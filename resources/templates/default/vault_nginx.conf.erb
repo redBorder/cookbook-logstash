@@ -1,0 +1,20 @@
+filter {
+  if "nginx" in [app_name] {
+    grok {
+      patterns_dir => ["/etc/logstash/pipelines/vault/patterns"]
+      match => {
+        "message" => [
+          "%{NGINXACCESS}"
+        ]
+      }
+    }
+    mutate {
+      add_field => {"source" => "%{remote_ip}"}
+      add_field => {"status" => "%{response}"}
+      add_field => {"target" => "%{request}"}
+      add_field => {"action" => "%{request_action}"}
+    }
+  }
+
+}
+

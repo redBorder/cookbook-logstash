@@ -1,0 +1,8 @@
+output {
+  kafka {
+    codec => json
+    topic_id => "<%= @output_topic %>"
+    bootstrap_servers => "kafka.service:9092"
+  }
+}
+

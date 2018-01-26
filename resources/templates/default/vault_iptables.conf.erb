@@ -1,0 +1,59 @@
+filter {
+  if "kernel" in [app_name] {
+    grok {
+      patterns_dir => ["/etc/logstash/pipelines/vault/patterns"]
+      match => {
+        "message" => [
+          "%{IPTABLES_MESSAGE}"
+        ]
+      }
+    }
+
+    if [iptables_src_ip] and [iptables_src_port]{
+      mutate {
+        add_field => {"source" => "%{iptables_src_ip}:%{iptables_src_port}"}
+      }
+    }
+
+    if [iptables_src_port] and ![iptables_src_ip]{
+      mutate {
+        add_field => {"source" => "%{iptables_src_port}"}
+      }
+    }
+
+    if ![iptables_src_port] and [iptables_src_ip]{
+      mutate {
+        add_field => {"source" => "%{iptables_src_ip}"}
+      }
+    }
+
+    if [iptables_dst_ip] and [iptables_dst_port]{
+      mutate {
+        add_field => {"target" => "%{iptables_dst_ip}:%{iptables_dst_port}"}
+      }
+    }
+
+    if [iptables_dst_ip] and ![iptables_dst_port]{
+      mutate {
+        add_field => {"target" => "%{iptables_dst_ip}"}
+      }
+    }
+
+    if ![iptables_dst_ip] and [iptables_dst_port]{
+      mutate {
+        add_field => {"target" => "%{iptables_dst_port}"}
+      }
+    }
+
+    if [status]{
+      mutate {
+        add_field => {"status" => "%{status}"}
+      }
+    }
+
+    mutate {
+      add_field => {"action" => "access"}
+    }
+  }
+}
+

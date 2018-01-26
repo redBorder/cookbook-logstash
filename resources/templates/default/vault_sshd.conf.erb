@@ -1,0 +1,367 @@
+filter {
+  if "sshd" in [app_name] {
+    grok {
+      patterns_dir => ["/etc/logstash/pipelines/vault/patterns"]
+      match => {
+        "message" => [
+          "%{SSHD_MESSAGE}"
+        ]
+      }
+    }
+
+    if [listening_on_msg] {
+      mutate {
+        add_field => {"action" => "listen on"}
+      }
+
+      if [sshd_listen_port] {
+        mutate {
+          add_field => {"target" => "%{sshd_listen_ip}:%{sshd_listen_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"target" => "%{sshd_listen_ip}"}
+        }
+      }
+    }
+
+    else if [terminate_msg] {
+      mutate {
+        add_field => {"action" => "terminate"}
+        add_field => {"status" => "%{sshd_signal}"}
+      }
+    }
+
+    else if [connection_failed_msg] {
+      mutate {
+        add_field => {"action" => "connect to"}
+        add_field => {"status" => "connection error"}
+      }
+
+      if [sshd_listen_port] {
+        mutate {
+          add_field => {"target" => "%{sshd_listen_ip}:%{sshd_listen_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"target" => "%{sshd_listen_ip}"}
+        }
+      }
+
+    }
+
+    else if [fail_listen_port_msg] {
+      mutate {
+        add_field => {"action" => "listen on"}
+        add_field => {"target" => "%{sshd_listen_port}"}
+        add_field => {"status" => "port error"}
+      }
+    }
+
+    else if [address_already_in_use_msg] {
+      mutate {
+        add_field => {"action" => "listen on"}
+        add_field => {"status" => "bind error"}
+      }
+    }
+
+    else if [cannot_listen_to_port_msg] {
+      mutate {
+        add_field => {"action" => "listen on"}
+        add_field => {"target" => "%{sshd_listen_port}"}
+        add_field => {"status" => "listen error"}
+      }
+    }
+
+    else if [timeout_msg] {
+      mutate {
+        add_field => {"action" => "timeout"}
+        add_field => {"status" => "not response"}
+      }
+    }
+
+    else if [sshd_success_connection_msg] {
+      mutate {
+        add_field => {"action" => "connect to"}
+        add_field => {"status" => "accepted"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+
+    }
+
+    else if [received_disconnect_from_msg] {
+      mutate {
+        add_field => {"action" => "disconnect from"}
+        add_field => {"status" => "code %{sshd_disconnect_code}"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+
+    }
+
+    else if [connection_closed_msg] {
+      mutate {
+        add_field => {"action" => "close connection"}
+        add_field => {"source" => "%{sshd_client_ip}"}
+        add_field => {"status" => "closed"}
+      }
+    }
+
+    else if [session_open_msg] {
+      mutate {
+        add_field => {"action" => "open session"}
+        add_field => {"source" => "%{sshd_user}"}
+        add_field => {"status" => "success"}
+      }
+    }
+
+    else if [session_closed_msg] {
+      mutate {
+        add_field => {"action" => "close session"}
+        add_field => {"source" => "%{sshd_user}"}
+        add_field => {"status" => "success"}
+      }
+    }
+
+    else if [session_fail_msg] {
+      mutate {
+        add_field => {"action" => "close session"}
+        add_field => {"status" => "fail"}
+      }
+    }
+
+    else if [sshd_result_conn_msg] {
+      mutate {
+        add_field => {"action" => "connection from"}
+        add_field => {"source" => "%{sshd_client_ip}"}
+        add_field => {"status" => "refused"}
+      }
+    }
+
+    else if [sshd_fail_msg] {
+      mutate {
+        add_field => {"action" => "authentication"}
+        add_field => {"target" => "%{sshd_invalid_user}"}
+        add_field => {"status" => "fail"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [sshd_user_fail_msg] {
+      mutate {
+        add_field => {"action" => "authentication"}
+        add_field => {"target" => "%{sshd_invalid_user}"}
+        add_field => {"status" => "wrong password"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [sshd_invalid_user_msg] {
+      mutate {
+        add_field => {"action" => "authentication"}
+        add_field => {"source" => "%{sshd_client_ip}"}
+        add_field => {"target" => "%{sshd_invalid_user}"}
+        add_field => {"status" => "invalid user"}
+      }
+    }
+
+    else if [disc_preauth_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "disconnected"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [received_disconnect_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "disconnected"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [max_auth_attempts_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "max attempts exceeded"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [disr_preauth_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "disconnected"}
+      }
+    }
+
+    else if [invalid_user_preauth_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"target" => "%{sshd_invalid_user}"}
+        add_field => {"status" => "invalid user"}
+      }
+    }
+
+    else if [connection_reset_preauth_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "connection reset"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [connection_closed_preauth_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "connection closed"}
+      }
+
+      if [sshd_port] {
+        mutate {
+          add_field => {"source" => "%{sshd_client_ip}:%{sshd_port}"}
+        }
+      } else {
+        mutate{
+          add_field => {"source" => "%{sshd_client_ip}"}
+        }
+      }
+    }
+
+    else if [bad_packet_length_msg] {
+      mutate {
+        add_field => {"action" => "preauth"}
+        add_field => {"status" => "bad packet length"}
+      }
+    }
+
+    else if [identification_fail_msg] {
+      mutate {
+        add_field => {"action" => "identification"}
+        add_field => {"source" => "%{sshd_client_ip}"}
+        add_field => {"status" => "fail"}
+      }
+    }
+
+    else if [sshd_mapb_fail_msg] {
+      mutate {
+        add_field => {"action" => "mapping"}
+        add_field => {"source" => "%{sshd_client_ip}"}
+        add_field => {"target" => "%{sshd_client_hostname}"}
+        add_field => {"status" => "fail"}
+      }
+    }
+
+    else if [sshd_rmap_fail_msg] {
+      mutate {
+        add_field => {"action" => "reverse mapping"}
+        add_field => {"source" => "%{sshd_client_hostname}"}
+        add_field => {"target" => "%{sshd_client_ip}"}
+        add_field => {"status" => "fail"}
+      }
+    }
+
+    else if [too_many_auth_msg] {
+      mutate {
+        add_field => {"action" => "authentication"}
+        add_field => {"target" => "%{sshd_invalid_user}"}
+        add_field => {"status" => "too many failures"}
+      }
+    }
+
+    else if [corrupted_mac_msg] {
+      mutate {
+        add_field => {"action" => "authentication"}
+        add_field => {"status" => "corrupted MAC"}
+      }
+    }
+
+    else if [packet_corrupt_msg] {
+      mutate {
+        add_field => {"action" => "authentication"}
+        add_field => {"status" => "packet corrupt"}
+      }
+    }
+
+    else if [bad_protocol_version_msg] {
+      mutate {
+        add_field => {"action" => "integrity"}
+        add_field => {"source" => "%{sshd_client_ip}"}
+        add_field => {"status" => "bad protocol"}
+      }
+    }
+
+ }
+}

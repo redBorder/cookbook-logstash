@@ -1,0 +1,26 @@
+filter {
+  if ![target] {
+    mutate {
+      add_field => {"target" => ""}
+    }
+  }
+
+  if ![source] {
+    mutate {
+      add_field => {"source" => ""}
+    }
+  }
+
+  if ![action] {
+    mutate {
+      add_field => {"action" => ""}
+    }
+  }
+
+  if ![status] {
+    mutate {
+      add_field => {"status" => ""}
+    }
+  }
+}
+

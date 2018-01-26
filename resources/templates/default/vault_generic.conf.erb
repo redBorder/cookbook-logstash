@@ -1,0 +1,14 @@
+filter {
+  mutate {
+    remove_field => ["hash", "parsed-info"]
+    rename => {
+      "raw_message" => "raw-message"
+    }
+  }
+
+  fingerprint {
+    key => <%= @hash_key %>
+    source => "raw-message"
+    method => <%= @hash_function.upcase %>
+  }
+}

@@ -1,0 +1,7 @@
+input {
+  kafka {
+    codec => json
+    bootstrap_servers => "kafka.service:9092"
+    topics => <%= @topics %>
+  }
+}

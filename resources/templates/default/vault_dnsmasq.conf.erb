@@ -1,0 +1,94 @@
+filter {
+  if "dnsmasq-dhcp" in [app_name] {
+    grok {
+      patterns_dir => ["/etc/logstash/pipelines/vault/patterns"]
+      match => {
+        "message" => [
+          "%{DHCPD}"
+        ]
+      }
+    }
+    if [source_mac] {
+      mutate {
+        add_field => {"source" => "%{source_mac}"}
+      }
+    }
+    if [source_ip] {
+      mutate {
+        add_field => {"status" => "%{source_ip}"}
+      }
+    }
+    if [message_type] {
+      mutate {
+        add_field => {"action" => "%{message_type}"}
+      }
+    }
+  }
+
+  if "dnsmasq" in [app_name] {
+    grok {
+      patterns_dir => ["/etc/logstash/pipelines/vault/patterns"]
+      match => {
+        "message" => [
+          "%{DNSMASQ_QUERY}",
+          "%{DNSMASQ_FORWARD}",
+          "%{DNSMASQ_ACTION_IS}"
+        ]
+      }
+    }
+    
+    if [action_dns] {
+
+      if [action_opt] {
+        mutate {
+          add_field => {"action" => "%{action_dns} %{action_opt}"}
+        }
+      }
+
+      else {
+        mutate {
+          add_field => {"action" => "%{action_dns}"}
+        }
+      }
+
+    }
+
+    if [target_ip] {
+      mutate {
+        add_field => {"target" => "%{target_ip}"}
+      }
+    }
+
+    if [source_ip] {
+      mutate {
+        add_field => {"source" => "%{source_ip}"}
+      }
+    }
+
+    if [target_dns] {
+      mutate {
+        add_field => {"target" => "%{target_dns}"}
+      }
+    }
+
+    if [status_dns] {
+      mutate {
+        add_field => {"status" => "%{status_dns}"}
+      }
+    }
+
+    if [domain] {
+      mutate {
+        add_field => {"source" => "%{domain}"}
+      }
+    }
+
+    if [ip_forward] {
+      mutate {
+        add_field => {"target" => "%{ip_forward}"}
+      }
+    }
+
+  }
+}
+
