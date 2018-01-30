@@ -22,7 +22,7 @@ action :add do
       system true
     end
 
-    logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { :hash_key => "0123456789", :hash_function => "SHA256"}
+    logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => "0123456789", "hash_function" => "SHA256" }
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/vault ].each do |path|
       directory path do
@@ -38,6 +38,7 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       variables(:user => user)
       notifies :restart, "service[logstash]", :delayed
@@ -46,10 +47,11 @@ action :add do
     # Vault pipeline
 
     template "/etc/logstash/pipelines/vault/00_input.conf" do
-      source "kafka_input.conf.erb"
+      source "input_kafka.conf.erb"
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       variables(:topics => ["rb_vault"])
       notifies :restart, "service[logstash]", :delayed
@@ -60,6 +62,7 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       variables(:hash_key => logstash_hash_item["hash_key"], :hash_function => logstash_hash_item["hash_function"])
       notifies :restart, "service[logstash]", :delayed
@@ -70,6 +73,7 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       notifies :restart, "service[logstash]", :delayed
     end
@@ -79,6 +83,7 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       notifies :restart, "service[logstash]", :delayed
     end
@@ -88,6 +93,7 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       notifies :restart, "service[logstash]", :delayed
     end
@@ -97,6 +103,7 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       notifies :restart, "service[logstash]", :delayed
     end
@@ -106,16 +113,17 @@ action :add do
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       notifies :restart, "service[logstash]", :delayed
     end
 
     template "/etc/logstash/pipelines/vault/99_output.conf" do
-      source "kafka_output.conf.erb"
+      source "output_kafka.conf.erb"
       owner "root"
       owner "root"
       mode 0644
-      retries 2
+      ignore_failure true
       variables(:input_topics => ["rb_vault"],
                 :output_topic => "rb_vault_post"
                )
@@ -125,10 +133,11 @@ action :add do
     # sflow pipeline
     
     template "/etc/logstash/pipelines/sflow/00_input.conf" do
-      source "kafka_input.conf.erb"
+      source "input_kafka.conf.erb"
       owner user
       group user
       mode 0644
+      ignore_failure true
       cookbook "logstash"
       variables(:topics => ["rb_sflow"])
       notifies :restart, "service[logstash]", :delayed
@@ -137,11 +146,11 @@ action :add do
     # TODO: normalize and enrich sflow
 
     template "/etc/logstash/pipelines/sflow/99_output.conf" do
-      source "kafka_output.conf.erb"
+      source "output_kafka.conf.erb"
       owner "root"
       owner "root"
       mode 0644
-      retries 2
+      ignore_failure true
       variables(:input_topics => ["rb_sflow"],
                 :output_topic => "rb_flow"
                )
