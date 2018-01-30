@@ -124,6 +124,7 @@ action :add do
       owner "root"
       mode 0644
       ignore_failure true
+      cookbook "logstash"
       variables(:input_topics => ["rb_vault"],
                 :output_topic => "rb_vault_post"
                )
@@ -151,6 +152,7 @@ action :add do
       owner "root"
       mode 0644
       ignore_failure true
+      cookbook "logstash"
       variables(:input_topics => ["rb_sflow"],
                 :output_topic => "rb_flow"
                )
