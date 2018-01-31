@@ -1,0 +1,74 @@
+filter {
+
+  if [ip_proto] == "udp" {
+     mutate {
+    	add_field => {
+        	"l4_proto" => 17
+        }
+     }
+  } else if [ip_proto] == "tcp" {
+     mutate {
+      	add_field => {
+		"l4_proto" => 6
+      	}
+     }
+  }
+
+  # Egress
+  if [tag] == 2 {
+    mutate {
+      rename => {
+        "ip_src" => "lan_ip"
+        "ip_dst" => "wan_ip"
+        "port_src" => "lan_l4_port"
+        "port_dst" => "wan_l4_port"
+        "country_ip_src" => "lan_ip_country_code"
+        "country_ip_dst" => "wan_ip_country_code"
+      }
+
+      add_field => {
+        "direction" => "upstream"
+      }
+    }
+  # Ingress
+  } else if [tag] == 1 {
+    mutate {
+      rename => {
+        "ip_src" => "wan_ip"
+        "ip_dst" => "lan_ip"
+        "port_src" => "wan_l4_port"
+        "port_dst" => "lan_l4_port"
+        "country_ip_src" => "wan_ip_country_code"
+        "country_ip_dst" => "lan_ip_country_code"
+      }
+
+      add_field => {
+        "direction" => "downstream"
+      }
+    }
+  }
+
+  ruby { code => "event.set('timestamp', event.get('@timestamp').to_i)" }
+
+  mutate {
+
+   add_field => {
+	"type" => "sflowv5"
+	"ip_protocol_version" => 4
+        "input_vrf" => 0
+        "output_vrf" => 0
+   }
+
+   rename => {
+	"packets" => "pkts"
+        "export_proto_seqno" => "flow_sequence"
+        "peer_ip_src" => "sensor_ip"
+   }
+
+   remove_field => [ "ip_proto", "tag", "stamp_updated", "event_type", "@version", "stamp_inserted", "writer_id", "timestamp_arrival", "@timestamp" ]
+
+  }
+
+
+}
+

@@ -1,0 +1,32 @@
+filter {
+
+  if [l4_proto] {
+    mutate { convert => ["l4_proto", "integer"]}
+  }
+
+  if [ip_protocol_version] {
+    mutate { convert => ["ip_protocol_version", "integer"]}
+  }
+
+  if [flow_sequence] {
+    mutate { convert => ["flow_sequence", "string"]}
+  }
+
+  if [input_vrf] {
+    mutate { convert => ["input_vrf", "integer"]}
+  }
+
+  if [output_vrf] {
+    mutate { convert => ["output_vrf", "integer"]}
+  }
+
+  if [index_partitions] {
+    mutate { convert => ["index_partitions", "integer"]}
+  }
+
+  if [index_replicas] {
+    mutate { convert => ["index_replicas", "integer"]}
+  }
+
+}
+

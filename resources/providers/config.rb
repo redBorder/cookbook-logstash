@@ -22,6 +22,8 @@ action :add do
       system true
     end
 
+    flow_nodes = []
+
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => "0123456789", "hash_function" => "SHA256" }
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/vault ].each do |path|
@@ -141,6 +143,37 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       variables(:topics => ["rb_sflow"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/sflow/01_normalization.conf" do
+      source "sflow_normalization.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/sflow/02_enrichment.conf" do
+      source "sflow_enrichment.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:flow_nodes => flow_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/sflow/03_field_conversion.conf" do
+      source "sflow_field_conversion.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
       notifies :restart, "service[logstash]", :delayed
     end
 
