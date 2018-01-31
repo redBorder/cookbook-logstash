@@ -46,6 +46,16 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
+    template "/etc/logstash/pipelines.yml" do
+      source "pipelines.yml.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
     # Vault pipeline
 
     template "/etc/logstash/pipelines/vault/00_input.conf" do
