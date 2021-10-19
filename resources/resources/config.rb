@@ -8,6 +8,8 @@ default_action :add
 
 attribute :user, :kind_of => String, :default => "logstash"
 attribute :cdomain, :kind_of => String, :default => "redborder.cluster"
+attribute :managers_all, :kind_of => Array, :default => []
+attribute :flow_nodes, :kind_of => Array, :default => []
 
 # EXAMPLES
 

@@ -1,0 +1,32 @@
+filter {
+<% @flow_nodes.each do |flow_node| %>
+  <% if !flow_node[:ipaddress].nil? and !flow_node["redborder"].nil? and flow_node["redborder"]["blocked"]!=true %>
+    if [tag] ==  0 and [peer_ip_src] == "<%=flow_node[:ipaddress]%>" {
+      ruby {
+        code => " # loop in all the homenets
+          require 'ipaddr'
+
+          internal = []
+          <% flow_node["redborder"]["homenets"].each do |x| %>
+            internal.push(IPAddr.new('<%=x["value"]%>'))
+          <% end %>
+
+          ip_src = IPAddr.new(event.get('ip_src'))
+          ip_dst = IPAddr.new(event.get('ip_dst'))
+          tag = 1
+          if internal.any? {|subnet| subnet.include?(ip_src) }
+            if internal.any? {|subnet| subnet.include?(ip_dst) }
+              tag = 3
+            else
+              tag = 2
+            end
+          end
+
+          event.set('tag', tag);
+
+        "
+      }
+    }
+  <% end unless flow_node["redborder"]["homenets"].nil?  %>
+<% end %>
+}

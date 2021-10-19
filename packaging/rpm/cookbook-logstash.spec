@@ -47,5 +47,8 @@ esac
 %doc
 
 %changelog
+* Tue Oct 19 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.1-1
+- Sflow pipeline enrichment
+
 * Tue Jan 25 2018 Juan J. Prieto <jjprieto@redborder.com> - 1.0.0-1
 - first spec version

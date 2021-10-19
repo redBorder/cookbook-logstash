@@ -8,9 +8,10 @@ include Logstash::Helper
 
 action :add do
   begin
-
     user = new_resource.user
     cdomain = new_resource.cdomain
+    flow_nodes = new_resource.flow_nodes
+    managers_all = new_resource.managers_all
 
     yum_package "logstash" do
       action :upgrade
@@ -22,8 +23,8 @@ action :add do
       system true
     end
 
-    flow_nodes = []
-
+    managers_all = get_managers
+    flow_nodes = get_sensors_info("flow-sensor")
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => "0123456789", "hash_function" => "SHA256" }
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/vault ].each do |path|
@@ -152,11 +153,22 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:topics => ["rb_sflow"])
+      variables(:topics => ["sflow"])
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/01_normalization.conf" do
+    template "/etc/logstash/pipelines/sflow/01_tagging.conf" do
+      source "sflow_tagging.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:flow_nodes => flow_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/sflow/02_normalization.conf" do
       source "sflow_normalization.conf.erb"
       owner user
       group user
@@ -166,7 +178,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/02_enrichment.conf" do
+    template "/etc/logstash/pipelines/sflow/03_enrichment.conf" do
       source "sflow_enrichment.conf.erb"
       owner user
       group user
@@ -177,7 +189,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/03_field_conversion.conf" do
+    template "/etc/logstash/pipelines/sflow/04_field_conversion.conf" do
       source "sflow_field_conversion.conf.erb"
       owner user
       group user
@@ -188,6 +200,15 @@ action :add do
     end
 
     # TODO: normalize and enrich sflow
+    template "/etc/logstash/pipelines/sflow/91_rename.conf" do
+      source "sflow_rename.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
 
     template "/etc/logstash/pipelines/sflow/99_output.conf" do
       source "output_kafka.conf.erb"
@@ -196,7 +217,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:input_topics => ["rb_sflow"],
+      variables(:input_topics => ["sflow"],
                 :output_topic => "rb_flow"
                )
       notifies :restart, "service[logstash]", :delayed
