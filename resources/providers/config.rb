@@ -12,6 +12,7 @@ action :add do
     cdomain = new_resource.cdomain
     flow_nodes = new_resource.flow_nodes
     managers_all = new_resource.managers_all
+    namespaces = new_resource.namespaces
 
     yum_package "logstash" do
       action :upgrade
@@ -24,10 +25,12 @@ action :add do
     end
 
     managers_all = get_managers
+    namespaces = get_namespaces
+
     flow_nodes = get_sensors_info("flow-sensor")
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => "0123456789", "hash_function" => "SHA256" }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/vault ].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault ].each do |path|
       directory path do
         owner user
         group user
@@ -199,7 +202,6 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    # TODO: normalize and enrich sflow
     template "/etc/logstash/pipelines/sflow/91_rename.conf" do
       source "sflow_rename.conf.erb"
       owner user
@@ -220,6 +222,93 @@ action :add do
       variables(:input_topics => ["sflow"],
                 :output_topic => "rb_flow"
                )
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    # netflow pipeline
+
+    template "/etc/logstash/pipelines/netflow/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_flow"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/01_macscrambling.conf" do
+      source "netflow_macscrambling.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/02_goenrich.conf" do
+      source "netflow_goenrich.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/03_macvendor.conf" do
+      source "netflow_macvendor.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/04_darklist.conf" do
+      source "netflow_darklist.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/90_splitflow.conf" do
+      source "netflow_splitflow.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/91_rename.conf" do
+      source "netflow_rename.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/netflow/99_output.conf" do
+      source "output_kafka_namespace.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:input_topics => ["rb_flow"],
+                :output_topic => "rb_flow_post",
+                :namespaces => namespaces
+      )
       notifies :restart, "service[logstash]", :delayed
     end
 

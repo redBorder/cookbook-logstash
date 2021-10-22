@@ -1,0 +1,10 @@
+filter {
+  mutate {
+    rename => {
+      "cisco_src_vlan" => "lan_vlan"
+      "src_vlan" => "lan_vlan"
+      "cisco_dst_vlan" => "wan_vlan"
+      "dst_vlan" => "wan_vlan"
+    }
+  }
+}

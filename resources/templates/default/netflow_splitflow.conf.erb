@@ -1,0 +1,7 @@
+filter {
+  netflowenrich {
+  }
+  mutate {
+    remove_field => [ "@version","@timestamp" ]
+  }
+}
