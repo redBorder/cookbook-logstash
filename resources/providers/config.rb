@@ -13,7 +13,8 @@ action :add do
     flow_nodes = new_resource.flow_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
-    memcached_config = new_resource.memcached_config
+    memcached_server = new_resource.memcached_server
+    mac_vendors = new_resource.mac_vendors
 
     yum_package "logstash" do
       action :upgrade
@@ -246,7 +247,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:memcached_config => memcached_config)
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -267,7 +268,9 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:memcached_config => memcached_config)
+      variables(:memcached_server => memcached_server,
+                :mac_vendors => mac_vendors
+      )
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -278,7 +281,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:memcached_config => memcached_config)
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -289,7 +292,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:memcached_config => memcached_config)
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
