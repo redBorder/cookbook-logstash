@@ -1,5 +1,6 @@
 filter {
   netflowenrich {
+    memcached_server => "<%= @memcached_config %>"
   }
   mutate {
     remove_field => [ "@version","@timestamp" ]

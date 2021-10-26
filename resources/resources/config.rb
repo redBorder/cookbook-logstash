@@ -11,6 +11,7 @@ attribute :cdomain, :kind_of => String, :default => "redborder.cluster"
 attribute :managers_all, :kind_of => Array, :default => []
 attribute :flow_nodes, :kind_of => Array, :default => []
 attribute :namespaces, :kind_of => Array, :default => []
+attribute :memcached_config, :kind_of => String, :default => "/var/www/rb-rails/config/memcached_config.yml"
 
 # EXAMPLES
 

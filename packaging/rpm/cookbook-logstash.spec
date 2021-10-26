@@ -12,7 +12,6 @@ URL: https://github.com/redBorder/cookbook-logstash
 Source0: %{name}-%{version}.tar.gz
 Source1: logstash-offline-plugins-7.4.2.zip
 
-%define _unpackaged_files_terminate_build 0
 
 %description
 %{summary}

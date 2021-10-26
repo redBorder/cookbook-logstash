@@ -13,6 +13,7 @@ action :add do
     flow_nodes = new_resource.flow_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
+    memcached_config = new_resource.memcached_config
 
     yum_package "logstash" do
       action :upgrade
@@ -245,11 +246,12 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_config => memcached_config)
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/02_goenrich.conf" do
-      source "netflow_goenrich.conf.erb"
+    template "/etc/logstash/pipelines/netflow/02_geoenrich.conf" do
+      source "netflow_geoenrich.conf.erb"
       owner user
       group user
       mode 0644
@@ -265,6 +267,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_config => memcached_config)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -275,6 +278,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_config => memcached_config)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -285,6 +289,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_config => memcached_config)
       notifies :restart, "service[logstash]", :delayed
     end
 
