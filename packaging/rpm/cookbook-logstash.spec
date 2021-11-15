@@ -1,5 +1,4 @@
 %global cookbook_path /var/chef/cookbooks/logstash/
-%global plugins_path /share/logstash-plugins/
 
 Name: cookbook-logstash
 Version: %{__version}
@@ -10,13 +9,12 @@ Summary: Logstash cookbook to install and configure it in redborder environments
 License: AGPL 3.0
 URL: https://github.com/redBorder/cookbook-logstash
 Source0: %{name}-%{version}.tar.gz
-Source1: logstash-offline-plugins-7.4.2.zip
-
 
 %description
 %{summary}
 
 %prep
+
 %setup -qn %{name}-%{version}
 
 %build
@@ -26,8 +24,6 @@ mkdir -p %{buildroot}%{cookbook_path}
 cp -f -r  resources/* %{buildroot}%{cookbook_path}
 chmod -R 0755 %{buildroot}%{cookbook_path}
 install -D -m 0644 README.md %{buildroot}%{cookbook_path}/README.md
-mkdir -p %{buildroot}%{plugins_path}
-cp -f $RPM_SOURCE_DIR/logstash-offline-plugins-7.4.2.zip %{buildroot}%{plugins_path}
 
 %pre
 
@@ -42,13 +38,8 @@ case "$1" in
     su - -s /bin/bash -c 'source /etc/profile && rvm gemset use default && env knife cookbook upload logstash'
   ;;
 esac
-if [ -f %{plugins_path}logstash-offline-plugins-7.4.2.zip ]; then
-    /usr/share/logstash/bin/logstash-plugin install --no-verify file://%{plugins_path}logstash-offline-plugins-7.4.2.zip 2>&1 | tee -a /root/.install-redborder-boot.log
-fi
 
 %files
-%defattr(0755,root,root)
-%{plugins_path}
 %defattr(0755,root,root)
 %{cookbook_path}
 %defattr(0644,root,root)
