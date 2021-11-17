@@ -1,0 +1,4 @@
+DHCPD %{WORD:message_type}(\(%{WORD:interface}\))?\s*%{IP:source_ip}?\s*%{COMMONMAC:source_mac}?\s*%{HOSTNAME:source_hostname}?
+DNSMASQ_QUERY %{WORD:action_dns}\[%{WORD:action_opt}\]\s*%{IPORHOST:target_ip}\s*from\s*%{IPORHOST:source_ip}\s*
+DNSMASQ_FORWARD %{WORD:action_dns}\s*%{IPORHOST:domain}\s*to\s*%{IPORHOST:ip_forward}\s*
+DNSMASQ_ACTION_IS %{WORD:action_dns}\s*%{IPORHOST:target_dns}\s*is\s*<?%{IPORHOST:status_dns}>?\s*

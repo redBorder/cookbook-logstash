@@ -30,7 +30,7 @@ action :add do
     namespaces = get_namespaces
 
     flow_nodes = get_sensors_info("flow-sensor")
-    logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => "0123456789", "hash_function" => "SHA256" }
+    logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault ].each do |path|
       directory path do
@@ -321,6 +321,21 @@ action :add do
     end
 
     # end of pipelines
+
+    #logstash rules
+    directory "/etc/logstash/pipelines/vault/patterns" do
+      owner "root"
+      group "root"
+      mode 0755
+      action :create
+    end
+
+    Dir.foreach("/var/chef/cookbooks/logstash/templates/default/patterns") do |f|
+      next if f == '.' or f == '..'
+      link "/etc/logstash/pipelines/vault/patterns/#{f}" do
+        to "/var/chef/cookbooks/logstash/templates/default/patterns/#{f}"
+      end
+    end
 
     service "logstash" do
       service_name "logstash"
