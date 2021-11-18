@@ -347,7 +347,7 @@ action :add do
         mode 0644
         cookbook "logstash"
         ignore_failure true
-        notifies :restart, "service[logstash]"
+        notifies :restart, "service[logstash]", :delayed
       end
     end
 
