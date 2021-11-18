@@ -48,6 +48,9 @@ esac
 %doc
 
 %changelog
+* Wed Nov 17 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.3-1
+- Vault pipeline enrichment
+
 * Fri Oct 22 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.2-1
 - Netflow pipeline enrichment
 

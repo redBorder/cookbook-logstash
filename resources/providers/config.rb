@@ -330,10 +330,31 @@ action :add do
       action :create
     end
 
-    Dir.foreach("/var/chef/cookbooks/logstash/templates/default/patterns") do |f|
+    directory "/share/logstash-rules" do
+      owner "root"
+      group "root"
+      mode 0755
+      action :create
+      recursive true
+    end
+
+    Dir.foreach("/var/chef/cookbooks/logstash/templates/patterns") do |f|
+      next if f == '.' or f == '..'
+      template "/share/logstash-rules/#{f}" do
+        source "patterns/#{f}"
+        owner "root"
+        group "root"
+        mode 0644
+        cookbook "logstash"
+        ignore_failure true
+        notifies :restart, "service[logstash]"
+      end
+    end
+
+    Dir.foreach("/share/logstash-rules") do |f|
       next if f == '.' or f == '..'
       link "/etc/logstash/pipelines/vault/patterns/#{f}" do
-        to "/var/chef/cookbooks/logstash/templates/default/patterns/#{f}"
+        to "/share/logstash-rules/#{f}"
       end
     end
 
