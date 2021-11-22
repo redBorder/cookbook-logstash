@@ -11,6 +11,7 @@ action :add do
     user = new_resource.user
     cdomain = new_resource.cdomain
     flow_nodes = new_resource.flow_nodes
+    vault_nodes = new_resource.flow_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
@@ -21,15 +22,17 @@ action :add do
       flush_cache [:before]
     end
 
+    yum_package "redborder-logstash-plugins" do
+      action :upgrade
+      flush_cache [:before]
+    end
+
     user user do
       action :create
       system true
     end
 
     managers_all = get_managers
-    namespaces = get_namespaces
-
-    flow_nodes = get_sensors_info("flow-sensor")
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault ].each do |path|
@@ -389,6 +392,10 @@ action :remove do
     end
 
     yum_package "logstash" do
+      action :remove
+    end
+
+    yum_package "redborder-logstash-plugins" do
       action :remove
     end
 
