@@ -11,7 +11,7 @@ action :add do
     user = new_resource.user
     cdomain = new_resource.cdomain
     flow_nodes = new_resource.flow_nodes
-    vault_nodes = new_resource.flow_nodes
+    vault_nodes = new_resource.vault_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
