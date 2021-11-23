@@ -52,7 +52,7 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       variables(:user => user)
-      notifies :restart, "service[logstash]", :delayed
+      notifies :restart, 'service[logstash]', :delayed
     end
 
     template "/etc/logstash/pipelines.yml" do
@@ -320,11 +320,10 @@ action :add do
                 :output_topic => "rb_flow_post",
                 :namespaces => namespaces
       )
-      notifies :restart, "service[logstash]", :delayed
+       notifies :restart, "service[logstash]", :delayed
     end
 
     # end of pipelines
-
     #logstash rules
     directory "/etc/logstash/pipelines/vault/patterns" do
       owner "root"

@@ -38,6 +38,7 @@ case "$1" in
     su - -s /bin/bash -c 'source /etc/profile && rvm gemset use default && env knife cookbook upload logstash'
   ;;
 esac
+mkdir -p /share/logstash-rules
 
 %files
 %defattr(0755,root,root)
