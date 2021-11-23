@@ -38,6 +38,7 @@ case "$1" in
     su - -s /bin/bash -c 'source /etc/profile && rvm gemset use default && env knife cookbook upload logstash'
   ;;
 esac
+mkdir -p /share/logstash-rules
 
 %files
 %defattr(0755,root,root)
@@ -48,6 +49,9 @@ esac
 %doc
 
 %changelog
+* Wed Nov 17 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.3-1
+- Vault pipeline enrichment
+
 * Fri Oct 22 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.2-1
 - Netflow pipeline enrichment
 
