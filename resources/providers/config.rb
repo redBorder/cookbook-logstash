@@ -17,7 +17,7 @@ action :add do
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
 
-    yum_package "cookbook-logstash-rules" do
+    yum_package "logstash-rules" do
       action :upgrade
       flush_cache [:before]
     end
@@ -37,7 +37,6 @@ action :add do
       system true
     end
 
-    managers_all = get_managers
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault ].each do |path|
@@ -379,7 +378,7 @@ action :remove do
       action :remove
     end
 
-    yum_package "cookbook-logstash-rules" do
+    yum_package "logstash-rules" do
       action :remove
     end
 
