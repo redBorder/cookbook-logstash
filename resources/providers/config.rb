@@ -151,7 +151,8 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       variables(:input_topics => ["rb_vault"],
-                :output_topic => "rb_vault_post"
+                :output_topic => "rb_vault_post",
+                :namespaces => namespaces
                )
       notifies :restart, "service[logstash]", :delayed
     end
