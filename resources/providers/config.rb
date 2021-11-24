@@ -17,6 +17,11 @@ action :add do
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
 
+    yum_package "cookbook-logstash-rules" do
+      action :upgrade
+      flush_cache [:before]
+    end
+
     yum_package "logstash" do
       action :upgrade
       flush_cache [:before]
@@ -140,7 +145,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/vault/99_output.conf" do
-      source "output_kafka.conf.erb"
+      source "output_kafka_namespace.conf.erb"
       owner "root"
       owner "root"
       mode 0644
@@ -324,33 +329,13 @@ action :add do
     end
 
     # end of pipelines
+
     #logstash rules
     directory "/etc/logstash/pipelines/vault/patterns" do
       owner "root"
       group "root"
       mode 0755
       action :create
-    end
-
-    directory "/share/logstash-rules" do
-      owner "root"
-      group "root"
-      mode 0755
-      action :create
-      recursive true
-    end
-
-    Dir.foreach("/var/chef/cookbooks/logstash/templates/patterns") do |f|
-      next if f == '.' or f == '..'
-      template "/share/logstash-rules/#{f}" do
-        source "patterns/#{f}"
-        owner "root"
-        group "root"
-        mode 0644
-        cookbook "logstash"
-        ignore_failure true
-        notifies :restart, "service[logstash]", :delayed
-      end
     end
 
     Dir.foreach("/share/logstash-rules") do |f|
@@ -391,6 +376,10 @@ action :remove do
     end
 
     yum_package "logstash" do
+      action :remove
+    end
+
+    yum_package "cookbook-logstash-rules" do
       action :remove
     end
 
