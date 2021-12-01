@@ -341,14 +341,13 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/social/99_output.conf" do
-      source "output_kafka_namespace.conf.erb"
+      source "logstash_social_99_output.conf.erb"
       owner "root"
       owner "root"
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:input_topics => ["rb_social","rb_hashtag"],
-                :output_topic => ["rb_social_post","rb_hashtag_post"],
+      variables(:kafka_topics => ["rb_social","rb_hashtag"],
                 :namespaces => namespaces
       )
       notifies :restart, "service[logstash]", :delayed

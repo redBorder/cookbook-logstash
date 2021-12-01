@@ -1,0 +1,41 @@
+output {
+  <% @kafka_topics.each do |kafka_topic| %>
+  if [kafka_topic] == "rb_social" {
+      if [namespace_uuid] {
+        <% @namespaces.each do |namespace| %>
+        if [namespace_uuid] == "<%=namespace%>" {
+          kafka {
+            codec => json
+            topic_id => "rb_social_post_<%=namespace%>"
+            bootstrap_servers => "kafka.service:9092"
+          }
+        }
+       <% end %>
+      } else {
+        kafka {
+          codec => json
+          topic_id => "rb_social_post"
+          bootstrap_servers => "kafka.service:9092"
+        }
+      }      
+   } else {
+      if [namespace_uuid] {
+        <% @namespaces.each do |namespace| %>
+        if [namespace_uuid] == "<%=namespace%>" {
+          kafka {
+            codec => json
+            topic_id => "rb_hastag_post_<%=namespace%>"
+            bootstrap_servers => "kafka.service:9092"
+          }
+        }
+       <% end %>
+      } else {
+         kafka {
+          codec => json
+          topic_id => "rb_hashtag_post"
+          bootstrap_servers => "kafka.service:9092"
+        }
+      }         
+   }
+  <% end %>
+}
