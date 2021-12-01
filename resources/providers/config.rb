@@ -39,7 +39,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault ].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social].each do |path|
       directory path do
         owner user
         group user
@@ -326,6 +326,32 @@ action :add do
                 :namespaces => namespaces
       )
        notifies :restart, "service[logstash]", :delayed
+    end
+
+    #social pipelines
+    template "/etc/logstash/pipelines/social/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_social","rb_hashtag"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/social/99_output.conf" do
+      source "output_kafka_namespace.conf.erb"
+      owner "root"
+      group "root"
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:input_topics => ["rb_social","rb_hashtag"],
+                :output_topic => ["rb_social_post","rb_hashtag_post"],
+                :namespaces => namespaces
+      )
+      notifies :restart, "service[logstash]", :delayed
     end
 
     # end of pipelines
