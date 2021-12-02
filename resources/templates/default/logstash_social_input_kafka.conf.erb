@@ -1,0 +1,14 @@
+input {
+  kafka {
+    codec => json
+    bootstrap_servers => "kafka.service:9092"
+    topics => <%= @input_topics %>
+    decorate_events => true
+  }
+}
+
+filter {
+  mutate {
+    add_field => { "[kafka_topic]" => "%{[@metadata][kafka][topic]}"}
+  }
+}

@@ -145,8 +145,8 @@ action :add do
 
     template "/etc/logstash/pipelines/vault/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
@@ -224,8 +224,8 @@ action :add do
 
     template "/etc/logstash/pipelines/sflow/99_output.conf" do
       source "output_kafka.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
@@ -316,8 +316,8 @@ action :add do
 
     template "/etc/logstash/pipelines/netflow/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
@@ -330,28 +330,27 @@ action :add do
 
     #social pipelines
     template "/etc/logstash/pipelines/social/00_input.conf" do
-      source "input_kafka.conf.erb"
+      source "logstash_social_input_kafka.conf.erb"
       owner user
       group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:topics => ["rb_social","rb_hashtag"])
+      variables(:input_topics => ["rb_social","rb_hashtag"])
       notifies :restart, "service[logstash]", :delayed
     end
 
     template "/etc/logstash/pipelines/social/99_output.conf" do
-      source "logstash_social_99_output.conf.erb"
-      owner "root"
-      owner "root"
+      source "logstash_social_output_kafka_namespace.conf.erb"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:kafka_topics => ["rb_social","rb_hashtag"],
-                :namespaces => namespaces
-      )
+      variables(:namespaces => namespaces)
       notifies :restart, "service[logstash]", :delayed
     end
+
 
     # end of pipelines
 

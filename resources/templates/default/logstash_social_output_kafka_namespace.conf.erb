@@ -1,0 +1,19 @@
+output {
+      if [namespace_uuid] {
+        <% @namespaces.each do |namespace| %>
+        if [namespace_uuid] == "<%=namespace%>" {
+          kafka {
+            codec => json
+            topic_id =>  "%{kafka_topic}<%=namespace%>"
+            bootstrap_servers => "kafka.service:9092"
+          }
+        }
+      <% end %>
+     } else {
+        kafka {
+          codec => json
+          topic_id =>  "%{kafka_topic}_post"
+          bootstrap_servers => "kafka.service:9092"
+        }
+      }
+}
