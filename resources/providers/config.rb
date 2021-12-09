@@ -39,7 +39,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault ].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social ].each do |path|
       directory path do
         owner user
         group user
@@ -145,8 +145,8 @@ action :add do
 
     template "/etc/logstash/pipelines/vault/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
@@ -224,8 +224,8 @@ action :add do
 
     template "/etc/logstash/pipelines/sflow/99_output.conf" do
       source "output_kafka.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
@@ -316,8 +316,8 @@ action :add do
 
     template "/etc/logstash/pipelines/netflow/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
@@ -327,6 +327,30 @@ action :add do
       )
        notifies :restart, "service[logstash]", :delayed
     end
+
+    #social pipelines
+    template "/etc/logstash/pipelines/social/00_input.conf" do
+      source "logstash_social_input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:input_topics => ["rb_social","rb_hashtag"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/social/99_output.conf" do
+      source "logstash_social_output_kafka_namespace.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:namespaces => namespaces)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
 
     # end of pipelines
 
