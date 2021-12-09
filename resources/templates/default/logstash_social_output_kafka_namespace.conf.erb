@@ -1,10 +1,14 @@
+filter {
+        mutate {   remove_field => [ "@version","@timestamp" ]}
+}
+
 output {
       if [namespace_uuid] {
         <% @namespaces.each do |namespace| %>
         if [namespace_uuid] == "<%=namespace%>" {
           kafka {
             codec => json
-            topic_id =>  "%{kafka_topic}<%=namespace%>"
+            topic_id =>  "%{kafka_topic}_<%=namespace%>"
             bootstrap_servers => "kafka.service:9092"
           }
         }

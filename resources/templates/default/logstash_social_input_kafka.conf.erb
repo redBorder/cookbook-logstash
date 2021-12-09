@@ -10,5 +10,6 @@ input {
 filter {
   mutate {
     add_field => { "[kafka_topic]" => "%{[@metadata][kafka][topic]}"}
+    remove_field => [ "@version","@timestamp" ]
   }
 }
