@@ -1,0 +1,20 @@
+filter {
+<% @scanner_nodes.each do |scanner_node| %>
+  <% if !scanner_node[:ipaddress].nil? and !scanner_node["redborder"].nil? and scanner_node["redborder"]["parent_id"].nil? and scanner_node["redborder"]["blocked"]!=true %>
+    if [sensor_ip] ==  "<%=scanner_node[:ipaddress].to_s%>" {
+      mutate {
+        add_field => {
+          "sensor_name" => "<%= (scanner_node["rbname"].nil? ? scanner_node.name : scanner_node["rbname"]) %>"
+          <% ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid" ].each do |ss| %>
+            <% if !scanner_node["redborder"][ss].nil? and scanner_node["redborder"][ss]!="" %>
+              "<%= ss %>" => "<%= scanner_node["redborder"][ss] %>"
+            <% end %>
+          <% end %>
+          "index_partitions" => <%= [ 1, ( !scanner_node["redborder"].nil? and !scanner_node["redborder"]["index_partitions"].nil? ) ? scanner_node["redborder"]["index_partitions"].to_i : 5].max %>
+          "index_replicas" => <%= [ 1, ( !scanner_node["redborder"].nil? and !scanner_node["redborder"]["index_replicas"].nil? ) ? scanner_node["redborder"]["index_replicas"].to_i : 1].max %>
+        }
+      }
+    }
+  <% end %>
+<% end %>
+}
