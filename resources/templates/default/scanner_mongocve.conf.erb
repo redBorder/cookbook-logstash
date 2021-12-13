@@ -1,7 +1,7 @@
 filter {
  if [scan_type] == "2" { 	 
   mongocve {
-    mongodb_hostname => "mongo.service"
+    mongodb_hostname => "mongodb.service"
     mongodb_port => <%= @mongo_port %>
     db_name => <%= @mongo_cve_database %>
   }
