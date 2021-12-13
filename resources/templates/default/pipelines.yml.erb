@@ -11,4 +11,10 @@
 - pipeline.id: netflow-pipeline
   path.config: "/etc/logstash/pipelines/netflow"
   pipeline.workers: 3
+- pipeline.id: social-pipeline
+  path.config: "/etc/logstash/pipelines/social"
+  pipeline.workers: 1
+- pipeline.id: scanner-pipeline
+  path.config: "/etc/logstash/pipelines/scanner"
+  pipeline.workers: 1
 
