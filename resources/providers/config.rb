@@ -377,18 +377,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/scanner/02_enrichment.conf" do
-      source "scanner_enrichment.conf.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      variables(:scanner_nodes => scanner_nodes)
-      notifies :restart, "service[logstash]", :delayed
-    end
-
-    template "/etc/logstash/pipelines/scanner/03_message.conf" do
+    template "/etc/logstash/pipelines/scanner/02_message.conf" do
       source "scanner_message.conf.erb"
       owner user
       group user
