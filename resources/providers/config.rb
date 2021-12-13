@@ -42,7 +42,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp].each do |path|
       directory path do
         owner user
         group user
@@ -401,6 +401,47 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
+    # NMSP pipeline
+    template "/etc/logstash/pipelines/nmsp/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_nmsp"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/nmsp/01_macscrambling.conf" do
+      source "logstash_nmsp_macscrambling.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/nmsp/03_nmsp.conf" do
+      source "logstash_nmsp_03_nmsp.conf.erb"
+      owner user
+      group user
+      mode 0644
+      retries 2
+      notifies :restart, "service[logstash]", :delayed if manager_services["logstash"]
+    end
+
+    template "/etc/logstash/pipelines/nmsp/99_output.conf" do
+      source "output_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:output_topic => "rb_location")
+      notifies :restart, "service[logstash]", :delayed
+    end
 
     # end of pipelines
 
