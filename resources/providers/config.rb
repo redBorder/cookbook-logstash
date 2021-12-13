@@ -11,11 +11,14 @@ action :add do
     user = new_resource.user
     cdomain = new_resource.cdomain
     flow_nodes = new_resource.flow_nodes
+    scanner_nodes = new_resource.scanner_nodes
     vault_nodes = new_resource.vault_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
+    mongo_cve_database = new_resource.mongo_cve_database
+    mongo_port = new_resource.mongo_port
 
     yum_package "logstash-rules" do
       action :upgrade
@@ -39,7 +42,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social ].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner].each do |path|
       directory path do
         owner user
         group user
@@ -348,6 +351,53 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       variables(:namespaces => namespaces)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    #scanner pipeline
+    template "/etc/logstash/pipelines/scanner/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_scanner"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/scanner/01_mongocve.conf" do
+      source "scanner_mongocve.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:mongo_port => mongo_port, :mongo_cve_database => mongo_cve_database)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/scanner/02_message.conf" do
+      source "scanner_message.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/scanner/99_output.conf" do
+      source "output_kafka_namespace.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:input_topics => ["rb_scanner"],
+                :output_topic => "rb_scanner_post",
+                :namespaces => namespaces
+      )
       notifies :restart, "service[logstash]", :delayed
     end
 
