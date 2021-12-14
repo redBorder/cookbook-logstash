@@ -414,17 +414,18 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/nmsp/01_macscrambling.conf" do
-      source "logstash_nmsp_macscrambling.conf.erb"
+      source "netflow_macscrambling.conf.erb"
       owner user
       group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
     template "/etc/logstash/pipelines/nmsp/03_nmsp.conf" do
-      source "logstash_nmsp_03_nmsp.conf.erb"
+      source "logstash_nmsp_removefields.conf.erb"
       owner user
       group user
       mode 0644
