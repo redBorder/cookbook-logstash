@@ -414,7 +414,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/nmsp/01_macscrambling.conf" do
-      source "netflow_macscrambling.conf.erb"
+      source "logstash_nmsp_macscrambling.conf.erb"
       owner user
       group user
       mode 0644
