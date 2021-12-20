@@ -420,7 +420,6 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -430,7 +429,9 @@ action :add do
       group user
       mode 0644
       retries 2
-      notifies :restart, "service[logstash]", :delayed if manager_services["logstash"]
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
     end
 
     template "/etc/logstash/pipelines/nmsp/99_output.conf" do
