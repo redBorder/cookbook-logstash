@@ -366,7 +366,17 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/scanner/01_mongocve.conf" do
+    template "/etc/logstash/pipelines/scanner/01_normalization.conf" do
+      source "scanner_normalization.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/scanner/02_mongocve.conf" do
       source "scanner_mongocve.conf.erb"
       owner user
       group user
