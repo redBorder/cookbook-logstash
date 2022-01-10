@@ -377,16 +377,6 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/scanner/02_message.conf" do
-      source "scanner_message.conf.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      notifies :restart, "service[logstash]", :delayed
-    end
-
     template "/etc/logstash/pipelines/scanner/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
