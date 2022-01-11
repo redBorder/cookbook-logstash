@@ -401,6 +401,47 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
+    #freeradius pipeline
+    template "/etc/logstash/pipelines/radius/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_radius"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/radius/01_macscrambling.conf" do
+      source "logstash_radius_01_macscrambling.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/radius/03_radius.conf" do
+      source "logstash_radius_03_radius.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/radius/99_output.conf" do
+      ource "output_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:output_topic => "rb_location")
+      notifies :restart, "service[logstash]", :delayed
+    end
+
 
     # end of pipelines
 
