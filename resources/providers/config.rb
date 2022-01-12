@@ -418,6 +418,8 @@ action :add do
       owner "root"
       owner "root"
       mode 0644
+      ignore_failure true
+      cookbook "logstash"
       retries 2
       notifies :restart, "service[logstash]", :delayed
     end
@@ -427,6 +429,8 @@ action :add do
       owner "root"
       owner "root"
       mode 0644
+      ignore_failure true
+      cookbook "logstash"
       retries 2
       notifies :restart, "service[logstash]", :delayed
     end
