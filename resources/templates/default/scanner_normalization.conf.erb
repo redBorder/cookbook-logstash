@@ -1,0 +1,16 @@
+filter {
+  if [uuid] {
+    mutate {
+      rename => {
+        "uuid" => "sensor_uuid"
+      }
+    }
+  }
+  if [name] {
+    mutate {
+      rename => {
+        "name" => "sensor_name"
+      }
+    }
+  }
+}
