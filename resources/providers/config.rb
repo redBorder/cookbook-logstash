@@ -42,7 +42,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/radius].each do |path|
       directory path do
         owner user
         group user
@@ -432,7 +432,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/radius/99_output.conf" do
-      ource "output_kafka.conf.erb"
+      source "output_kafka.conf.erb"
       owner user
       group user
       mode 0644
@@ -441,7 +441,6 @@ action :add do
       variables(:output_topic => "rb_location")
       notifies :restart, "service[logstash]", :delayed
     end
-
 
     # end of pipelines
 
