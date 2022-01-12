@@ -1,0 +1,8 @@
+filter {
+  nmsp {
+  }
+
+  mutate {
+    remove_field => ["@version","@timestamp"]
+  }
+}
