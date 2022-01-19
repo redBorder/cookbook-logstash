@@ -42,7 +42,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility ].each do |path|
       directory path do
         owner user
         group user
@@ -496,6 +496,40 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       variables(:output_topic => "rb_location")
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    # Mobility pipeline
+    template "/etc/logstash/pipelines/mobility/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_location"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/mobility/01_mobility.conf" do
+      source "logstash_mobility_removefields.conf.erb"
+      owner user
+      group user
+      mode 0644
+      retries 2
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/mobility/99_output.conf" do
+      source "output_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:output_topic => "rb_loc_post")
       notifies :restart, "service[logstash]", :delayed
     end
 

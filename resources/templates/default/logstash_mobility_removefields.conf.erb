@@ -1,0 +1,8 @@
+filter {
+  mobility {
+  }
+
+  mutate {
+    remove_field => ["@version","@timestamp"]
+  }
+}
