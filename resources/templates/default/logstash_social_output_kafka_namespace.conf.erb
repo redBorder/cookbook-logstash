@@ -8,7 +8,7 @@ output {
         if [namespace_uuid] == "<%=namespace%>" {
           kafka {
             codec => json
-            topic_id =>  "%{kafka_topic}_<%=namespace%>"
+            topic_id =>  "%{kafka_topic}_post_<%=namespace%>"
             bootstrap_servers => "kafka.service:9092"
           }
         }
