@@ -1,9 +1,9 @@
 filter {
-{
-  memcached_server => "<%= @memcached_server %>"
-}
-
-  mutate {
-    remove_field => ["@version","@timestamp"]
+  meraki{
+    memcached_server => "<%= @memcached_server %>"
   }
+
+    mutate {
+      remove_field => ["@version","@timestamp"]
+    }
 }
