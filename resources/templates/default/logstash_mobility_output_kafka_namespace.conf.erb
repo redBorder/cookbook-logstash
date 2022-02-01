@@ -1,0 +1,27 @@
+output {
+  if [discard] {
+    kafka {
+      codec => json
+      topic_id => "<%= @output_topic + "_discard" %>"
+      bootstrap_servers => "kafka.service:9092"
+    }
+  } else {
+    if [namespace_uuid]{
+      <% @namespaces.each do |namespace| %>
+        if [namespace_uuid] == "<%= namespace %>" {
+          kafka {
+            codec => json
+            topic_id => "<%= @output_topic + "_" + namespace %>"
+            bootstrap_servers => "kafka.service:9092"
+          }
+        }
+      <% end %>
+    } else {
+      kafka {
+        codec => json
+        topic_id => "<%= @output_topic %>"
+        bootstrap_servers => "kafka.service:9092"
+      }
+    }
+  }
+}
