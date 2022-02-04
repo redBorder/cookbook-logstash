@@ -14,12 +14,19 @@
 - pipeline.id: social-pipeline
   path.config: "/etc/logstash/pipelines/social"
   pipeline.workers: 1
+- pipeline.id: scanner-pipeline
+  path.config: "/etc/logstash/pipelines/scanner"
+  pipeline.workers: 1
 - pipeline.id: location-pipeline
   path.config: "/etc/logstash/pipelines/location"
   pipeline.workers: 1
 - pipeline.id: nmsp-pipeline
   path.config: "/etc/logstash/pipelines/nmsp"
   pipeline.workers: 1
+- pipeline.id: meraki-pipeline
+  path.config: "/etc/logstash/pipelines/meraki"
+  pipeline.workers: 1
 - pipeline.id: mobility-pipeline
   path.config: "/etc/logstash/pipelines/mobility"
   pipeline.workers: 1
+
