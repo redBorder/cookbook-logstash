@@ -599,6 +599,7 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       retries 2
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -610,6 +611,7 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       retries 2
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
