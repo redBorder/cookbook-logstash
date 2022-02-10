@@ -333,7 +333,7 @@ action :add do
 
     #social pipelines
     template "/etc/logstash/pipelines/social/00_input.conf" do
-      source "logstash_social_input_kafka.conf.erb"
+      source "social_input_kafka.conf.erb"
       owner user
       group user
       mode 0644
@@ -344,7 +344,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/social/99_output.conf" do
-      source "logstash_social_output_kafka_namespace.conf.erb"
+      source "social_output_kafka_namespace.conf.erb"
       owner user
       group user
       mode 0644
@@ -414,7 +414,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/nmsp/01_macscrambling.conf" do
-      source "logstash_nmsp_macscrambling.conf.erb"
+      source "nmsp_macscrambling.conf.erb"
       owner user
       group user
       mode 0644
@@ -424,7 +424,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/nmsp/03_nmsp.conf" do
-      source "logstash_nmsp_removefields.conf.erb"
+      source "nmsp_removefields.conf.erb"
       owner user
       group user
       mode 0644
@@ -458,7 +458,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/location/01_macscrambling.conf" do
-      source "logstash_location_macscrambling.conf.erb"
+      source "location_macscrambling.conf.erb"
       owner user
       group user
       mode 0644
@@ -479,7 +479,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/location/10_location.conf" do
-      source "logstash_location_10_location.conf.erb"
+      source "location_location.conf.erb"
       owner user
       group user
       mode 0644
@@ -512,7 +512,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/mobility/01_mobility.conf" do
-      source "logstash_mobility_removefields.conf.erb"
+      source "mobility_removefields.conf.erb"
       owner user
       group user
       mode 0644
@@ -546,7 +546,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/meraki/01_macscrambling.conf" do
-      source "logstash_meraki_01_macscrambling.conf.erb"
+      source "meraki_macscrambling.conf.erb"
       owner user
       group user
       mode 0644
@@ -557,7 +557,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/meraki/03_meraki.conf" do
-      source "logstash_meraki_removefields.conf.erb"
+      source "meraki_removefields.conf.erb"
       owner user
       group user
       mode 0644
@@ -592,7 +592,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/radius/01_macscrambling.conf" do
-      source "logstash_radius_01_macscrambling.conf.erb"
+      source "radius_macscrambling.conf.erb"
       owner "root"
       owner "root"
       mode 0644
@@ -604,7 +604,7 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/radius/03_radius.conf" do
-      source "logstash_radius_03_radius.conf.erb"
+      source "radius_radius.conf.erb"
       owner "root"
       owner "root"
       mode 0644
