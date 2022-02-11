@@ -420,6 +420,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -431,6 +432,7 @@ action :add do
       retries 2
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -453,7 +455,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:topics => ["rb_loc"])
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -464,6 +466,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -485,6 +488,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -519,6 +523,7 @@ action :add do
       retries 2
       ignore_failure true
       cookbook "logstash"
+      variables(:memcached_server => memcached_server)
       notifies :restart, "service[logstash]", :delayed
     end
 
