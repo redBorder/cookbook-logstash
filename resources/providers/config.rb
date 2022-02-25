@@ -455,7 +455,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:memcached_server => memcached_server)
+      variables(:topics => ["rb_loc"])
       notifies :restart, "service[logstash]", :delayed
     end
 
