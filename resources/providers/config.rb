@@ -42,7 +42,7 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/monitor].each do |path|
       directory path do
         owner user
         group user
@@ -625,6 +625,32 @@ action :add do
       variables(:output_topic => "rb_location")
       notifies :restart, "service[logstash]", :delayed
     end
+
+    #monitor pipeline
+    template "/etc/logstash/pipelines/monitor/00_input.conf" do
+      source "input_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:topics => ["rb_monitor"])
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/monitor/99_output.conf" do
+      source "output_kafka_namespace.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:output_topic => "rb_monitor_post",
+                :namespaces => namespaces
+      )
+      notifies :restart, "service[logstash]", :delayed
+     end
+
 
     # end of pipelines
 
