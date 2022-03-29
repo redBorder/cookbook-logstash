@@ -638,6 +638,16 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
+    template "/etc/logstash/pipelines/monitor/01_monitor.conf" do
+      source "monitor_removefields.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
     template "/etc/logstash/pipelines/monitor/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
