@@ -17,7 +17,7 @@ SOURCES:
 archive: SOURCES
 	cd ../../ && \
 	git archive --prefix=$(PACKAGE_NAME)-$(VERSION)/ \
-		-o packaging/rpm/SOURCES/$(PACKAGE_NAME)-$(VERSION).tar.gz HEAD
+		-o packaging/rpm/SOURCES/$(PACKAGE_NAME)-$(VERSION).tar.gz $(LATEST)
 
 
 build_prepare: archive
