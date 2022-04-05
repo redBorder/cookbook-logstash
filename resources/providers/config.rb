@@ -42,7 +42,15 @@ action :add do
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
 
-    db_redborder_secrets = data_bag_item("passwords", "db_redborder")
+    db_redborder_secrets = data_bag_item("passwords", "db_redborder") rescue db_redborder_secrets = {}
+    if !db_redborder_secrets.empty?
+      database_name = db_redborder_secrets["database"]
+      username = db_redborder_secrets["username"]
+      password = db_redborder_secrets["pass"]
+      port = db_redborder_secrets["port"]
+      host = db_redborder_secrets["hostname"]
+    end
+
 
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/rbwindow].each do |path|
       directory path do
@@ -633,7 +641,6 @@ action :add do
     end
 
     # Rbwindow pipelines
-
     template "/etc/logstash/pipelines/rbwindow/00_input.conf" do
       source "rbwindow_00_input.conf.erb"
       owner user
@@ -642,9 +649,8 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       retries 2
-      variables(:database_name => db_redborder_secrets["database"], :host => db_redborder_secrets["hostname"],
-                :password => db_redborder_secrets['pass'], :user => db_redborder_secrets['username'],
-                :port => db_redborder_secrets["port"])
+      variables(:memcached_server => memcached_server, :database_name => database_name, :host => host,
+                :password => password, :user => username, :port => port)
       notifies :restart, "service[logstash]", :delayed
     end
 
