@@ -640,28 +640,31 @@ action :add do
       owner "root"
       mode 0644
       retries 2
+      cookbook "logstash"
       variables(:device_nodes => device_nodes,
                 :monitors => monitors_dg["monitors"]
       )
-      notifies :restart, "service[logstash]", :delayed if manager_services["logstash"]
+      notifies :restart, "service[logstash]", :delayed
     end
 
     template "/etc/logstash/pipelines/redfish/01_normalize.conf" do
-      source "redfish_normalize_conf.erb"
+      source "redfish_normalize.conf.erb"
       owner "root"
       owner "root"
       mode 0644
       retries 2
+      cookbook "logstash"
       variables(:device_nodes => device_nodes)
       notifies :restart, "service[logstash]", :delayed
     end
 
     template "/etc/logstash/pipelines/redfish/02_enrichment.conf" do
-      source "redfish_enrichment_conf.erb"
+      source "redfish_enrichment.conf.erb"
       owner "root"
       owner "root"
       mode 0644
       retries 2
+      cookbook "logstash"
       variables(:device_nodes => device_nodes)
       notifies :restart, "service[logstash]", :delayed
     end
