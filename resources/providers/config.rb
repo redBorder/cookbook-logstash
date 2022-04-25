@@ -13,6 +13,7 @@ action :add do
     flow_nodes = new_resource.flow_nodes
     scanner_nodes = new_resource.scanner_nodes
     vault_nodes = new_resource.vault_nodes
+    device_nodes = new_resource.device_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
@@ -41,8 +42,9 @@ action :add do
     end
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
+    monitors_dg = data_bag_item("rBglobal", "monitors") rescue monitors_dg = {}
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/redfish ].each do |path|
       directory path do
         owner user
         group user
@@ -628,6 +630,50 @@ action :add do
       ignore_failure true
       cookbook "logstash"
       variables(:output_topic => "rb_location")
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    # Redfish pipeline
+    template "/etc/logstash/pipelines/redfish/00_input.conf" do
+      source "redfish_input.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      variables(:device_nodes => device_nodes,
+                :monitors => monitors_dg["monitors"]
+      )
+      notifies :restart, "service[logstash]", :delayed if manager_services["logstash"]
+    end
+
+    template "/etc/logstash/pipelines/redfish/01_normalize.conf" do
+      source "redfish_normalize_conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      variables(:device_nodes => device_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/redfish/02_enrichment.conf" do
+      source "redfish_enrichment_conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      variables(:device_nodes => device_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/redfish/99_output.conf" do
+      source "output_kafka.conf.erb"
+      owner user
+      group user
+      mode 0644
+      ignore_failure true
+      cookbook "logstash"
+      variables(:output_topic => "rb_monitor")
       notifies :restart, "service[logstash]", :delayed
     end
 
