@@ -538,13 +538,14 @@ action :add do
     end
 
     template "/etc/logstash/pipelines/mobility/99_output.conf" do
-      source "output_kafka.conf.erb"
+      source "output_kafka_namespace.conf.erb"
       owner user
       group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:output_topic => "rb_loc_post")
+      variables(:output_topic => "rb_loc_post",
+                :namespaces => namespaces)
       notifies :restart, "service[logstash]", :delayed
     end
 
