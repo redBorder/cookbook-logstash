@@ -4,9 +4,9 @@ filter {
         gsub => ["[message]", "[\\]", ""]
         gsub => ["[message]", "[\/]", ""]
         gsub => ["[message]", "[\%]", ""]
-    }
+  }
   bulkstats {
-    bulkstats_columns_tar_gz => "/share/bulkstats.tar.gz"
+        bulkstats_columns_tar_gz => "/share/bulkstats.tar.gz"
   }
 } # end of filter 
 

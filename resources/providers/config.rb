@@ -686,6 +686,13 @@ action :add do
       action :create
     end
 
+    directory "/etc/logstash/pipelines/bulkstats/patterns" do
+      owner "root"
+      group "root"
+      mode 0755
+      action :create
+    end
+
     Dir.foreach("/share/logstash-rules") do |f|
       next if f == '.' or f == '..'
       link "/etc/logstash/pipelines/vault/patterns/#{f}" do
