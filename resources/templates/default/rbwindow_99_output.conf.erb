@@ -1,0 +1,13 @@
+filter {
+  mutate {
+    remove_field => ["@version","@timestamp"]
+  }
+}
+
+output {
+  kafka {
+  codec => json
+  topic_id => "rb_monitor"
+  bootstrap_servers => "kafka.service:9092"
+  }
+}
