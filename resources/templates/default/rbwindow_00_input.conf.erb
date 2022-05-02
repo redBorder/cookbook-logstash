@@ -1,0 +1,11 @@
+input {
+  rbwindow {
+    memcached_server => "<%= @memcached_server %>"
+    schedule => { cron => "*/1 * * * * UTC"}
+    database_name => "<%= @database_name.nil? ? "redborder" : @database_name  %>"
+    user => "<%= @user %>"
+    password => "<%= @password %>"
+    host => "<%= @host.nil? ? "postgresql.#{ node["redBorder"]["cdomain"] }" : @host %>"
+    port => <%= @port.nil? ? "5432" : @port %>
+  }
+}
