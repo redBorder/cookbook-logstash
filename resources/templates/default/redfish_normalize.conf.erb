@@ -1,0 +1,682 @@
+filter {
+
+  if [message] {
+    json {
+      source => [message]
+      target => "message"
+    }
+  }
+
+  ruby {
+    code => "event.set('timestamp', event.get('@timestamp').to_i);"
+  }
+
+############################### Power_PowerSupplies ###############################
+
+  if [message][PowerSupplies] {
+
+   ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][PowerSupplies]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' || (ps['Status']['state']) == 'Enabled' ? 1 : 0
+                  if (ps['Status']['State']) != 'Absent' && (ps['Status']['state']) != 'Disabled'
+                    event.set('value', status)
+                    event.set('monitor','redfish_power_powersupply_health_per_instance')
+                    event.set('instance','redfish_power_powersupply_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  else
+                    logger.info('Powersupply in bay ' + (index + 1).to_s + ' is Absent of a total of ' + event.get('[message][PowerSupplies]').length.to_s + ' Powersupply bays for sensor using IP: ' + event.get('ip').to_s)
+                  end 
+                end
+              }
+              event.set('monitor','redfish_power_powersupply_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+################################# PowerRedundancy #################################
+
+  if [message][Redundancy] and ![tag] {
+
+   ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Redundancy]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+                  if (ps['Status']['State']) != 'Absent'
+                    event.set('value', status)
+                    event.set('monitor','redfish_power_powerredundancy_health_per_instance')
+                    event.set('instance','redfish_power_powerredundancy_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  end
+                end
+              }
+              event.set('monitor','redfish_power_powerredundancy_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+############################## Power Control Metric ##############################
+
+  if [message][PowerControl] and ![tag] {
+    ruby  {
+      code => "
+              event.set('tag','processed')
+              average = event.get('[message][PowerControl][PowerMetric][AverageConsumedWatts]').to_i
+
+              event.set('monitor','redfish_power_powercontrol_averageconsumedwatts')
+              event.set('value', average)
+              if average != 0
+                new_event_block.call(event.clone)
+              else
+                logger.info('No Metric event found for sensor using IP: ' + event.get('ip').to_s)
+              end
+              event.remove('tag')
+              "
+    }
+  }
+
+###################################################################################
+
+#################################### Fan Health ###################################
+
+  if [message][Fans] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Fans]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent'
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_fan_health_per_instance')
+                    event.set('instance','redfish_thermal_fan_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  else
+                    logger.info('Fan in bay ' + (index + 1).to_s + ' is Absent of a total of ' + event.get('[message][Fans]').length.to_s + ' Fans')
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_fan_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+#################################### Fan Speed  ###################################
+
+  if [message][Fans] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              avg, count = 0, 0
+              event.get('[message][Fans]').each_with_index { |ps, index|
+                if ps.key?'Reading'
+                  reading = ps['Reading']
+                  if (ps['Status']['State']) != 'Absent'
+                    count += 1
+                    event.set('value', reading.to_i)
+                    event.set('monitor','redfish_thermal_fan_speed_per_instance')
+                    event.set('instance','redfish_thermal_fan_speed-'+index.to_s)
+                    avg += reading.to_i
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  end
+                end
+              }
+              avg /= count unless count == 0
+
+              event.set('monitor','redfish_thermal_fan_speed')
+              event.set('value', avg)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+################################## Temperature CPU ################################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'CPU'
+
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_temperature_cpu_health_per_instance')
+                    event.set('instance','redfish_thermal_temperature_cpu_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  elsif (ps['Status']['State']) == 'Absent' && (ps['PhysicalContext']) == 'CPU'
+                    logger.info('No CPU Temperature information found for CPU-' + index.to_s + ' using sensor with IP: ' + event.get('ip').to_s)
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_temperature_cpu_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+############################ Temperature SystemBoard ##############################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'SystemBoard'
+
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_temperature_systemboard_health_per_instance')
+                    event.set('instance','redfish_thermal_temperature_systemboard_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  elsif (ps['Status']['State']) == 'Absent' && (ps['PhysicalContext']) == 'SystemBoard'
+                    logger.info('Absent SystemBoard-' + index.to_s + ', name: ' + ps['Name'].to_s + ' | using sensor with IP: ' + event.get('ip').to_s)
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_temperature_systemboard_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+############################### Temperature Front #################################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'Front'
+
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_temperature_front_health_per_instance')
+                    event.set('instance','redfish_thermal_temperature_front_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                 elsif (ps['Status']['State']) == 'Absent' && (ps['PhysicalContext']) == 'Front'
+                    logger.info('No Front Temperature information found for Front-' + index.to_s + ' using sensor with IP: ' + event.get('ip').to_s)
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_temperature_front_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+########################## Temperature NetworkingDevice ###########################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'NetworkingDevices'
+
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_temperature_networkingdevices_health_per_instance')
+                    event.set('instance','redfish_thermal_temperature_networkingdevices_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  elsif (ps['Status']['State']) == 'Absent' && (ps['PhysicalContext']) == 'NetworkingDevices'
+                    logger.info('No Networking-Device Temperature information found for Networking-Device-'+index.to_s + ' using sensor with IP: ' + event.get('ip').to_s)
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_temperature_networkingdevices_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+############################ Temperature PowerSupply ##############################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'PowerSupply'
+
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_temperature_powersupply_health_per_instance')
+                    event.set('instance','redfish_thermal_temperature_powersupply_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  elsif (ps['Status']['State']) == 'Absent' && (ps['PhysicalContext']) == 'PowerSupply'
+                    logger.info('No PowerSupply Temperature information found for PowerSupply-' + index.to_s + ' using sensor with IP: ' + event.get('ip').to_s)
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_temperature_powersupply_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+################################ Temperature Intake ###############################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              healthy = 1
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  status = (ps['Status']['Health']) == 'OK' ? 1 : 0
+
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'Intake'
+
+                    event.set('value', status)
+                    event.set('monitor','redfish_thermal_temperature_intake_health_per_instance')
+                    event.set('instance','redfish_thermal_temperature_intake_health-'+index.to_s)
+
+                    healthy = [status,healthy].min
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  elsif (ps['Status']['State']) == 'Absent' && (ps['PhysicalContext']) == 'Intake'
+                    logger.info('No Intake Temperature information found for Intake-' + index.to_s + ' using sensor with IP: ' + event.get('ip').to_s)
+                  end
+                end
+              }
+              event.set('monitor','redfish_thermal_temperature_intake_health')
+              event.set('value', healthy)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+############################### Avg Temperature CPU ###############################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              count, temp = 0, 0
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'CPU'
+                    temp += ps['ReadingCelsius'].to_i
+                    count+=1
+                    event.set('value', ps['ReadingCelsius'].to_i)
+                    event.set('monitor','redfish_thermal_temperature_cpu_average_per_instance')
+                    event.set('instance','redfish_thermal_temperature_cpu_average-'+index.to_s)
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  end
+                end
+              }
+              avg = count > 0 ? temp/count : temp
+
+              event.set('monitor','redfish_thermal_temperature_cpu_average')
+              event.set('value', avg)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+########################### Avg Temperature SystemBoard ###########################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              count, temp = 0, 0
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'SystemBoard'
+                    temp += ps['ReadingCelsius'].to_i
+                    count+=1
+                    event.set('value', ps['ReadingCelsius'].to_i)
+                    event.set('monitor','redfish_thermal_temperature_systemboard_average_per_instance')
+                    event.set('instance','redfish_thermal_temperature_systemboard_average-'+index.to_s)
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  end
+                end
+              }
+              avg = count > 0 ? temp/count : temp
+
+              event.set('monitor','redfish_thermal_temperature_systemboard_average')
+              event.set('value', avg)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+########################### Avg Temperature PowerSupply ###########################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+                count, temp = 0, 0
+                event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'PowerSupply'
+                    temp += ps['ReadingCelsius'].to_i
+                    count+=1
+                    event.set('value', ps['ReadingCelsius'].to_i)
+                    event.set('monitor','redfish_thermal_temperature_powersupply_average_per_instance')
+                    event.set('instance','redfish_thermal_temperature_powersupply_average-'+index.to_s)
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  end
+                end
+              }
+              avg = count > 0 ? temp/count : temp
+              
+              event.set('monitor','redfish_thermal_temperature_powersupply_average')
+              event.set('value', avg)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+############################## Avg Temperature Intake #############################
+
+  if [message][Temperatures] and ![tag] {
+    ruby  {
+     code => "
+              event.set('tag','processed')
+              count, temp = 0, 0
+              event.get('[message][Temperatures]').each_with_index { |ps, index|
+                if ps.key?'Status'
+                  if (ps['Status']['State']) != 'Absent' && (ps['PhysicalContext']) == 'Intake'
+                    temp += ps['ReadingCelsius'].to_i
+                    count+=1
+                    event.set('value', ps['ReadingCelsius'].to_i)
+                    event.set('monitor','redfish_thermal_temperature_intake_average_per_instance')
+                    event.set('instance','redfish_thermal_temperature_intake_average-'+index.to_s)
+
+                    # Clone the event!
+                    new_event_block.call(event.clone)
+                  end
+                end
+              }
+              avg = count > 0 ? temp/count : temp
+
+              event.set('monitor','redfish_thermal_temperature_intake_average')
+              event.set('value', avg)
+              event.remove('instance')
+              new_event_block.call(event.clone)
+              event.remove('tag')
+             "
+    }
+  }
+
+###################################################################################
+
+################################# Serial Number ###################################
+
+  if [message][SerialNumber] and ![tag] {
+    ruby  {
+      code => "
+              event.set('tag','processed')
+              serial = event.get('[message][SerialNumber]').to_s
+
+              event.set('monitor','redfish_system_serialnumber')
+              event.set('value', serial)
+              new_event_block.call(event.clone)
+              event.remove('tag')
+              "
+    }
+  }
+
+###################################################################################
+ 
+################################# Processor Model #################################
+
+  if [message][ProcessorSummary] and ![tag] {
+    ruby  {
+      code => "
+              event.set('tag','processed')
+              model = event.get('[message][ProcessorSummary][Model]').to_s
+
+              event.set('monitor','redfish_system_processorsummary_model')
+              event.set('value', model)
+              new_event_block.call(event.clone)
+              event.remove('tag')
+              "
+    }
+  }
+
+###################################################################################
+
+
+################################ ProcessorType info ###############################
+
+  if [message][ProcessorType] and ![tag] {
+    ruby  {
+      code => "
+              event.set('tag','processed')
+              type = event.get('[message][ProcessorType]').to_s
+              name = event.get('[message][Name]').to_s
+
+	      if event.get('[message][Description]')
+	      	description = event.get('[message][Description]').to_s
+                event.set('processordescription', description)
+	      end
+	      
+	      if event.get('[message][ProcessorArchitecture]')
+              	architecture = event.get('[message][ProcessorArchitecture]').to_s
+                event.set('processorarchitecture', architecture)
+	      end
+
+	      if event.get('[message][TotalThreads]')
+              	threads = event.get('[message][TotalThreads]').to_i
+                event.set('processortotalthreads', threads)
+	      end
+	      
+	      if event.get('[message][TotalCores]')
+              	cores = event.get('[message][TotalCores]').to_i
+                event.set('processortotalcores', cores)
+	      end
+	      
+              if event.get('[message][MaxSpeedMHz]')
+                speed = event.get('[message][MaxSpeedMHz]').to_i
+                event.set('processormaxspeedmhz', speed)
+              end
+
+              if event.get('[message][Status]')
+                health = event.get('[message][Status][Health]')
+                event.set('processorhealth', health)
+              end
+	      
+              event.set('monitor','redfish_system_processorinfo')
+              event.set('processortype', type)
+              event.set('processorname', name)
+              event.set('value', 0)
+              new_event_block.call(event.clone)
+              event.remove('tag')
+              "
+    }
+  }
+
+###################################################################################
+
+################################# PCIe Info #################################
+
+  if [message][Links][PCIeDevice] and ![tag] {
+    ruby  {
+      code => "
+              event.set('tag','processed')
+              name = event.get('[message][Name]').to_s
+	      description = event.get('[message][Description]').to_s
+	      id = event.get('[message][Id]').to_s
+	      event.set('pciname', name)
+	      event.set('pcidescription', description)
+	      event.set('pciid', id)
+              event.set('monitor','redfish_system_pcieinfo')
+              event.set('value', 0)
+              new_event_block.call(event.clone)
+              event.remove('tag')
+              "
+    }
+  }
+
+###################################################################################
+
+################################# Processor Model #################################
+
+  if [message][ChassisType] and ![tag] {
+    ruby  {
+      code => "
+              event.set('tag','processed')
+              manufacturer = event.get('[message][Manufacturer]')
+              name = event.get('[message][Name]')
+              model = event.get('[message][Model]')
+              type = event.get('[message][ChassisType]')
+
+              event.set('monitor','redfish_system_chassisinfo')
+              event.set('manufacturer', manufacturer)
+              event.set('name', name)
+              event.set('model', model)
+              event.set('chassistype', type)
+
+              new_event_block.call(event.clone)
+              event.remove('tag')
+              "
+    }
+  }
+
+###################################################################################
+
+
+  if ![tag] {
+    ruby {
+     code => 'event.cancel'
+    } 
+  }
+
+  mutate {
+    remove_field => [ "message", "@version","@timestamp", "type" ]
+    rename => { "ip" => "sensor_ip" }
+  }
+}
+

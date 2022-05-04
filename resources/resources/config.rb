@@ -7,6 +7,8 @@ actions :add, :remove, :register, :deregister
 default_action :add
 
 attribute :user, :kind_of => String, :default => "logstash"
+attribute :logstash_dir, :kind_of => String, :default => "/etc/logstash"
+attribute :pipelines_dir, :kind_of => String, :default => "/etc/logstash/pipelines"
 attribute :cdomain, :kind_of => String, :default => "redborder.cluster"
 attribute :managers_all, :kind_of => Array, :default => []
 attribute :flow_nodes, :kind_of => Array, :default => []
