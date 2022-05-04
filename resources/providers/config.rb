@@ -52,7 +52,9 @@ action :add do
       host = db_redborder_secrets["hostname"]
     end
 
+
     %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/rbwindow /etc/logstash/pipelines/bulkstats ].each do |path|
+
       directory path do
         owner user
         group user
@@ -709,7 +711,7 @@ action :add do
       variables(:output_topic => "rb_monitor")
       notifies :restart, "service[logstash]", :delayed
     end
-
+    
     # end of pipelines
 
     #logstash rules
