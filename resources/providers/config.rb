@@ -753,6 +753,7 @@ action :add do
       mode 0644
       retries 2
       cookbook "logstash"
+      variables(:device_nodes => device_nodes)
       notifies :restart, "service[logstash]", :delayed
     end
 
