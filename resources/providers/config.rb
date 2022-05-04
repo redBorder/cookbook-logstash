@@ -9,6 +9,8 @@ include Logstash::Helper
 action :add do
   begin
     user = new_resource.user
+    logstash_dir = new_resource.logstash_dir
+    pipelines_dir = new_resource.pipelines_dir
     cdomain = new_resource.cdomain
     flow_nodes = new_resource.flow_nodes
     scanner_nodes = new_resource.scanner_nodes
@@ -42,6 +44,7 @@ action :add do
     end
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
+    monitors_dg = data_bag_item("rBglobal", "monitors") rescue monitors_dg = {}
 
     db_redborder_secrets = data_bag_item("passwords", "db_redborder") rescue db_redborder_secrets = {}
     if !db_redborder_secrets.empty?
@@ -52,10 +55,8 @@ action :add do
       host = db_redborder_secrets["hostname"]
     end
 
-
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/rbwindow /etc/logstash/pipelines/bulkstats ].each do |path|
-
-      directory path do
+    [logstash_dir, pipelines_dir].each do |dir|
+      directory dir do
         owner user
         group user
         mode 0755
@@ -63,7 +64,17 @@ action :add do
       end
     end
 
-    template "/etc/logstash/logstash.yml" do
+    %w[ sflow netflow vault social scanner nmsp location
+        mobility meraki radius rbwindow bulkstats redfish ].each do |pipeline|
+      directory "#{pipelines_dir}/#{pipeline}" do
+        owner user
+        group user
+        mode 0755
+        action :create
+      end
+    end
+
+    template "#{logstash_dir}/logstash.yml" do
       source "logstash.yml.erb"
       owner user
       group user
@@ -74,7 +85,7 @@ action :add do
       notifies :restart, 'service[logstash]', :delayed
     end
 
-    template "/etc/logstash/pipelines.yml" do
+    template "#{logstash_dir}/pipelines.yml" do
       source "pipelines.yml.erb"
       owner user
       group user
@@ -86,7 +97,7 @@ action :add do
 
     # Vault pipeline
 
-    template "/etc/logstash/pipelines/vault/00_input.conf" do
+    template "#{pipelines_dir}/vault/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -97,7 +108,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/01_generic.conf" do
+    template "#{pipelines_dir}/vault/01_generic.conf" do
       source "vault_generic.conf.erb"
       owner user
       group user
@@ -108,7 +119,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/02_sshd.conf" do
+    template "#{pipelines_dir}/vault/02_sshd.conf" do
       source "vault_sshd.conf.erb"
       owner user
       group user
@@ -118,7 +129,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/03_iptables.conf" do
+    template "#{pipelines_dir}/vault/03_iptables.conf" do
       source "vault_iptables.conf.erb"
       owner user
       group user
@@ -128,7 +139,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/04_nginx.conf" do
+    template "#{pipelines_dir}/vault/04_nginx.conf" do
       source "vault_nginx.conf.erb"
       owner user
       group user
@@ -138,7 +149,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/05_dnsmasq.conf" do
+    template "#{pipelines_dir}/vault/05_dnsmasq.conf" do
       source "vault_dnsmasq.conf.erb"
       owner user
       group user
@@ -148,7 +159,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/06_addfields.conf" do
+    template "#{pipelines_dir}/vault/06_addfields.conf" do
       source "vault_addfields.conf.erb"
       owner user
       group user
@@ -158,7 +169,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/vault/99_output.conf" do
+    template "#{pipelines_dir}/vault/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
       group user
@@ -174,7 +185,7 @@ action :add do
 
     # sflow pipeline
 
-    template "/etc/logstash/pipelines/sflow/00_input.conf" do
+    template "#{pipelines_dir}/sflow/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -185,7 +196,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/01_tagging.conf" do
+    template "#{pipelines_dir}/sflow/01_tagging.conf" do
       source "sflow_tagging.conf.erb"
       owner user
       group user
@@ -196,7 +207,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/02_normalization.conf" do
+    template "#{pipelines_dir}/sflow/02_normalization.conf" do
       source "sflow_normalization.conf.erb"
       owner user
       group user
@@ -206,7 +217,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/03_enrichment.conf" do
+    template "#{pipelines_dir}/sflow/03_enrichment.conf" do
       source "sflow_enrichment.conf.erb"
       owner user
       group user
@@ -217,7 +228,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/04_field_conversion.conf" do
+    template "#{pipelines_dir}/sflow/04_field_conversion.conf" do
       source "sflow_field_conversion.conf.erb"
       owner user
       group user
@@ -227,7 +238,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/91_rename.conf" do
+    template "#{pipelines_dir}/sflow/91_rename.conf" do
       source "sflow_rename.conf.erb"
       owner user
       group user
@@ -237,7 +248,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/sflow/99_output.conf" do
+    template "#{pipelines_dir}/sflow/99_output.conf" do
       source "output_kafka.conf.erb"
       owner user
       group user
@@ -252,7 +263,7 @@ action :add do
 
     # netflow pipeline
 
-    template "/etc/logstash/pipelines/netflow/00_input.conf" do
+    template "#{pipelines_dir}/netflow/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -263,7 +274,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/01_macscrambling.conf" do
+    template "#{pipelines_dir}/netflow/01_macscrambling.conf" do
       source "netflow_macscrambling.conf.erb"
       owner user
       group user
@@ -274,7 +285,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/02_geoenrich.conf" do
+    template "#{pipelines_dir}/netflow/02_geoenrich.conf" do
       source "netflow_geoenrich.conf.erb"
       owner user
       group user
@@ -284,7 +295,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/03_macvendor.conf" do
+    template "#{pipelines_dir}/netflow/03_macvendor.conf" do
       source "netflow_macvendor.conf.erb"
       owner user
       group user
@@ -297,7 +308,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/04_darklist.conf" do
+    template "#{pipelines_dir}/netflow/04_darklist.conf" do
       source "netflow_darklist.conf.erb"
       owner user
       group user
@@ -308,7 +319,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/90_splitflow.conf" do
+    template "#{pipelines_dir}/netflow/90_splitflow.conf" do
       source "netflow_splitflow.conf.erb"
       owner user
       group user
@@ -319,7 +330,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/91_rename.conf" do
+    template "#{pipelines_dir}/netflow/91_rename.conf" do
       source "netflow_rename.conf.erb"
       owner user
       group user
@@ -329,7 +340,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/netflow/99_output.conf" do
+    template "#{pipelines_dir}/netflow/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
       group user
@@ -344,7 +355,7 @@ action :add do
     end
 
     #social pipelines
-    template "/etc/logstash/pipelines/social/00_input.conf" do
+    template "#{pipelines_dir}/social/00_input.conf" do
       source "social_input_kafka.conf.erb"
       owner user
       group user
@@ -355,7 +366,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/social/99_output.conf" do
+    template "#{pipelines_dir}/social/99_output.conf" do
       source "social_output_kafka_namespace.conf.erb"
       owner user
       group user
@@ -367,7 +378,7 @@ action :add do
     end
 
     #scanner pipeline
-    template "/etc/logstash/pipelines/scanner/00_input.conf" do
+    template "#{pipelines_dir}/scanner/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -378,7 +389,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/scanner/01_normalization.conf" do
+    template "#{pipelines_dir}/scanner/01_normalization.conf" do
       source "scanner_normalization.conf.erb"
       owner user
       group user
@@ -388,7 +399,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/scanner/02_mongocve.conf" do
+    template "#{pipelines_dir}/scanner/02_mongocve.conf" do
       source "scanner_mongocve.conf.erb"
       owner user
       group user
@@ -399,7 +410,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/scanner/99_output.conf" do
+    template "#{pipelines_dir}/scanner/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
       group user
@@ -414,7 +425,7 @@ action :add do
     end
 
     # NMSP pipeline
-    template "/etc/logstash/pipelines/nmsp/00_input.conf" do
+    template "#{pipelines_dir}/nmsp/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -425,7 +436,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/nmsp/01_macscrambling.conf" do
+    template "#{pipelines_dir}/nmsp/01_macscrambling.conf" do
       source "nmsp_macscrambling.conf.erb"
       owner user
       group user
@@ -436,7 +447,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/nmsp/03_nmsp.conf" do
+    template "#{pipelines_dir}/nmsp/03_nmsp.conf" do
       source "nmsp_removefields.conf.erb"
       owner user
       group user
@@ -448,7 +459,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/nmsp/99_output.conf" do
+    template "#{pipelines_dir}/nmsp/99_output.conf" do
       source "output_kafka.conf.erb"
       owner user
       group user
@@ -460,7 +471,7 @@ action :add do
     end
 
     # Location pipeline
-    template "/etc/logstash/pipelines/location/00_input.conf" do
+    template "#{pipelines_dir}/location/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -471,7 +482,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/location/01_macscrambling.conf" do
+    template "#{pipelines_dir}/location/01_macscrambling.conf" do
       source "location_macscrambling.conf.erb"
       owner user
       group user
@@ -482,7 +493,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/location/02_macvendor.conf" do
+    template "#{pipelines_dir}/location/02_macvendor.conf" do
       source "netflow_macvendor.conf.erb"
       owner user
       group user
@@ -493,7 +504,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/location/10_location.conf" do
+    template "#{pipelines_dir}/location/10_location.conf" do
       source "location_location.conf.erb"
       owner user
       group user
@@ -504,7 +515,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/location/99_output.conf" do
+    template "#{pipelines_dir}/location/99_output.conf" do
       source "output_kafka.conf.erb"
       owner user
       group user
@@ -516,7 +527,7 @@ action :add do
     end
 
     # Mobility pipeline
-    template "/etc/logstash/pipelines/mobility/00_input.conf" do
+    template "#{pipelines_dir}/mobility/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -527,7 +538,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/mobility/01_mobility.conf" do
+    template "#{pipelines_dir}/mobility/01_mobility.conf" do
       source "mobility_removefields.conf.erb"
       owner user
       group user
@@ -539,7 +550,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/mobility/99_output.conf" do
+    template "#{pipelines_dir}/mobility/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
       group user
@@ -552,7 +563,7 @@ action :add do
     end
 
     # MERAKI pipeline
-    template "/etc/logstash/pipelines/meraki/00_input.conf" do
+    template "#{pipelines_dir}/meraki/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -563,7 +574,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/meraki/01_macscrambling.conf" do
+    template "#{pipelines_dir}/meraki/01_macscrambling.conf" do
       source "meraki_macscrambling.conf.erb"
       owner user
       group user
@@ -574,7 +585,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/meraki/03_meraki.conf" do
+    template "#{pipelines_dir}/meraki/03_meraki.conf" do
       source "meraki_removefields.conf.erb"
       owner user
       group user
@@ -586,7 +597,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/meraki/99_output.conf" do
+    template "#{pipelines_dir}/meraki/99_output.conf" do
       source "output_kafka.conf.erb"
       owner user
       group user
@@ -598,7 +609,7 @@ action :add do
     end
 
     #freeradius pipeline
-    template "/etc/logstash/pipelines/radius/00_input.conf" do
+    template "#{pipelines_dir}/radius/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -609,7 +620,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/radius/01_macscrambling.conf" do
+    template "#{pipelines_dir}/radius/01_macscrambling.conf" do
       source "radius_macscrambling.conf.erb"
       owner user
       group user
@@ -620,7 +631,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/radius/03_radius.conf" do
+    template "#{pipelines_dir}/radius/03_radius.conf" do
       source "radius_radius.conf.erb"
       owner "root"
       owner "root"
@@ -632,7 +643,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/radius/99_output.conf" do
+    template "#{pipelines_dir}/radius/99_output.conf" do
       source "output_kafka.conf.erb"
       owner user
       group user
@@ -644,7 +655,7 @@ action :add do
     end
 
     # Rbwindow pipelines
-    template "/etc/logstash/pipelines/rbwindow/00_input.conf" do
+    template "#{pipelines_dir}/rbwindow/00_input.conf" do
       source "rbwindow_00_input.conf.erb"
       owner user
       group user
@@ -657,19 +668,18 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/rbwindow/99_output.conf" do
+    template "#{pipelines_dir}/rbwindow/99_output.conf" do
       source "rbwindow_99_output.conf.erb"
       owner user
       group user
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      retries 2
       notifies :restart, "service[logstash]", :delayed
     end
 
     #Bulskstats pipeline
-    template "/etc/logstash/pipelines/bulkstats/00_input.conf" do
+    template "#{pipelines_dir}/bulkstats/00_input.conf" do
       source "bulkstats_input.conf.erb"
       owner user
       owner user
@@ -679,7 +689,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/bulkstats/01_bulkstats.conf" do
+    template "#{pipelines_dir}/bulkstats/01_bulkstats.conf" do
       source "bulkstats_bulkstats.conf.erb"
       owner user
       owner user
@@ -690,7 +700,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/bulkstats/02_enrichment.conf" do
+    template "#{pipelines_dir}/bulkstats/02_enrichment.conf" do
       source "bulkstats_enrichment.conf.erb"
       owner user
       owner user
@@ -701,7 +711,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/bulkstats/99_output.conf" do
+    template "#{pipelines_dir}/bulkstats/99_output.conf" do
       source "output_kafka.conf.erb"
       owner user
       owner user
@@ -711,11 +721,65 @@ action :add do
       variables(:output_topic => "rb_monitor")
       notifies :restart, "service[logstash]", :delayed
     end
+
+    # Redfish pipeline
+    template "#{pipelines_dir}/redfish/00_input.conf" do
+      source "redfish_input.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      cookbook "logstash"
+      variables(:device_nodes => device_nodes,
+                :monitors => monitors_dg["monitors"]
+      )
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "#{pipelines_dir}/redfish/01_normalize.conf" do
+      source "redfish_normalize.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      cookbook "logstash"
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "#{pipelines_dir}/redfish/02_enrichment.conf" do
+      source "redfish_enrichment.conf.erb"
+      owner "root"
+      owner "root"
+      mode 0644
+      retries 2
+      cookbook "logstash"
+      variables(:device_nodes => device_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "#{pipelines_dir}/redfish/99_output.conf" do
+        source "output_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        retries 2
+        variables(:output_topic => "rb_monitor")
+        notifies :restart, "service[logstash]", :delayed
+    end
     
     # end of pipelines
 
     #logstash rules
-    directory "/etc/logstash/pipelines/vault/patterns" do
+    directory "#{pipelines_dir}/vault/patterns" do
+      owner "root"
+      group "root"
+      mode 0755
+      action :create
+    end
+
+    directory "#{pipelines_dir}/bulkstats/patterns" do
       owner "root"
       group "root"
       mode 0755
@@ -731,7 +795,7 @@ action :add do
 
     Dir.foreach("/share/logstash-rules") do |f|
       next if f == '.' or f == '..'
-      link "/etc/logstash/pipelines/vault/patterns/#{f}" do
+      link "#{pipelines_dir}/vault/patterns/#{f}" do
         to "/share/logstash-rules/#{f}"
       end
     end
