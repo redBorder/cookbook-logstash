@@ -668,8 +668,8 @@ action :add do
     #Bulskstats pipeline
     template "/etc/logstash/pipelines/bulkstats/00_input.conf" do
       source "bulkstats_input.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      owner user
       mode 0644
       cookbook "logstash"
       retries 2
@@ -678,8 +678,8 @@ action :add do
 
     template "/etc/logstash/pipelines/bulkstats/01_bulkstats.conf" do
       source "bulkstats_bulkstats.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      owner user
       mode 0644
       cookbook "logstash"
       retries 2
@@ -689,8 +689,8 @@ action :add do
 
     template "/etc/logstash/pipelines/bulkstats/02_enrichment.conf" do
       source "bulkstats_enrichment.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      owner user
       mode 0644
       cookbook "logstash"
       retries 2
@@ -700,8 +700,8 @@ action :add do
 
     template "/etc/logstash/pipelines/bulkstats/99_output.conf" do
       source "output_kafka.conf.erb"
-      owner "root"
-      owner "root"
+      owner user
+      owner user
       mode 0644
       cookbook "logstash"
       retries 2
