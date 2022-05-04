@@ -1,0 +1,10 @@
+input {
+   file {
+      id => "my_bulkstat_id"
+      path => "/etc/bulkstats/data/*/*/*"
+      mode => "read"
+      file_completed_action => "log_and_delete"
+      file_completed_log_path => "/var/log/logstash/logstash-input-file.log"
+   }
+}
+
