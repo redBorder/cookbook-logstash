@@ -12,6 +12,7 @@ attribute :managers_all, :kind_of => Array, :default => []
 attribute :flow_nodes, :kind_of => Array, :default => []
 attribute :scanner_nodes, :kind_of => Array, :default => []
 attribute :vault_nodes, :kind_of => Array, :default => []
+attribute :device_nodes, :kind_of => Array, :default => []
 attribute :namespaces, :kind_of => Array, :default => []
 attribute :memcached_server, :kind_of => String, :default => "memcached.service"
 attribute :mac_vendors, :kind_of => String, :default => "/etc/objects/mac_vendors"

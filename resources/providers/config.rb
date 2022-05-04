@@ -13,6 +13,7 @@ action :add do
     flow_nodes = new_resource.flow_nodes
     scanner_nodes = new_resource.scanner_nodes
     vault_nodes = new_resource.vault_nodes
+    device_nodes = new_resource.device_nodes
     managers_all = new_resource.managers_all
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
@@ -52,7 +53,8 @@ action :add do
     end
 
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/rbwindow].each do |path|
+    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/rbwindow /etc/logstash/pipelines/bulkstats ].each do |path|
+
       directory path do
         owner user
         group user
@@ -665,10 +667,62 @@ action :add do
       retries 2
       notifies :restart, "service[logstash]", :delayed
     end
+
+    #Bulskstats pipeline
+    template "/etc/logstash/pipelines/bulkstats/00_input.conf" do
+      source "bulkstats_input.conf.erb"
+      owner user
+      owner user
+      mode 0644
+      cookbook "logstash"
+      retries 2
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/bulkstats/01_bulkstats.conf" do
+      source "bulkstats_bulkstats.conf.erb"
+      owner user
+      owner user
+      mode 0644
+      cookbook "logstash"
+      retries 2
+      variables(:device_nodes => device_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/bulkstats/02_enrichment.conf" do
+      source "bulkstats_enrichment.conf.erb"
+      owner user
+      owner user
+      mode 0644
+      cookbook "logstash"
+      retries 2
+      variables(:device_nodes => device_nodes)
+      notifies :restart, "service[logstash]", :delayed
+    end
+
+    template "/etc/logstash/pipelines/bulkstats/99_output.conf" do
+      source "output_kafka.conf.erb"
+      owner user
+      owner user
+      mode 0644
+      cookbook "logstash"
+      retries 2
+      variables(:output_topic => "rb_monitor")
+      notifies :restart, "service[logstash]", :delayed
+    end
+    
     # end of pipelines
 
     #logstash rules
     directory "/etc/logstash/pipelines/vault/patterns" do
+      owner "root"
+      group "root"
+      mode 0755
+      action :create
+    end
+
+    directory "/etc/logstash/pipelines/bulkstats/patterns" do
       owner "root"
       group "root"
       mode 0755
@@ -681,6 +735,65 @@ action :add do
         to "/share/logstash-rules/#{f}"
       end
     end
+
+    #bulkstats
+    directory "/etc/bulkstats" do
+      owner "root"
+      group "root"
+      mode 0777
+      action :create
+    end
+
+    directory "/etc/bulkstats/data" do
+      owner "root"
+      group "root"
+      mode 0777
+      action :create
+    end
+
+    # Make subdirectories for sftp
+    sensors_uuid_with_monitors = []
+    device_nodes.each do |dnode|
+      next if !dnode["redborder"]["parent_id"].nil?
+      if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
+        directories_to_make = []
+        dnode["redborder"]["monitors"].each do |monitor|
+          directories_to_make |= [monitor["bulkstats_schema_id"]] if monitor["bulkstats_schema_id"]
+        end
+        # Make the parent directory
+        if directories_to_make.count > 0
+          sensors_uuid_with_monitors.push(dnode["redborder"][:sensor_uuid])
+          directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}" do
+            owner "root"
+            group "root"
+            mode 0777
+            action :create
+          end
+        end
+
+        # Make the subdirectories
+        directories_to_make.each do |dir|
+          directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}/#{dir}" do
+            owner "root"
+            group "root"
+            mode 0777
+            action :create
+          end
+        end
+      end
+    end
+
+    # Clean unuse directories
+    Dir["/etc/bulkstats/data/*"].each do |path|
+      directory path do
+        owner "root"
+        group "root"
+        mode 0777
+        recursive true
+        action :delete if !sensors_uuid_with_monitors.include?(path.split("/").last.to_s.insert(8,"-").insert(13,"-").insert(18,"-").insert(23,"-"))
+      end
+    end
+    # end of bulkstats
 
     service "logstash" do
       service_name "logstash"
