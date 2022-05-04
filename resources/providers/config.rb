@@ -768,7 +768,7 @@ action :add do
         variables(:output_topic => "rb_monitor")
         notifies :restart, "service[logstash]", :delayed
     end
-
+    
     # end of pipelines
 
     #logstash rules
