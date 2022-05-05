@@ -25,6 +25,7 @@ action :add do
     mode = new_resource.mode
 
     yum_package "logstash-rules" do
+      only_if { mode == "manager" }
       action :upgrade
       flush_cache [:before]
     end
@@ -69,7 +70,7 @@ action :add do
     if mode == "manager"
       pipelines = %w[ sflow netflow vault social scanner nmsp location mobility meraki radius rbwindow bulkstats redfish ]
     elsif mode == "proxy"
-      pipelines = %w[ bulkstats, redfish ]
+      pipelines = %w[ bulkstats redfish ]
     end
 
     pipelines.each do |pipeline|
@@ -803,24 +804,26 @@ action :add do
     # end of pipelines
 
     #logstash rules
-    directory "#{pipelines_dir}/vault/patterns" do
-      owner "root"
-      group "root"
-      mode 0755
-      action :create
-    end
+    if mode == "manager"
+      directory "#{pipelines_dir}/vault/patterns" do
+        owner "root"
+        group "root"
+        mode 0755
+        action :create
+      end
 
-    directory "#{pipelines_dir}/bulkstats/patterns" do
-      owner "root"
-      group "root"
-      mode 0755
-      action :create
-    end
+      directory "#{pipelines_dir}/bulkstats/patterns" do
+        owner "root"
+        group "root"
+        mode 0755
+        action :create
+      end
 
-    Dir.foreach("/share/logstash-rules") do |f|
-      next if f == '.' or f == '..'
-      link "#{pipelines_dir}/vault/patterns/#{f}" do
-        to "/share/logstash-rules/#{f}"
+      Dir.foreach("/share/logstash-rules") do |f|
+        next if f == '.' or f == '..'
+        link "#{pipelines_dir}/vault/patterns/#{f}" do
+          to "/share/logstash-rules/#{f}"
+        end
       end
     end
 
