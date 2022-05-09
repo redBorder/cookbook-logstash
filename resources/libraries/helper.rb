@@ -83,7 +83,6 @@ module Logstash
 
       unless device_nodes.nil?
         device_nodes.each do |monitor|
-          Chef::Log.info monitor
           if monitor["redborder"]["monitors"]
             monitor["redborder"]["monitors"].each do |dmonitor|
               has_redfish_monitors =  (dmonitor["system"].split().first == "redfish" or has_redfish_monitors)
@@ -92,7 +91,6 @@ module Logstash
           end
         end
       end
-      Chef::Log.info has_bulkstats_monitors
       return (has_bulkstats_monitors || has_redfish_monitors), has_bulkstats_monitors, has_redfish_monitors
     end
   end
