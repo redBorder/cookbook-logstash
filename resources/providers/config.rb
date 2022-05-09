@@ -845,7 +845,7 @@ action :add do
     # Make subdirectories for sftp
     sensors_uuid_with_monitors = []
     device_nodes.each do |dnode|
-      next if !dnode["redborder"]["parent_id"].nil?
+      next if !dnode["redborder"]["parent_id"].nil? and mode != "proxy"
       if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
         directories_to_make = []
         dnode["redborder"]["monitors"].each do |monitor|
@@ -884,13 +884,39 @@ action :add do
         action :delete if !sensors_uuid_with_monitors.include?(path.split("/").last.to_s.insert(8,"-").insert(13,"-").insert(18,"-").insert(23,"-"))
       end
     end
+
+    activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)
+    node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
+
+    if mode == "proxy"
+      execute "rb_get_bulkstats_columns" do
+        ignore_failure true
+        command "/usr/lib/redborder/scripts/rb_get_bulkstats_columns.rb"
+        notifies :run, "ruby_block[update_pending_bulkstats_changes]", :immediately
+        only_if { (has_bulkstats_monitors and ( node["redborder"]["pending_bulkstats_changes"]>0) or !::File.exist?("/share/bulkstats.tar.gz")) }
+      end
+
+      ruby_block "update_pending_bulkstats_changes" do
+        block do
+          if node["redborder"]["pending_bulkstats_changes"]>0
+            node.set["redborder"]["pending_bulkstats_changes"] = (node.set["redborder"]["pending_bulkstats_changes"].to_i-1)
+          else
+            node.set["redborder"]["pending_bulkstats_changes"] = 0
+          end
+        end
+        action :nothing
+        notifies :restart, "service[logstash]", :delayed if activate_logstash
+      end
+    end
+
     # end of bulkstats
 
     service "logstash" do
       service_name "logstash"
       ignore_failure true
       supports :status => true, :reload => true, :restart => true, :enable => true
-      action [:start, :enable]
+      action [:start, :enable] if mode == "manager" or (activate_logstash and mode == "proxy")
+      action [:stop, :disable] if !activate_logstash and mode == "proxy"
     end
 
     Chef::Log.info("Logstash cookbook has been processed")
