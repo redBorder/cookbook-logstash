@@ -22,10 +22,11 @@ action :add do
     mac_vendors = new_resource.mac_vendors
     mongo_cve_database = new_resource.mongo_cve_database
     mongo_port = new_resource.mongo_port
-    mode = new_resource.mode
+    is_proxy = is_proxy?
+    is_manager = is_manager?
 
     yum_package "logstash-rules" do
-      only_if { mode == "manager" }
+      only_if { is_manager }
       action :upgrade
       flush_cache [:before]
     end
@@ -67,9 +68,9 @@ action :add do
     end
 
     pipelines = []
-    if mode == "manager"
+    if is_manager
       pipelines = %w[ sflow netflow vault social scanner nmsp location mobility meraki radius rbwindow bulkstats redfish ]
-    elsif mode == "proxy"
+    elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     end
 
@@ -100,12 +101,12 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:mode => mode)
+      variables(:is_manager => is_manager, :is_proxy => is_proxy)
       notifies :restart, "service[logstash]", :delayed
     end
 
     # Vault pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/vault/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -194,7 +195,7 @@ action :add do
     end
 
     # sflow pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/sflow/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -273,7 +274,7 @@ action :add do
     end
 
     # netflow pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/netflow/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -367,7 +368,7 @@ action :add do
     end
 
     #social pipelines
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/social/00_input.conf" do
         source "social_input_kafka.conf.erb"
         owner user
@@ -392,7 +393,7 @@ action :add do
     end
 
     #scanner pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/scanner/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -441,7 +442,7 @@ action :add do
     end
 
     # NMSP pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/nmsp/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -489,7 +490,7 @@ action :add do
     end
 
     # Location pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/location/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -547,7 +548,7 @@ action :add do
     end
 
     # Mobility pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/mobility/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -585,7 +586,7 @@ action :add do
     end
 
     # MERAKI pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/meraki/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -633,7 +634,7 @@ action :add do
     end
 
     #freeradius pipeline
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/radius/00_input.conf" do
         source "input_kafka.conf.erb"
         owner user
@@ -681,7 +682,7 @@ action :add do
     end
 
     # Rbwindow pipelines
-    if mode == "manager"
+    if is_manager
       template "#{pipelines_dir}/rbwindow/00_input.conf" do
         source "rbwindow_00_input.conf.erb"
         owner user
@@ -707,7 +708,7 @@ action :add do
     end
 
     #Bulskstats pipeline
-    if mode == "manager" || mode == "proxy"
+    if is_manager || is_proxy
       template "#{pipelines_dir}/bulkstats/00_input.conf" do
         source "bulkstats_input.conf.erb"
         owner user
@@ -753,7 +754,7 @@ action :add do
     end
 
     # Redfish pipeline
-    if mode == "manager" || mode == "proxy"
+    if is_manager || is_proxy
       template "#{pipelines_dir}/redfish/00_input.conf" do
         source "redfish_input.conf.erb"
         owner "root"
@@ -804,7 +805,7 @@ action :add do
     # end of pipelines
 
     #logstash rules
-    if mode == "manager"
+    if is_manager
       directory "#{pipelines_dir}/vault/patterns" do
         owner "root"
         group "root"
@@ -845,7 +846,7 @@ action :add do
     # Make subdirectories for sftp
     sensors_uuid_with_monitors = []
     device_nodes.each do |dnode|
-      next if !dnode["redborder"]["parent_id"].nil? and mode != "proxy"
+      next if !dnode["redborder"]["parent_id"].nil? and !is_proxy
       if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
         directories_to_make = []
         dnode["redborder"]["monitors"].each do |monitor|
@@ -888,7 +889,7 @@ action :add do
     activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)
     node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
 
-    if mode == "proxy"
+    if is_proxy
       execute "rb_get_bulkstats_columns" do
         ignore_failure true
         command "/usr/lib/redborder/scripts/rb_get_bulkstats_columns.rb"
@@ -915,8 +916,8 @@ action :add do
       service_name "logstash"
       ignore_failure true
       supports :status => true, :reload => true, :restart => true, :enable => true
-      action [:start, :enable] if mode == "manager" or (activate_logstash and mode == "proxy")
-      action [:stop, :disable] if !activate_logstash and mode == "proxy"
+      action [:start, :enable] if is_manager or (activate_logstash and is_proxy)
+      action [:stop, :disable] if !activate_logstash and is_proxy
     end
 
     Chef::Log.info("Logstash cookbook has been processed")

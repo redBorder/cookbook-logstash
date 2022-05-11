@@ -93,5 +93,13 @@ module Logstash
       end
       return (has_bulkstats_monitors || has_redfish_monitors), has_bulkstats_monitors, has_redfish_monitors
     end
+
+    def is_proxy?
+      node["redborder"]["is_proxy"] rescue false
+    end
+
+    def is_manager?
+      node["redborder"]["is_manager"] rescue true
+    end
   end
 end
