@@ -770,7 +770,7 @@ action :add do
     end
 
     #Monitor pipeline
-    template "/etc/logstash/pipelines/monitor/00_input.conf" do
+    template "#{pipelines_dir}/monitor/00_input.conf" do
       source "input_kafka.conf.erb"
       owner user
       group user
@@ -781,7 +781,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/monitor/01_monitor.conf" do
+    template "#{pipelines_dir}/monitor/01_monitor.conf" do
       source "monitor_removefields.conf.erb"
       owner user
       group user
@@ -791,7 +791,7 @@ action :add do
       notifies :restart, "service[logstash]", :delayed
     end
 
-    template "/etc/logstash/pipelines/monitor/99_output.conf" do
+    template "#{pipelines_dir}/monitor/99_output.conf" do
       source "output_kafka_namespace.conf.erb"
       owner user
       group user
