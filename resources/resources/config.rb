@@ -7,11 +7,14 @@ actions :add, :remove, :register, :deregister
 default_action :add
 
 attribute :user, :kind_of => String, :default => "logstash"
+attribute :logstash_dir, :kind_of => String, :default => "/etc/logstash"
+attribute :pipelines_dir, :kind_of => String, :default => "/etc/logstash/pipelines"
 attribute :cdomain, :kind_of => String, :default => "redborder.cluster"
 attribute :managers_all, :kind_of => Array, :default => []
 attribute :flow_nodes, :kind_of => Array, :default => []
 attribute :scanner_nodes, :kind_of => Array, :default => []
 attribute :vault_nodes, :kind_of => Array, :default => []
+attribute :device_nodes, :kind_of => Array, :default => []
 attribute :namespaces, :kind_of => Array, :default => []
 attribute :memcached_server, :kind_of => String, :default => "memcached.service"
 attribute :mac_vendors, :kind_of => String, :default => "/etc/objects/mac_vendors"
