@@ -55,84 +55,6 @@ action :add do
       host = db_redborder_secrets["hostname"]
     end
 
-    %w[ /etc/logstash /etc/logstash/pipelines /etc/logstash/pipelines/sflow /etc/logstash/pipelines/netflow /etc/logstash/pipelines/vault /etc/logstash/pipelines/social /etc/logstash/pipelines/scanner /etc/logstash/pipelines/nmsp /etc/logstash/pipelines/location /etc/logstash/pipelines/mobility /etc/logstash/pipelines/meraki /etc/logstash/pipelines/radius /etc/logstash/pipelines/rbwindow /etc/logstash/pipelines/monitor].each do |path|
-      directory path do
-    [logstash_dir, pipelines_dir].each do |dir|
-      directory dir do
-        owner user
-        group user
-        mode 0755
-        action :create
-      end
-    end
-
-    %w[ sflow netflow vault social scanner nmsp location
-        mobility meraki radius rbwindow bulkstats redfish monitor].each do |pipeline|
-      directory "#{pipelines_dir}/#{pipeline}" do
-        owner user
-        group user
-        mode 0755
-        action :create
-      end
-    end
-
-    template "#{logstash_dir}/logstash.yml" do
-      source "logstash.yml.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      variables(:user => user)
-      notifies :restart, 'service[logstash]', :delayed
-    end
-
-    template "#{logstash_dir}/pipelines.yml" do
-      source "pipelines.yml.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      notifies :restart, "service[logstash]", :delayed
-    end
-
-    # Vault pipeline
-
-    template "#{pipelines_dir}/vault/00_input.conf" do
-      source "input_kafka.conf.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      variables(:topics => ["rb_vault"])
-      notifies :restart, "service[logstash]", :delayed
-    end
-
-    template "#{pipelines_dir}/vault/01_generic.conf" do
-      source "vault_generic.conf.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      variables(:hash_key => logstash_hash_item["hash_key"], :hash_function => logstash_hash_item["hash_function"])
-      notifies :restart, "service[logstash]", :delayed
-    end
-
-    template "#{pipelines_dir}/vault/02_sshd.conf" do
-      source "vault_sshd.conf.erb"
-      owner user
-      group user
-      mode 0644
-      ignore_failure true
-      cookbook "logstash"
-      notifies :restart, "service[logstash]", :delayed
-    end
-
-    template "#{pipelines_dir}/vault/03_iptables.conf" do
-      source "vault_iptables.conf.erb"
       owner user
       group user
       mode 0644
@@ -805,7 +727,6 @@ action :add do
       )
       notifies :restart, "service[logstash]", :delayed
     end
-
 
     # end of pipelines
 
