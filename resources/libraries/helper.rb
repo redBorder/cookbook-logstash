@@ -95,11 +95,11 @@ module Logstash
     end
 
     def is_proxy?
-      node["redborder"]["is_proxy"] rescue false
+      node["redborder"]["machine_type"] == "proxy"
     end
 
     def is_manager?
-      node["redborder"]["is_manager"] rescue true
+      node["redborder"]["machine_type"] == "manager"
     end
   end
 end
