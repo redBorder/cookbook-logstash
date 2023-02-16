@@ -846,6 +846,7 @@ action :add do
     # Make subdirectories for sftp
     sensors_uuid_with_monitors = []
     device_nodes.each do |dnode|
+      #TODO: Simplify that double if, maybe some bools don't need to be checked anymore
       next if !dnode["redborder"]["parent_id"].nil? and !is_proxy
       if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
         directories_to_make = []

@@ -95,7 +95,7 @@ module Logstash
     end
 
     def is_proxy?
-      node.roles.include? "proxy"
+      node.roles.include? "proxy-sensor"
     end
 
     def is_manager?
