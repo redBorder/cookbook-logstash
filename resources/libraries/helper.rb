@@ -95,11 +95,11 @@ module Logstash
     end
 
     def is_proxy?
-      node["redborder"]["machine_type"] == "proxy"
+      node.roles.include? "proxy"
     end
 
     def is_manager?
-      node["redborder"]["machine_type"] == "manager"
+      node.roles.include? "manager"
     end
   end
 end
