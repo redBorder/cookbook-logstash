@@ -1,23 +1,23 @@
 input {
   <% @device_nodes.each do |node| %>
-    <% next if !node["redborder"]["parent_id"].nil? %>
-    <% if !node[:ipaddress].nil? and !node["redborder"].nil? %>
-      <% @types = [] %>
-      <% node["redborder"]["monitors"].each do |monitor| %>
-        <% next unless monitor["system"] %>
-        <% @system = monitor["system"].split() %> 
-        <% if @system.first.eql?("redfish") %>
-          <% @types.push(@system.last) %>
-        <% end %>
+#   <%= next unless node["redborder"]["parent_id"].nil? %>
+#   <%= !node[:ipaddress].nil? and !node["redborder"].nil? %>
+    <% next if node[:ipaddress].nil? or node["redborder"].nil? %>
+    <% @types = [] %>
+    <% node["redborder"]["monitors"].each do |monitor| %>
+      <% next unless monitor["system"] %>
+      <% @system = monitor["system"].split() %> 
+      <% if @system.first.eql?("redfish") %>
+        <% @types.push(@system.last) %>
       <% end %>
-      <% if @types.any? %>
-        redfish {
-          ip => "<%= node["ipaddress"] %>"
-          api_user => "<%= node["redborder"]["rest_api_user"] %>"
-          api_key => "<%= node["redborder"]["rest_api_password"] %>"
-          types => <%= @types.uniq.to_s %>
-        }
-      <% end %>
+    <% end %>
+    <% if @types.any? %>
+  redfish {
+    ip => "<%= node["ipaddress"] %>"
+    api_user => "<%= node["redborder"]["rest_api_user"] %>"
+    api_key => "<%= node["redborder"]["rest_api_password"] %>"
+    types => <%= @types.uniq.to_s %>
+  }
     <% end %>
   <% end %>
 }
