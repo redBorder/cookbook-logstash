@@ -1,31 +1,27 @@
 filter {
-
   <% @device_nodes.each do |node| %>
-    <% next if !node["redborder"]["parent_id"].nil? %>
-    <% if !node[:ipaddress].nil? and !node["redborder"].nil? %>
-      <% @has_bulkstats_monitor = false  %>
-      <% node["redborder"]["monitors"].each do |monitor| %>
-            <% break if @has_bulkstats_monitor  %>
-            <% @has_bulkstats_monitor =  (monitor["bulkstats_schema_id"] or @has_bulkstats_monitor) %>
-      <%end %>
-      <% if @has_bulkstats_monitor %>
-       if [sensor_uuid] ==  "<%=node["redborder"][:sensor_uuid].to_s%>" {
-        mutate {
-          add_field => {
-            "sensor_name" => "<%= (node["rbname"].nil? ? node.name : node["rbname"]) %>"
-            <% ["deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid" ].each do |ss| %>
-                  <% if !node["redborder"][ss].nil? and node["redborder"][ss]!="" %>
-                  "<%= ss %>" => "<%= node["redborder"][ss] %>"
-                  <% end %>
+    <% next unless !node[:ipaddress].nil? and !node["redborder"].nil? %>
+    <% @has_bulkstats_monitor = false  %>
+    <% node["redborder"]["monitors"].each do |monitor| %>
+      <% @has_bulkstats_monitor = monitor["bulkstats_schema_id"] %>
+      <% break if @has_bulkstats_monitor  %>
+    <%end %>
+    <% next unless @has_bulkstats_monitor %>
+  if [sensor_uuid] ==  "<%=node["redborder"][:sensor_uuid].to_s%>" {
+    mutate {
+      add_field => {
+        "sensor_name" => "<%= (node["rbname"].nil? ? node.name : node["rbname"]) %>"
+      <% %w(deployment deployment_uuid namespace namespace_uuid market market_uuid organization organization_uuid service_provider service_provider_uuid campus campus_uuid building building_uuid floor floor_uuid).each do |ss| %>
+      <% if !node["redborder"][ss].nil? and node["redborder"][ss]!="" %>
+        "<%= ss %>" => "<%= node["redborder"][ss] %>"
             <% end %>
-            "index_partitions" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_partitions"].nil? ) ? node["redborder"]["index_partitions"].to_i : 5].max %>
-            "index_replicas" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_replicas"].nil? ) ? node["redborder"]["index_replicas"].to_i : 1].max %>
-          }
-          remove_field => ["path", "@version","message","@timestamp"]
-        }
-       }
       <% end %>
-    <% end %>
+        "index_partitions" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_partitions"].nil? ) ? node["redborder"]["index_partitions"].to_i : 5].max %>
+        "index_replicas" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_replicas"].nil? ) ? node["redborder"]["index_replicas"].to_i : 1].max %>
+      }
+      remove_field => ["path", "@version","message","@timestamp"]
+    }
+  }
   <% end %>
 }
 
