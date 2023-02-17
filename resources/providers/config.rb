@@ -920,7 +920,7 @@ action :add do
       action [:start, :enable] if is_manager or (activate_logstash and is_proxy)
       action [:stop, :disable] if !activate_logstash and is_proxy
     end
-
+    Chef::Log.info("Activate logstash?: " + activate_logstash.to_s)
     Chef::Log.info("Logstash cookbook has been processed")
   rescue => e
     Chef::Log.error(e.message)
