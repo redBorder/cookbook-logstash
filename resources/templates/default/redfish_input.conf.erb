@@ -1,6 +1,5 @@
 input {
   <% @device_nodes.each do |node| %>
-#   <%= next unless node["redborder"]["parent_id"].nil? %>
 #   <%= !node[:ipaddress].nil? and !node["redborder"].nil? %>
     <% next if node[:ipaddress].nil? or node["redborder"].nil? %>
     <% @types = [] %>
