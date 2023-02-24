@@ -5,7 +5,7 @@ filter {
     <% node["redborder"]["monitors"].each do |monitor| %>
       <% break if @has_bulkstats_monitor  %>
       <% @has_bulkstats_monitor =  (monitor["bulkstats_schema_id"] or @has_bulkstats_monitor) %>
-    <%end %>
+    <% end %>
     <% next unless @has_bulkstats_monitor %>
   if [sensor_uuid] ==  "<%=node["redborder"][:sensor_uuid].to_s%>" {
     mutate {
