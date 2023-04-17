@@ -77,6 +77,29 @@ module Logstash
       sensors
     end
 
+    def check_proxy_monitors(device_nodes)
+      has_redfish_monitors = false
+      has_bulkstats_monitors = false
 
+      unless device_nodes.nil?
+        device_nodes.each do |monitor|
+          if monitor["redborder"]["monitors"]
+            monitor["redborder"]["monitors"].each do |dmonitor|
+              has_redfish_monitors =  (dmonitor["system"].split().first == "redfish" or has_redfish_monitors)
+              has_bulkstats_monitors = (dmonitor["system"].to_s.start_with? "bulkstats" or has_bulkstats_monitors)
+            end
+          end
+        end
+      end
+      return (has_bulkstats_monitors || has_redfish_monitors), has_bulkstats_monitors, has_redfish_monitors
+    end
+
+    def is_proxy?
+      node.roles.include? "proxy-sensor"
+    end
+
+    def is_manager?
+      node.roles.include? "manager"
+    end
   end
 end
