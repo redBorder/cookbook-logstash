@@ -36,6 +36,9 @@
 - pipeline.id: rbwindow-pipeline
   path.config: "/etc/logstash/pipelines/rbwindow"
   pipeline.workers: 1
+- pipeline.id: monitor-pipeline
+  path.config: "/etc/logstash/pipelines/monitor"
+  pipeline.workers: 1
   <% end %>
   <% if @is_manager or @is_proxy %>
 - pipeline.id: bulkstats-pipeline

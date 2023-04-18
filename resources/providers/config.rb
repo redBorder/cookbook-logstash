@@ -69,7 +69,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w[ sflow netflow vault social scanner nmsp location mobility meraki radius rbwindow bulkstats redfish ]
+      pipelines = %w[ sflow netflow vault social scanner nmsp location mobility meraki radius rbwindow bulkstats redfish monitor ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     end
@@ -790,15 +790,52 @@ action :add do
       end
 
       template "#{pipelines_dir}/redfish/99_output.conf" do
-          source "output_kafka.conf.erb"
-          owner user
-          group user
-          mode 0644
-          ignore_failure true
-          cookbook "logstash"
-          retries 2
-          variables(:output_topic => "rb_monitor")
-          notifies :restart, "service[logstash]", :delayed
+        source "output_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        retries 2
+        variables(:output_topic => "rb_monitor")
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    #Monitor pipeline
+    if is_manager
+      template "#{pipelines_dir}/monitor/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_monitor"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/monitor/01_monitor.conf" do
+        source "monitor_removefields.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/monitor/99_output.conf" do
+        source "output_kafka_namespace.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_monitor_post",
+                  :namespaces => namespaces
+        )
+        notifies :restart, "service[logstash]", :delayed
       end
     end
 
@@ -819,190 +856,190 @@ action :add do
         mode 0755
         action :create
       end
-      
-    directory "/etc/logstash/pipelines/bulkstats/patterns" do
-      owner "root"
-      group "root"
-      mode 0755
-      action :create
-    end
 
-    Dir.foreach("/share/logstash-rules") do |f|
-      next if f == '.' or f == '..'
-      link "#{pipelines_dir}/vault/patterns/#{f}" do
-        to "/share/logstash-rules/#{f}"
+      directory "/etc/logstash/pipelines/bulkstats/patterns" do
+        owner "root"
+        group "root"
+        mode 0755
+        action :create
       end
-    end
 
-    #bulkstats
-    directory "/etc/bulkstats" do
-      owner "root"
-      group "root"
-      mode 0777
-      action :create
-    end
-
-    directory "/etc/bulkstats/data" do
-      owner "root"
-      group "root"
-      mode 0777
-      action :create
-    end
-
-    # Make subdirectories for sftp
-    sensors_uuid_with_monitors = []
-    device_nodes.each do |dnode|
-      #TODO: Simplify that double if, maybe some bools don't need to be checked anymore
-      next if !dnode["redborder"]["parent_id"].nil? and !is_proxy
-      if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
-        directories_to_make = []
-        dnode["redborder"]["monitors"].each do |monitor|
-          directories_to_make |= [monitor["bulkstats_schema_id"]] if monitor["bulkstats_schema_id"]
-        end
-        # Make the parent directory
-        if directories_to_make.count > 0
-          sensors_uuid_with_monitors.push(dnode["redborder"][:sensor_uuid])
-          directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}" do
-            owner "root"
-            group "root"
-            mode 0777
-            action :create
-          end
-        end
-
-        # Make the subdirectories
-        directories_to_make.each do |dir|
-          directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}/#{dir}" do
-            owner "root"
-            group "root"
-            mode 0777
-            action :create
-          end
+      Dir.foreach("/share/logstash-rules") do |f|
+        next if f == '.' or f == '..'
+        link "#{pipelines_dir}/vault/patterns/#{f}" do
+          to "/share/logstash-rules/#{f}"
         end
       end
-    end
 
-    # Clean unuse directories
-    Dir["/etc/bulkstats/data/*"].each do |path|
-      directory path do
+      #bulkstats
+      directory "/etc/bulkstats" do
         owner "root"
         group "root"
         mode 0777
-        recursive true
-        action :delete if !sensors_uuid_with_monitors.include?(path.split("/").last.to_s.insert(8,"-").insert(13,"-").insert(18,"-").insert(23,"-"))
-      end
-    end
-
-    activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)
-    node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
-
-    if is_proxy
-      execute "rb_get_bulkstats_columns" do
-        ignore_failure true
-        command "/usr/lib/redborder/scripts/rb_get_bulkstats_columns.rb"
-        notifies :run, "ruby_block[update_pending_bulkstats_changes]", :immediately
-        only_if { (has_bulkstats_monitors and ( node["redborder"]["pending_bulkstats_changes"]>0) or !::File.exist?("/share/bulkstats.tar.gz")) }
+        action :create
       end
 
-      ruby_block "update_pending_bulkstats_changes" do
-        block do
-          if node["redborder"]["pending_bulkstats_changes"]>0
-            node.set["redborder"]["pending_bulkstats_changes"] = (node.set["redborder"]["pending_bulkstats_changes"].to_i-1)
-          else
-            node.set["redborder"]["pending_bulkstats_changes"] = 0
+      directory "/etc/bulkstats/data" do
+        owner "root"
+        group "root"
+        mode 0777
+        action :create
+      end
+
+      # Make subdirectories for sftp
+      sensors_uuid_with_monitors = []
+      device_nodes.each do |dnode|
+        #TODO: Simplify that double if, maybe some bools don't need to be checked anymore
+        next if !dnode["redborder"]["parent_id"].nil? and !is_proxy
+        if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
+          directories_to_make = []
+          dnode["redborder"]["monitors"].each do |monitor|
+            directories_to_make |= [monitor["bulkstats_schema_id"]] if monitor["bulkstats_schema_id"]
+          end
+          # Make the parent directory
+          if directories_to_make.count > 0
+            sensors_uuid_with_monitors.push(dnode["redborder"][:sensor_uuid])
+            directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}" do
+              owner "root"
+              group "root"
+              mode 0777
+              action :create
+            end
+          end
+
+          # Make the subdirectories
+          directories_to_make.each do |dir|
+            directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}/#{dir}" do
+              owner "root"
+              group "root"
+              mode 0777
+              action :create
+            end
           end
         end
-        action :nothing
-        notifies :restart, "service[logstash]", :delayed if activate_logstash
       end
-    end
 
-    # end of bulkstats
-
-    service "logstash" do
-      service_name "logstash"
-      ignore_failure true
-      supports :status => true, :reload => true, :restart => true, :enable => true
-      action [:start, :enable] if is_manager or (activate_logstash and is_proxy)
-      action [:stop, :disable] if !activate_logstash and is_proxy
-    end
-
-    Chef::Log.info("Logstash cookbook has been processed")
-  rescue => e
-    Chef::Log.error(e.message)
-  end
-end
-
-action :remove do
-  begin
-
-    service "logstash" do
-      service_name "logstash"
-      ignore_failure true
-      supports :status => true, :enable => true
-      action [:stop, :disable]
-    end
-
-    %w[ /etc/logstash ].each do |path|
-      directory path do
-        recursive true
-        action :delete
+      # Clean unuse directories
+      Dir["/etc/bulkstats/data/*"].each do |path|
+        directory path do
+          owner "root"
+          group "root"
+          mode 0777
+          recursive true
+          action :delete if !sensors_uuid_with_monitors.include?(path.split("/").last.to_s.insert(8,"-").insert(13,"-").insert(18,"-").insert(23,"-"))
+        end
       end
-    end
 
-    yum_package "logstash" do
-      action :remove
-    end
+      activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)
+      node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
 
-    yum_package "logstash-rules" do
-      action :remove
-    end
+      if is_proxy
+        execute "rb_get_bulkstats_columns" do
+          ignore_failure true
+          command "/usr/lib/redborder/scripts/rb_get_bulkstats_columns.rb"
+          notifies :run, "ruby_block[update_pending_bulkstats_changes]", :immediately
+          only_if { (has_bulkstats_monitors and ( node["redborder"]["pending_bulkstats_changes"]>0) or !::File.exist?("/share/bulkstats.tar.gz")) }
+        end
 
-    yum_package "redborder-logstash-plugins" do
-      action :remove
-    end
+        ruby_block "update_pending_bulkstats_changes" do
+          block do
+            if node["redborder"]["pending_bulkstats_changes"]>0
+              node.set["redborder"]["pending_bulkstats_changes"] = (node.set["redborder"]["pending_bulkstats_changes"].to_i-1)
+            else
+              node.set["redborder"]["pending_bulkstats_changes"] = 0
+            end
+          end
+          action :nothing
+          notifies :restart, "service[logstash]", :delayed if activate_logstash
+        end
+      end
 
-    Chef::Log.info("Logstash cookbook has been processed")
-  rescue => e
-    Chef::Log.error(e.message)
+      # end of bulkstats
+
+      service "logstash" do
+        service_name "logstash"
+        ignore_failure true
+        supports :status => true, :reload => true, :restart => true, :enable => true
+        action [:start, :enable] if is_manager or (activate_logstash and is_proxy)
+        action [:stop, :disable] if !activate_logstash and is_proxy
+      end
+
+      Chef::Log.info("Logstash cookbook has been processed")
+      rescue => e
+      Chef::Log.error(e.message)
+    end
   end
-end
 
-action :register do
-  begin
-    if !node["logstash"]["registered"]
-      query = {}
-      query["ID"] = "logstash-#{node["hostname"]}"
-      query["Name"] = "logstash"
-      query["Address"] = "#{node["ipaddress"]}"
-      query["Port"] = "5000"
-      json_query = Chef::JSONCompat.to_json(query)
+  action :remove do
+    begin
 
-      execute 'Register service in consul' do
-        command "curl http://localhost:8500/v1/agent/service/register -d '#{json_query}' &>/dev/null"
-        action :nothing
-      end.run_action(:run)
+      service "logstash" do
+        service_name "logstash"
+        ignore_failure true
+        supports :status => true, :enable => true
+        action [:stop, :disable]
+      end
 
-      node.set["logstash"]["registered"] = true
-      Chef::Log.info("Logstash service has been registered to consul")
+      %w[ /etc/logstash ].each do |path|
+        directory path do
+          recursive true
+          action :delete
+        end
+      end
+
+      yum_package "logstash" do
+        action :remove
+      end
+
+      yum_package "logstash-rules" do
+        action :remove
+      end
+
+      yum_package "redborder-logstash-plugins" do
+        action :remove
+      end
+
+      Chef::Log.info("Logstash cookbook has been processed")
+    rescue => e
+      Chef::Log.error(e.message)
     end
-  rescue => e
-    Chef::Log.error(e.message)
   end
-end
 
-action :deregister do
-  begin
-    if node["logstash"]["registered"]
-      execute 'Deregister service in consul' do
-        command "curl http://localhost:8500/v1/agent/service/deregister/logstash-#{node["hostname"]} &>/dev/null"
-        action :nothing
-      end.run_action(:run)
+  action :register do
+    begin
+      if !node["logstash"]["registered"]
+        query = {}
+        query["ID"] = "logstash-#{node["hostname"]}"
+        query["Name"] = "logstash"
+        query["Address"] = "#{node["ipaddress"]}"
+        query["Port"] = "5000"
+        json_query = Chef::JSONCompat.to_json(query)
 
-      node.set["logstash"]["registered"] = false
-      Chef::Log.info("Logstash service has been deregistered from consul")
+        execute 'Register service in consul' do
+          command "curl http://localhost:8500/v1/agent/service/register -d '#{json_query}' &>/dev/null"
+          action :nothing
+        end.run_action(:run)
+
+        node.set["logstash"]["registered"] = true
+        Chef::Log.info("Logstash service has been registered to consul")
+      end
+    rescue => e
+      Chef::Log.error(e.message)
     end
-  rescue => e
-    Chef::Log.error(e.message)
   end
-end
+
+  action :deregister do
+    begin
+      if node["logstash"]["registered"]
+        execute 'Deregister service in consul' do
+          command "curl http://localhost:8500/v1/agent/service/deregister/logstash-#{node["hostname"]} &>/dev/null"
+          action :nothing
+        end.run_action(:run)
+
+        node.set["logstash"]["registered"] = false
+        Chef::Log.info("Logstash service has been deregistered from consul")
+      end
+    rescue => e
+      Chef::Log.error(e.message)
+    end
+  end
