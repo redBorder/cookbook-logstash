@@ -1,32 +1,27 @@
 filter {
-
 <% @device_nodes.each do |node| %>
-  <% next if !node["redborder"]["parent_id"].nil? %>
-    <% if !node[:ipaddress].nil? and !node["redborder"].nil? %>
-      <% @has_redfish_monitor = false %>
-      <% node["redborder"]["monitors"].each do |monitor| %>
-        <% break if @has_redfish_monitor %>
-        <% next unless monitor["system"] %>
-        <% @system = monitor["system"].split() %>
-        <% @has_redfish_monitor =  (@system.first == "redfish" or @has_redfish_monitor) %>
-      <%end %>
-      <% if @has_redfish_monitor %>
-       if [sensor_ip] ==  "<%=node[:ipaddress].to_s%>" {
-        mutate {
-          add_field => {
-            "sensor_name" => "<%= (node["rbname"].nil? ? node.name : node["rbname"]) %>"
-            <% ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid" ].each do |ss| %>
-                  <% if !node["redborder"][ss].nil? and node["redborder"][ss]!="" %>
-                  "<%= ss %>" => "<%= node["redborder"][ss] %>"
-                  <% end %>
-            <% end %>
-            "index_partitions" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_partitions"].nil? ) ? node["redborder"]["index_partitions"].to_i : 5].max %>
-            "index_replicas" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_replicas"].nil? ) ? node["redborder"]["index_replicas"].to_i : 1].max %>
-          }
-        }
-       }
+  <% next if node[:ipaddress].nil? or node["redborder"].nil? %>
+  <% @has_redfish_monitor = false %>
+  <% node["redborder"]["monitors"].each do |monitor| %>
+    <% break if @has_redfish_monitor %>
+    <% next unless monitor["system"] %>
+    <% @system = monitor["system"].split() %>
+    <% @has_redfish_monitor =  (@system.first == "redfish" or @has_redfish_monitor) %>
+  <% end %>
+  <% next unless @has_redfish_monitor %>
+  if [sensor_ip] == "<%= node[:ipaddress].to_s %>" {
+    mutate {
+      add_field => {
+        "sensor_name" => "<%= (node["rbname"].nil? ? node.name : node["rbname"]) %>"
+  <% %w(sensor_uuid  deployment  deployment_uuid  namespace  namespace_uuid  market  market_uuid  organization  organization_uuid  service_provider  service_provider_uuid  campus  campus_uuid  building  building_uuid  floor  floor_uuid).each do |ss| %>
+    <% unless node["redborder"][ss].nil? or node["redborder"][ss]=="" %>
+        "<%= ss %>" => "<%= node["redborder"][ss] %>"
     <% end %>
   <% end %>
+        "index_partitions" => <%= [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_partitions"].nil? )  ? node["redborder"]["index_partitions"].to_i  : 5].max %>
+        "index_replicas" => <%=   [ 1, ( !node["redborder"].nil? and !node["redborder"]["index_replicas"].nil? )    ? node["redborder"]["index_replicas"].to_i    : 1].max %>
+      }
+    }
+  }
 <% end %>
 }
-
