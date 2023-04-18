@@ -49,6 +49,9 @@ mkdir -p /share/logstash-rules
 %doc
 
 %changelog
+* Tue Apr 18 2023 Luis J. Blanco <ljblanco@redborder.com> - 1.0.21
+- Monitor pipeline
+
 * Wed Nov 17 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.3-1
 - Vault pipeline enrichment
 
