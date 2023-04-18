@@ -796,6 +796,487 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
+        variables(:input_topics => ["sflow"],
+                  :output_topic => "rb_flow"
+        )
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    # netflow pipeline
+    if is_manager
+      template "#{pipelines_dir}/netflow/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_flow"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/01_macscrambling.conf" do
+        source "netflow_macscrambling.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/02_geoenrich.conf" do
+        source "netflow_geoenrich.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/03_macvendor.conf" do
+        source "netflow_macvendor.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server,
+                  :mac_vendors => mac_vendors
+        )
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/04_darklist.conf" do
+        source "netflow_darklist.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/90_splitflow.conf" do
+        source "netflow_splitflow.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/91_rename.conf" do
+        source "netflow_rename.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/netflow/99_output.conf" do
+        source "output_kafka_namespace.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:input_topics => ["rb_flow"],
+                  :output_topic => "rb_flow_post",
+                  :namespaces => namespaces
+        )
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    #social pipelines
+    if is_manager
+      template "#{pipelines_dir}/social/00_input.conf" do
+        source "social_input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:input_topics => ["rb_social","rb_hashtag"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/social/99_output.conf" do
+        source "social_output_kafka_namespace.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:namespaces => namespaces)
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    #scanner pipeline
+    if is_manager
+      template "#{pipelines_dir}/scanner/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_scanner"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/scanner/01_normalization.conf" do
+        source "scanner_normalization.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/scanner/02_mongocve.conf" do
+        source "scanner_mongocve.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:mongo_port => mongo_port, :mongo_cve_database => mongo_cve_database)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/scanner/99_output.conf" do
+        source "output_kafka_namespace.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:input_topics => ["rb_scanner"],
+                  :output_topic => "rb_scanner_post",
+                  :namespaces => namespaces
+        )
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    # NMSP pipeline
+    if is_manager
+      template "#{pipelines_dir}/nmsp/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_nmsp"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/nmsp/01_macscrambling.conf" do
+        source "nmsp_macscrambling.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/nmsp/03_nmsp.conf" do
+        source "nmsp_removefields.conf.erb"
+        owner user
+        group user
+        mode 0644
+        retries 2
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/nmsp/99_output.conf" do
+        source "output_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_location")
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    # Location pipeline
+    if is_manager
+      template "#{pipelines_dir}/location/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_loc"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/location/01_macscrambling.conf" do
+        source "location_macscrambling.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/location/02_macvendor.conf" do
+        source "netflow_macvendor.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:mac_vendors => mac_vendors)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/location/10_location.conf" do
+        source "location_location.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/location/99_output.conf" do
+        source "output_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_location")
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    # Mobility pipeline
+    if is_manager
+      template "#{pipelines_dir}/mobility/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_location"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/mobility/01_mobility.conf" do
+        source "mobility_removefields.conf.erb"
+        owner user
+        group user
+        mode 0644
+        retries 2
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/mobility/99_output.conf" do
+        source "output_kafka_namespace.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_loc_post",
+                  :namespaces => namespaces)
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    # MERAKI pipeline
+    if is_manager
+      template "#{pipelines_dir}/meraki/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["sflow"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/meraki/01_macscrambling.conf" do
+        source "meraki_macscrambling.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/meraki/03_meraki.conf" do
+        source "meraki_removefields.conf.erb"
+        owner user
+        group user
+        mode 0644
+        retries 2
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/meraki/99_output.conf" do
+        source "output_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_location")
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    #freeradius pipeline
+    if is_manager
+      template "#{pipelines_dir}/radius/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_radius"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/radius/01_macscrambling.conf" do
+        source "radius_macscrambling.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/radius/03_radius.conf" do
+        source "radius_radius.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        retries 2
+        variables(:memcached_server => memcached_server)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/radius/99_output.conf" do
+        source "output_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_location")
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    # Rbwindow pipelines
+    if is_manager
+      template "#{pipelines_dir}/rbwindow/00_input.conf" do
+        source "rbwindow_00_input.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        retries 2
+        variables(:memcached_server => memcached_server, :database_name => database_name, :host => host,
+                  :password => password, :user => username, :port => port)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/rbwindow/99_output.conf" do
+        source "rbwindow_99_output.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    #Bulskstats pipeline
+    if is_manager || is_proxy
+      template "#{pipelines_dir}/bulkstats/00_input.conf" do
+        source "bulkstats_input.conf.erb"
+        owner user
+        owner user
+        mode 0644
+        cookbook "logstash"
+        retries 2
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/bulkstats/01_bulkstats.conf" do
+        source "bulkstats_bulkstats.conf.erb"
+        owner user
+        owner user
+        mode 0644
+        cookbook "logstash"
+        retries 2
+        variables(:device_nodes => device_nodes)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/bulkstats/02_enrichment.conf" do
+        source "bulkstats_enrichment.conf.erb"
+        owner user
+        owner user
+        mode 0644
+        cookbook "logstash"
+        retries 2
+        variables(:device_nodes => device_nodes)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/bulkstats/99_output.conf" do
+        source "output_kafka.conf.erb"
+        owner user
+        owner user
+        mode 0644
+        cookbook "logstash"
         retries 2
         variables(:output_topic => "rb_monitor")
         notifies :restart, "service[logstash]", :delayed
@@ -837,6 +1318,53 @@ action :add do
         )
         notifies :restart, "service[logstash]", :delayed
       end
+    # Redfish pipeline
+    if is_manager || is_proxy
+      template "#{pipelines_dir}/redfish/00_input.conf" do
+        source "redfish_input.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        variables(:device_nodes => device_nodes,
+                  :monitors => monitors_dg["monitors"]
+        )
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/redfish/01_normalize.conf" do
+        source "redfish_normalize.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/redfish/02_enrichment.conf" do
+        source "redfish_enrichment.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        variables(:device_nodes => device_nodes)
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/redfish/99_output.conf" do
+          source "output_kafka.conf.erb"
+          owner user
+          group user
+          mode 0644
+          ignore_failure true
+          cookbook "logstash"
+          retries 2
+          variables(:output_topic => "rb_monitor")
+          notifies :restart, "service[logstash]", :delayed
+      end
     end
 
     # end of pipelines
@@ -848,6 +1376,26 @@ action :add do
         group "root"
         mode 0755
         action :create
+      end
+
+      directory "#{pipelines_dir}/bulkstats/patterns" do
+        owner "root"
+        group "root"
+        mode 0755
+        action :create
+      end
+      
+    directory "/etc/logstash/pipelines/bulkstats/patterns" do
+      owner "root"
+      group "root"
+      mode 0755
+      action :create
+    end
+
+    Dir.foreach("/share/logstash-rules") do |f|
+      next if f == '.' or f == '..'
+      link "#{pipelines_dir}/vault/patterns/#{f}" do
+        to "/share/logstash-rules/#{f}"
       end
 
       directory "#{pipelines_dir}/bulkstats/patterns" do
@@ -868,6 +1416,35 @@ action :add do
         next if f == '.' or f == '..'
         link "#{pipelines_dir}/vault/patterns/#{f}" do
           to "/share/logstash-rules/#{f}"
+    # Make subdirectories for sftp
+    sensors_uuid_with_monitors = []
+    device_nodes.each do |dnode|
+      #TODO: Simplify that double if, maybe some bools don't need to be checked anymore
+      next if !dnode["redborder"]["parent_id"].nil? and !is_proxy
+      if !dnode[:ipaddress].nil? and !dnode["redborder"].nil?
+        directories_to_make = []
+        dnode["redborder"]["monitors"].each do |monitor|
+          directories_to_make |= [monitor["bulkstats_schema_id"]] if monitor["bulkstats_schema_id"]
+        end
+        # Make the parent directory
+        if directories_to_make.count > 0
+          sensors_uuid_with_monitors.push(dnode["redborder"][:sensor_uuid])
+          directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}" do
+            owner "root"
+            group "root"
+            mode 0777
+            action :create
+          end
+        end
+
+        # Make the subdirectories
+        directories_to_make.each do |dir|
+          directory "/etc/bulkstats/data/#{dnode["redborder"][:sensor_uuid].gsub("-","")}/#{dir}" do
+            owner "root"
+            group "root"
+            mode 0777
+            action :create
+          end
         end
       end
 
@@ -884,6 +1461,62 @@ action :add do
         group "root"
         mode 0777
         action :create
+    end
+
+    activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)
+    node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
+
+    if is_proxy
+      execute "rb_get_bulkstats_columns" do
+        ignore_failure true
+        command "/usr/lib/redborder/scripts/rb_get_bulkstats_columns.rb"
+        notifies :run, "ruby_block[update_pending_bulkstats_changes]", :immediately
+        only_if { (has_bulkstats_monitors and ( node["redborder"]["pending_bulkstats_changes"]>0) or !::File.exist?("/share/bulkstats.tar.gz")) }
+      end
+
+      ruby_block "update_pending_bulkstats_changes" do
+        block do
+          if node["redborder"]["pending_bulkstats_changes"]>0
+            node.set["redborder"]["pending_bulkstats_changes"] = (node.set["redborder"]["pending_bulkstats_changes"].to_i-1)
+          else
+            node.set["redborder"]["pending_bulkstats_changes"] = 0
+          end
+        end
+        action :nothing
+        notifies :restart, "service[logstash]", :delayed if activate_logstash
+      end
+    end
+
+    # end of bulkstats
+
+    service "logstash" do
+      service_name "logstash"
+      ignore_failure true
+      supports :status => true, :reload => true, :restart => true, :enable => true
+      action [:start, :enable] if is_manager or (activate_logstash and is_proxy)
+      action [:stop, :disable] if !activate_logstash and is_proxy
+    end
+
+    Chef::Log.info("Logstash cookbook has been processed")
+  rescue => e
+    Chef::Log.error(e.message)
+  end
+end
+
+action :remove do
+  begin
+
+    service "logstash" do
+      service_name "logstash"
+      ignore_failure true
+      supports :status => true, :enable => true
+      action [:stop, :disable]
+    end
+
+    %w[ /etc/logstash ].each do |path|
+      directory path do
+        recursive true
+        action :delete
       end
 
       # Make subdirectories for sftp
