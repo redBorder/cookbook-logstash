@@ -49,6 +49,9 @@ mkdir -p /share/logstash-rules
 %doc
 
 %changelog
+* Fri Sep 22 2023 Miguel Negrón <manegron@redborder.com> - 2.0.0-1
+- Remove social
+
 * Tue Apr 18 2023 Luis J. Blanco <ljblanco@redborder.com> - 1.0.21
 - Monitor pipeline
 

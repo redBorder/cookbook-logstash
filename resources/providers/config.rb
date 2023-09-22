@@ -69,7 +69,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w[ sflow netflow vault social scanner nmsp location mobility meraki radius rbwindow bulkstats redfish monitor ]
+      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki radius rbwindow bulkstats redfish monitor ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     end
@@ -363,31 +363,6 @@ action :add do
                   :output_topic => "rb_flow_post",
                   :namespaces => namespaces
         )
-        notifies :restart, "service[logstash]", :delayed
-      end
-    end
-
-    #social pipelines
-    if is_manager
-      template "#{pipelines_dir}/social/00_input.conf" do
-        source "social_input_kafka.conf.erb"
-        owner user
-        group user
-        mode 0644
-        ignore_failure true
-        cookbook "logstash"
-        variables(:input_topics => ["rb_social","rb_hashtag"])
-        notifies :restart, "service[logstash]", :delayed
-      end
-
-      template "#{pipelines_dir}/social/99_output.conf" do
-        source "social_output_kafka_namespace.conf.erb"
-        owner user
-        group user
-        mode 0644
-        ignore_failure true
-        cookbook "logstash"
-        variables(:namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
     end
