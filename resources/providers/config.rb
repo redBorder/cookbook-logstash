@@ -25,18 +25,18 @@ action :add do
     is_proxy = is_proxy?
     is_manager = is_manager?
 
-    yum_package "logstash-rules" do
+    dnf_package "logstash-rules" do
       only_if { is_manager }
       action :upgrade
       flush_cache [:before]
     end
 
-    yum_package "logstash" do
+    dnf_package "logstash" do
       action :upgrade
       flush_cache [:before]
     end
 
-    yum_package "redborder-logstash-plugins" do
+    dnf_package "redborder-logstash-plugins" do
       action :upgrade
       flush_cache [:before]
     end
@@ -943,15 +943,15 @@ action :remove do
       action :delete
     end
 
-    yum_package "logstash" do
+    dnf_package "logstash" do
       action :remove
     end
 
-    yum_package "logstash-rules" do
+    dnf_package "logstash-rules" do
       action :remove
     end
 
-    yum_package "redborder-logstash-plugins" do
+    dnf_package "redborder-logstash-plugins" do
       action :remove
     end
 
