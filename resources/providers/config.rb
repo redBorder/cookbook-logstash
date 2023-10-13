@@ -890,7 +890,7 @@ action :add do
     end
 
     activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)      #TODO Deprecated?
-    node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
+    node.default["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
 
     if is_proxy
       execute "rb_get_bulkstats_columns" do
@@ -903,9 +903,9 @@ action :add do
       ruby_block "update_pending_bulkstats_changes" do
         block do
           if node["redborder"]["pending_bulkstats_changes"]>0
-            node.set["redborder"]["pending_bulkstats_changes"] = (node.set["redborder"]["pending_bulkstats_changes"].to_i-1)
+            node.default["redborder"]["pending_bulkstats_changes"] = (node.default["redborder"]["pending_bulkstats_changes"].to_i-1)
           else
-            node.set["redborder"]["pending_bulkstats_changes"] = 0
+            node.default["redborder"]["pending_bulkstats_changes"] = 0
           end
         end
         action :nothing
@@ -976,7 +976,7 @@ action :register do
         action :nothing
       end.run_action(:run)
 
-      node.set["logstash"]["registered"] = true
+      node.default["logstash"]["registered"] = true
       Chef::Log.info("Logstash service has been registered to consul")
     end
   rescue => e
@@ -992,7 +992,7 @@ action :deregister do
         action :nothing
       end.run_action(:run)
 
-      node.set["logstash"]["registered"] = false
+      node.default["logstash"]["registered"] = false
       Chef::Log.info("Logstash service has been deregistered from consul")
     end
   rescue => e
