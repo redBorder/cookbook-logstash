@@ -9,7 +9,7 @@ module Logstash
         m = node if m.name == node.name
 
         begin
-          roles = m.roles
+          roles = m['roles']
         rescue NoMethodError
           begin
             roles = m.run_list
@@ -46,7 +46,7 @@ module Logstash
         m = node if m.name == node.name
 
         begin
-          roles = m.roles
+          roles = m['roles']
         rescue NoMethodError
           begin
             roles = m.run_list
@@ -95,11 +95,11 @@ module Logstash
     end
 
     def is_proxy?
-      node.roles.include? "proxy-sensor"
+      node['roles'].include? "proxy-sensor"
     end
 
     def is_manager?
-      node.roles.include? "manager"
+      node['roles'].include? "manager"
     end
   end
 end
