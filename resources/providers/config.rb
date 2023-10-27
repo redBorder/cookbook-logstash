@@ -25,25 +25,26 @@ action :add do
     is_proxy = is_proxy?
     is_manager = is_manager?
 
-    yum_package "logstash-rules" do
+    dnf_package "logstash-rules" do
       only_if { is_manager }
       action :upgrade
       flush_cache [:before]
     end
 
-    yum_package "logstash" do
+    dnf_package "logstash" do
       action :upgrade
       flush_cache [:before]
     end
 
-    yum_package "redborder-logstash-plugins" do
+    dnf_package "redborder-logstash-plugins" do
       action :upgrade
       flush_cache [:before]
     end
 
-    user user do
-      action :create
-      system true
+    execute "create_user" do
+      command "/usr/sbin/useradd -r #{user}"
+      ignore_failure true
+      not_if "getent passwd #{user}"
     end
 
     logstash_hash_item = data_bag_item("passwords","vault") rescue logstash_hash_item = { "hash_key" => node["redborder"]["rsyslog"]["hash_key"], "hash_function" => node["redborder"]["rsyslog"]["hash_function"] }
@@ -69,7 +70,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w[ sflow netflow vault social scanner nmsp location mobility meraki radius rbwindow bulkstats redfish monitor ]
+      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki radius rbwindow bulkstats redfish monitor ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     end
@@ -363,31 +364,6 @@ action :add do
                   :output_topic => "rb_flow_post",
                   :namespaces => namespaces
         )
-        notifies :restart, "service[logstash]", :delayed
-      end
-    end
-
-    #social pipelines
-    if is_manager
-      template "#{pipelines_dir}/social/00_input.conf" do
-        source "social_input_kafka.conf.erb"
-        owner user
-        group user
-        mode 0644
-        ignore_failure true
-        cookbook "logstash"
-        variables(:input_topics => ["rb_social","rb_hashtag"])
-        notifies :restart, "service[logstash]", :delayed
-      end
-
-      template "#{pipelines_dir}/social/99_output.conf" do
-        source "social_output_kafka_namespace.conf.erb"
-        owner user
-        group user
-        mode 0644
-        ignore_failure true
-        cookbook "logstash"
-        variables(:namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
     end
@@ -915,7 +891,7 @@ action :add do
     end
 
     activate_logstash, has_bulkstats_monitors, has_redfish_monitors = check_proxy_monitors(device_nodes)      #TODO Deprecated?
-    node.set["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
+    node.normal["redborder"]["pending_bulkstats_changes"] = 0 if node["redborder"]["pending_bulkstats_changes"].nil?
 
     if is_proxy
       execute "rb_get_bulkstats_columns" do
@@ -928,9 +904,9 @@ action :add do
       ruby_block "update_pending_bulkstats_changes" do
         block do
           if node["redborder"]["pending_bulkstats_changes"]>0
-            node.set["redborder"]["pending_bulkstats_changes"] = (node.set["redborder"]["pending_bulkstats_changes"].to_i-1)
+            node.normal["redborder"]["pending_bulkstats_changes"] = (node.normal["redborder"]["pending_bulkstats_changes"].to_i-1)
           else
-            node.set["redborder"]["pending_bulkstats_changes"] = 0
+            node.normal["redborder"]["pending_bulkstats_changes"] = 0
           end
         end
         action :nothing
@@ -968,15 +944,15 @@ action :remove do
       action :delete
     end
 
-    yum_package "logstash" do
+    dnf_package "logstash" do
       action :remove
     end
 
-    yum_package "logstash-rules" do
+    dnf_package "logstash-rules" do
       action :remove
     end
 
-    yum_package "redborder-logstash-plugins" do
+    dnf_package "redborder-logstash-plugins" do
       action :remove
     end
 
@@ -1001,7 +977,7 @@ action :register do
         action :nothing
       end.run_action(:run)
 
-      node.set["logstash"]["registered"] = true
+      node.normal["logstash"]["registered"] = true
       Chef::Log.info("Logstash service has been registered to consul")
     end
   rescue => e
@@ -1017,7 +993,7 @@ action :deregister do
         action :nothing
       end.run_action(:run)
 
-      node.set["logstash"]["registered"] = false
+      node.normal["logstash"]["registered"] = false
       Chef::Log.info("Logstash service has been deregistered from consul")
     end
   rescue => e
