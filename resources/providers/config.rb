@@ -70,7 +70,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki radius rbwindow bulkstats redfish monitor ]
+      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     end
@@ -653,6 +653,42 @@ action :add do
         ignore_failure true
         cookbook "logstash"
         variables(:output_topic => "rb_location")
+        notifies :restart, "service[logstash]", :delayed
+      end
+    end
+
+    #apstate pipeline
+    if is_manager
+      template "#{pipelines_dir}/apstate/00_input.conf" do
+        source "input_kafka.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:topics => ["rb_state"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/apstate/01_apstate.conf" do
+        source "apstate_apstate.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/apstate/99_output.conf" do
+        source "output_kafka_namespace.conf.erb"
+        owner user
+        group user
+        mode 0644
+        ignore_failure true
+        cookbook "logstash"
+        variables(:output_topic => "rb_state_post",
+                  :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
     end
