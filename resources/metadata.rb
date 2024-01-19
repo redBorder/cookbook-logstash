@@ -4,4 +4,4 @@ maintainer_email 'jjprieto@redborder.com'
 license          'All rights reserved'
 description      'Installs/Configures cookbook-logstash'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '1.0.22'
+version          '2.0.1'
