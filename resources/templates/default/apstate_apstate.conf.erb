@@ -1,0 +1,7 @@
+filter {
+  apstate { 
+  }
+  mutate {
+    remove_field => ["@version","@timestamp"]
+  }
+}
