@@ -1,10 +1,21 @@
 output {
+  
+<% if @output_topics %>
+  <% @output_topics.each do |output_topic| %>
+    kafka {
+      codec => json
+      topic_id => "<%= output_topic %>"
+      bootstrap_servers => "kafka.service:9092"
+    }
+  <% end %>
+<% end %>
+
   if [namespace_uuid]{
     <% @namespaces.each do |namespace| %>
       if [namespace_uuid] == "<%= namespace %>" {
         kafka {
           codec => json
-          topic_id => "<%= @output_topic + "_" + namespace %>"
+          topic_id => "<%= @output_namespace_topic + "_" + namespace %>"
           bootstrap_servers => "kafka.service:9092"
         }
       }
@@ -12,7 +23,7 @@ output {
   } else {
     kafka {
       codec => json
-      topic_id => "<%= @output_topic %>"
+      topic_id => "<%= @output_namespace_topic %>"
       bootstrap_servers => "kafka.service:9092"
     }
   }
