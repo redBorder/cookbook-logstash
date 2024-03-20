@@ -187,8 +187,7 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:input_topics => ["rb_vault"],
-                  :output_topic => "rb_vault_post",
+        variables(:output_namespace_topic => "rb_vault_post",
                   :namespaces => namespaces
         )
         notifies :restart, "service[logstash]", :delayed
@@ -360,8 +359,7 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:input_topics => ["rb_flow"],
-                  :output_topic => "rb_flow_post",
+        variables(:output_namespace_topic => "rb_flow_post",
                   :namespaces => namespaces
         )
         notifies :restart, "service[logstash]", :delayed
@@ -409,8 +407,7 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:input_topics => ["rb_scanner"],
-                  :output_topic => "rb_scanner_post",
+        variables(:output_namespace_topic => "rb_scanner_post",
                   :namespaces => namespaces
         )
         notifies :restart, "service[logstash]", :delayed
@@ -454,13 +451,15 @@ action :add do
       end
 
       template "#{pipelines_dir}/nmsp/99_output.conf" do
-        source "output_kafka.conf.erb"
+        source "output_kafka_namespace.conf.erb"
         owner user
         group user
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:output_topic => "rb_location")
+        variables(:output_topics => ["rb_location"],
+                  :output_namespace_topic => "rb_wireless",
+                  :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
     end
@@ -512,13 +511,15 @@ action :add do
       end
 
       template "#{pipelines_dir}/location/99_output.conf" do
-        source "output_kafka.conf.erb"
+        source "output_kafka_namespace.conf.erb"
         owner user
         group user
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:output_topic => "rb_location")
+        variables(:output_topics => ["rb_location"],
+                  :output_namespace_topic => "rb_wireless",
+                  :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
     end
@@ -555,7 +556,7 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:output_topic => "rb_loc_post",
+        variables(:output_namespace_topic => "rb_loc_post",
                   :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
@@ -687,7 +688,7 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:output_topic => "rb_state_post",
+        variables(:output_namespace_topic => "rb_state_post",
                   :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
@@ -795,7 +796,7 @@ action :add do
         mode 0644
         ignore_failure true
         cookbook "logstash"
-        variables(:output_topic => "rb_monitor_post",
+        variables(:output_namespace_topic => "rb_monitor_post",
                   :namespaces => namespaces
         )
         notifies :restart, "service[logstash]", :delayed
