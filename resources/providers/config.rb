@@ -71,7 +71,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor ]
+      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor ips intrusion ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     elsif is_sensor
