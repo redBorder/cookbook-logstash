@@ -1,0 +1,7 @@
+input {
+  kafka {
+    codec => json
+    bootstrap_servers => "rbmanager.redborder.cluster:9092"
+    topics => ["rb_event"]
+  }
+}

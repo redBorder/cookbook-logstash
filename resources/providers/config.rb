@@ -890,6 +890,78 @@ action :add do
         :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
+
+    # Intrusion pipeline
+    if is_manager || is_sensor
+      template "#{pipelines_dir}/intrusion/00_input.conf" do #TODO add pipelines for ips and intrusion
+        source "intrusion_input.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/intrusion/01_intrusion.conf" do
+        source "intrusion_intrusion.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        notifies :restart, "service[logstash]", :delayed
+        action :delete if (logstash_settings and logstash_settings["intrusion"] and !logstash_settings["intrusion"]["multienrichment"]) # Idk wtf to do with this
+      end
+    
+
+      template "#{pipelines_dir}/intrusion/02_geoenrich.conf" do
+        source "intrusion_geoenrich.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        notifies :restart, "service[logstash]", :delayed
+        action :delete if (logstash_settings and logstash_settings["intrusion"] and logstash_settings["intrusion"]["geoip"] and logstash_settings["intrusion"]["geoip"] == "0")
+      end
+
+      template "#{pipelines_dir}/intrusion/03_macvendor.conf" do
+        source "intrusion_macvendor.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        notifies :restart, "service[logstash]", :delayed
+        action :delete if (logstash_settings and logstash_settings["intrusion"] and logstash_settings["intrusion"]["macvendor"] and logstash_settings["intrusion"]["macvendor"] == "0")
+      end
+    
+      template "#{pipelines_dir}/intrusion/04_darklist.conf" do
+        source "intrusion_darklist.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        notifies :restart, "service[logstash]", :delayed
+        action :delete if (logstash_settings and logstash_settings["intrusion"] and logstash_settings["intrusion"]["darklist"] and logstash_settings["intrusion"]["darklist"] == "0")
+      end
+    
+      template "#{pipelines_dir}/intrusion/98_encode.conf" do
+        source "intrusion_encode.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        notifies :restart, "service[logstash]", :delayed
+      end
+      
+      template "#{pipelines_dir}/intrusion/99_output.conf" do
+        source "intrusion_output.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        variables(:namespaces => namespaces)
+        notifies :restart, "service[logstash]", :delayed
+      end
   
     # End of pipelines
 

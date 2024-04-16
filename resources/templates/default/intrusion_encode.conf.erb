@@ -1,0 +1,12 @@
+filter {
+  if [file_uri] {
+    ruby {
+      code => '
+        def rb_easy_unescape(str, encoding = Encoding::UTF_8)
+          str.dup.force_encoding("ASCII-8BIT").gsub(/%((?:\p{XDigit}{2})+)/n) { [$1].pack("H*") }.force_encoding(encoding)
+        end
+        event.set("file_uri", rb_easy_unescape(event.get("file_uri")))
+      '
+    }
+  }
+}

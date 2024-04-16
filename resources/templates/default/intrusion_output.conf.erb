@@ -1,0 +1,11 @@
+output {
+    if [namespace_uuid] {
+    } else {
+      kafka {
+        codec => json
+        topic_id => "rb_event_post"
+        bootstrap_servers => "rbmanager.redborder.cluster:9092"
+      }
+    }
+ 
+}
