@@ -23,6 +23,7 @@ action :add do
     mongo_cve_database = new_resource.mongo_cve_database
     mongo_port = new_resource.mongo_port
     is_proxy = is_proxy?
+    is_sensor = is_sensor?
     is_manager = is_manager?
 
     dnf_package "logstash-rules" do
@@ -73,6 +74,8 @@ action :add do
       pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
+    elsif is_sensor
+      pipelines = %w[ ips intrusion ]
     end
 
     pipelines.each do |pipeline|
@@ -102,7 +105,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:is_manager => is_manager, :is_proxy => is_proxy)
+      variables(:is_manager => is_manager, :is_proxy => is_proxy, :is_sensor => is_sensor)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -851,6 +854,42 @@ action :add do
           notifies :restart, "service[logstash]", :delayed
       end
     end
+
+    # IPS pipeline
+    if is_manager || is_sensor
+      template "#{pipelines_dir}/ips/00_input.conf" do
+        source "ips_input.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        variables(:input_topics => ["rb_event"])
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/ips/10_ips.conf" do
+        source "ips_ips.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        variables(:reputation_managers => ["rb-reputation"]) # Idk if this shit works, may need to remove this line
+        notifies :restart, "service[logstash]", :delayed
+      end
+
+      template "#{pipelines_dir}/ips/99_output.conf" do
+        source "ips_output.conf.erb"
+        owner "root"
+        owner "root"
+        mode 0644
+        retries 2
+        cookbook "logstash"
+        variables(:output_topic => "rb_malware_post",
+        :namespaces => namespaces)
+        notifies :restart, "service[logstash]", :delayed
+      end
   
     # End of pipelines
 

@@ -48,3 +48,11 @@
   path.config: "/etc/logstash/pipelines/redfish"
   pipeline.workers: 1
   <% end %>
+  <% if @is_manager or @is_sensor %>
+- pipeline.id: ips-pipeline
+  path.config: "/etc/logstash/pipelines/ips"
+  pipeline.workers: 1
+- pipeline.id: intrusion-pipeline
+  path.config: "/etc/logstash/pipelines/intrusion"
+  pipeline.workers: 1
+  <% end %>

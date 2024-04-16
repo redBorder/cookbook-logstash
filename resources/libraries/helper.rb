@@ -98,6 +98,10 @@ module Logstash
       node['roles'].include? "proxy-sensor"
     end
 
+    def is_sensor?
+      node['roles'].include? "ips-sensor" #Could also be 'sensor' I'm not sure
+    end
+
     def is_manager?
       node['roles'].include? "manager"
     end
