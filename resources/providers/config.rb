@@ -71,7 +71,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor ]
+      pipelines = %w[ sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor ips intrusion ]
     elsif is_proxy
       pipelines = %w[ bulkstats redfish ]
     elsif is_sensor
@@ -890,6 +890,7 @@ action :add do
         :namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
+    end
 
     # Intrusion pipeline
     if is_manager || is_sensor
@@ -962,7 +963,8 @@ action :add do
         variables(:namespaces => namespaces)
         notifies :restart, "service[logstash]", :delayed
       end
-  
+    end
+    
     # End of pipelines
 
     #logstash rules
