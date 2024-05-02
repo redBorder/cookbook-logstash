@@ -1,5 +1,10 @@
 cookbook-logstash CHANGELOG
-===========================
+===============
+
+## 2.0.4
+
+  - nilsver
+    - [65b6bec] import template logstash from centos6
 
 This file is used to list changes made in each version of the logstash cookbook.
 
