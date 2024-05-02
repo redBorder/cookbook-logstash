@@ -17,11 +17,12 @@ action :add do
     vault_nodes = new_resource.vault_nodes        #TODO Deprecated?
     device_nodes = new_resource.device_nodes
     managers_all = new_resource.managers_all      #TODO Deprecated?
-    namespaces = new_resource.namespaces  
+    namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
     mongo_cve_database = new_resource.mongo_cve_database
     mongo_port = new_resource.mongo_port
+    logstash_pipelines = new_resource.logstash_pipelines
     is_proxy = is_proxy?
     is_manager = is_manager?
 
@@ -102,7 +103,7 @@ action :add do
       mode 0644
       ignore_failure true
       cookbook "logstash"
-      variables(:is_manager => is_manager, :is_proxy => is_proxy)
+      variables(:is_manager => is_manager, :is_proxy => is_proxy, :pipelines => logstash_pipelines)
       notifies :restart, "service[logstash]", :delayed
     end
 
@@ -851,7 +852,7 @@ action :add do
           notifies :restart, "service[logstash]", :delayed
       end
     end
-  
+
     # End of pipelines
 
     #logstash rules
