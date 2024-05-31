@@ -1,6 +1,5 @@
 module Logstash
   module Helper
-
     def get_managers
       sensors = []
       managers_keys = Chef::Node.list.keys.sort
@@ -19,7 +18,7 @@ module Logstash
         end
 
         unless roles.nil?
-          if roles.include?("manager")
+          if roles.include?('manager')
             sensors << m
           end
         end
@@ -31,8 +30,8 @@ module Logstash
       namespaces = []
       Chef::Role.list.keys.each do |rol|
         ro = Chef::Role.load rol
-        if ro and ro.override_attributes["redborder"] and ro.override_attributes["redborder"]["namespace"] and ro.override_attributes["redborder"]["namespace_uuid"] and !ro.override_attributes["redborder"]["namespace_uuid"].empty?
-          namespaces.push(ro.override_attributes["redborder"]["namespace_uuid"])
+        if ro and ro.override_attributes['redborder'] and ro.override_attributes['redborder']['namespace'] and ro.override_attributes['redborder']['namespace_uuid'] and !ro.override_attributes['redborder']['namespace_uuid'].empty?
+          namespaces.push(ro.override_attributes['redborder']['namespace_uuid'])
         end
       end
       namespaces.uniq
@@ -56,18 +55,18 @@ module Logstash
         end
 
         unless roles.nil?
-          if !roles.empty? and !roles.include?("manager")
+          if !roles.empty? and !roles.include?('manager')
             case sensor_type
-            when "ips-sensor"
-              if roles.include?("ips-sensor") or roles.include?("ipsv2-sensor") or roles.include?("ipscp-sensor")
+            when 'ips-sensor'
+              if roles.include?('ips-sensor') or roles.include?('ipsv2-sensor') or roles.include?('ipscp-sensor')
                 sensors << m
               end
-            when "cep-sensor"
-              if m.respond_to?"run_list" and (m.run_list.map{|x| x.name}.include?"vault-sensor" or m.run_list.map{|x| x.name}.include?"cep-sensor")
+            when 'cep-sensor'
+              if m.respond_to?'run_list' and (m.run_list.map{|x| x.name}.include?'vault-sensor' or m.run_list.map{|x| x.name}.include?'cep-sensor')
                 sensors << m
               end
             else
-              if m.respond_to?"run_list" and m.run_list.map{|x| x.name}.include?(sensor_type)
+              if m.respond_to?'run_list' and m.run_list.map{|x| x.name}.include?(sensor_type)
                 sensors << m
               end
             end
@@ -83,10 +82,10 @@ module Logstash
 
       unless device_nodes.nil?
         device_nodes.each do |monitor|
-          if monitor["redborder"]["monitors"]
-            monitor["redborder"]["monitors"].each do |dmonitor|
-              has_redfish_monitors =  (dmonitor["system"].split().first == "redfish" or has_redfish_monitors)
-              has_bulkstats_monitors = (dmonitor["system"].to_s.start_with? "bulkstats" or has_bulkstats_monitors)
+          if monitor['redborder']['monitors']
+            monitor['redborder']['monitors'].each do |dmonitor|
+              has_redfish_monitors =  (dmonitor['system'].split().first == 'redfish' or has_redfish_monitors)
+              has_bulkstats_monitors = (dmonitor['system'].to_s.start_with? 'bulkstats' or has_bulkstats_monitors)
             end
           end
         end
@@ -95,11 +94,11 @@ module Logstash
     end
 
     def is_proxy?
-      node['roles'].include? "proxy-sensor"
+      node['roles'].include? 'proxy-sensor'
     end
 
     def is_manager?
-      node['roles'].include? "manager"
+      node['roles'].include? 'manager'
     end
   end
 end
