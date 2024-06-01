@@ -113,7 +113,7 @@ module Logstash
     end
 
     def is_manager?
-      noder.role?('manager')
+      node.role?('manager')
     end
   end
 end
