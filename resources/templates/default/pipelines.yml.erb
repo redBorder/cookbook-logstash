@@ -3,48 +3,76 @@
 #######################################################
 # pipelines
   <% if @is_manager %>
+  <% if @pipelines.include?("vault-pipeline") %>
 - pipeline.id: vault-pipeline
   path.config: "/etc/logstash/pipelines/vault"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("sflow-pipeline") %>
 - pipeline.id: sflow-pipeline
   path.config: "/etc/logstash/pipelines/sflow"
   pipeline.workers: 3
+  <% end %>
+  <% if @pipelines.include?("netflow-pipeline") %>
 - pipeline.id: netflow-pipeline
   path.config: "/etc/logstash/pipelines/netflow"
   pipeline.workers: 3
-- pipeline.id: social-pipeline
-  path.config: "/etc/logstash/pipelines/social"
-  pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("scanner-pipeline") %>
 - pipeline.id: scanner-pipeline
   path.config: "/etc/logstash/pipelines/scanner"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("location-pipeline") %>
 - pipeline.id: location-pipeline
   path.config: "/etc/logstash/pipelines/location"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("nmsp-pipeline") %>
 - pipeline.id: nmsp-pipeline
   path.config: "/etc/logstash/pipelines/nmsp"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("radius-pipeline") %>
 - pipeline.id: radius-pipeline
   path.config: "/etc/logstash/pipelines/radius"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("meraki-pipeline") %>
 - pipeline.id: meraki-pipeline
   path.config: "/etc/logstash/pipelines/meraki"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("mobility-pipeline") %>
 - pipeline.id: mobility-pipeline
   path.config: "/etc/logstash/pipelines/mobility"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("apstate-pipeline") %>
+- pipeline.id: apstate-pipeline
+  path.config: "/etc/logstash/pipelines/apstate"
+  pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("rbwindow-pipeline") %>
 - pipeline.id: rbwindow-pipeline
   path.config: "/etc/logstash/pipelines/rbwindow"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("monitor-pipeline") %>
 - pipeline.id: monitor-pipeline
   path.config: "/etc/logstash/pipelines/monitor"
   pipeline.workers: 1
   <% end %>
+  <% end %>
   <% if @is_manager or @is_proxy %>
+  <% if @pipelines.include?("bulkstats-pipeline") %>
 - pipeline.id: bulkstats-pipeline
   path.config: "/etc/logstash/pipelines/bulkstats"
   pipeline.workers: 1
+  <% end %>
+  <% if @pipelines.include?("redfish-pipeline") %>
 - pipeline.id: redfish-pipeline
   path.config: "/etc/logstash/pipelines/redfish"
   pipeline.workers: 1
+  <% end %>
   <% end %>

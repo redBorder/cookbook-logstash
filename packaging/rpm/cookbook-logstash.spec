@@ -49,7 +49,13 @@ mkdir -p /share/logstash-rules
 %doc
 
 %changelog
-* Tue Apr 18 2023 Luis J. Blanco <ljblanco@redborder.com> - 1.0.21
+* Fri Jan 19 2023 David Vanhoucke <dvanhoucke@redborder.com> - 2.0.1-1
+- Add apstate pipeline
+
+* Fri Sep 22 2023 Miguel Negrón <manegron@redborder.com> - 2.0.0-1
+- Remove social
+
+* Tue Apr 18 2023 Luis J. Blanco <ljblanco@redborder.com> - 1.0.21-1
 - Monitor pipeline
 
 * Wed Nov 17 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.3-1

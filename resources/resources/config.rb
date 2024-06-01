@@ -20,6 +20,7 @@ attribute :memcached_server, :kind_of => String, :default => "memcached.service"
 attribute :mac_vendors, :kind_of => String, :default => "/etc/objects/mac_vendors"
 attribute :mongo_cve_database, :kind_of => String, :default => 'cvedb'
 attribute :mongo_port, :kind_of => String, :default => '27017'
+attribute :logstash_pipelines, :kind_of => Array, :default => []
 
 # EXAMPLES
 
