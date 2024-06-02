@@ -68,7 +68,7 @@ action :add do
       host = db_redborder_secrets['hostname']
     end
 
-    %w(#{logstash_dir} #{pipelines_dir}).each do |dir|
+    %W(#{logstash_dir} #{pipelines_dir}).each do |dir|
       directory dir do
         owner user
         group user
