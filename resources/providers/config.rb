@@ -935,7 +935,7 @@ action :add do
     has_bulkstats_monitors = bulkstats_monitors?(device_nodes)
     has_redfish_monitors = redfish_monitors?(device_nodes)
 
-    activate_logstash = hash_bulkstats_monitors || has_redfish_monitors
+    activate_logstash = has_bulkstats_monitors || has_redfish_monitors
 
     if node['redborder']['pending_bulkstats_changes'].nil?
       node.normal['redborder']['pending_bulkstats_changes'] = 0
