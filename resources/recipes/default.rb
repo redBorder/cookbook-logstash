@@ -1,12 +1,8 @@
-#
-# Cookbook Name:: logstash
+# Cookbook:: logstash
 # Recipe:: default
-#
-# Copyright 2016, redborder
-#
-# All rights reserved - Do Not Redistribute
-#
+# Copyright:: 2024, redborder
+# License:: Affero General Public License, Version 3
 
-logstash_config "config" do
+logstash_config 'config' do
   action :add
 end

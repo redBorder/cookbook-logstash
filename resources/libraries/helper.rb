@@ -1,6 +1,5 @@
 module Logstash
   module Helper
-
     def get_managers
       sensors = []
       managers_keys = Chef::Node.list.keys.sort
@@ -18,10 +17,10 @@ module Logstash
           end
         end
 
-        unless roles.nil?
-          if roles.include?("manager")
-            sensors << m
-          end
+        next unless roles
+
+        if roles.include?('manager')
+          sensors << m
         end
       end
       sensors
@@ -29,12 +28,16 @@ module Logstash
 
     def get_namespaces
       namespaces = []
-      Chef::Role.list.keys.each do |rol|
+      Chef::Role.list.each_key do |rol|
         ro = Chef::Role.load rol
-        if ro and ro.override_attributes["redborder"] and ro.override_attributes["redborder"]["namespace"] and ro.override_attributes["redborder"]["namespace_uuid"] and !ro.override_attributes["redborder"]["namespace_uuid"].empty?
-          namespaces.push(ro.override_attributes["redborder"]["namespace_uuid"])
-        end
+        next unless ro && ro.override_attributes['redborder'] &&
+                    ro.override_attributes['redborder']['namespace'] &&
+                    ro.override_attributes['redborder']['namespace_uuid'] &&
+                    !ro.override_attributes['redborder']['namespace_uuid'].empty?
+
+        namespaces.push(ro.override_attributes['redborder']['namespace_uuid'])
       end
+
       namespaces.uniq
     end
 
@@ -55,51 +58,62 @@ module Logstash
           end
         end
 
-        unless roles.nil?
-          if !roles.empty? and !roles.include?("manager")
-            case sensor_type
-            when "ips-sensor"
-              if roles.include?("ips-sensor") or roles.include?("ipsv2-sensor") or roles.include?("ipscp-sensor")
-                sensors << m
-              end
-            when "cep-sensor"
-              if m.respond_to?"run_list" and (m.run_list.map{|x| x.name}.include?"vault-sensor" or m.run_list.map{|x| x.name}.include?"cep-sensor")
-                sensors << m
-              end
-            else
-              if m.respond_to?"run_list" and m.run_list.map{|x| x.name}.include?(sensor_type)
-                sensors << m
-              end
-            end
+        next unless roles && !roles.empty? && !roles.include?('manager')
+
+        case sensor_type
+        when 'ips-sensor'
+          if roles.include?('ips-sensor') || roles.include?('ipsv2-sensor') || roles.include?('ipscp-sensor')
+            sensors << m
+          end
+        when 'cep-sensor'
+          if m.respond_to?('run_list') &&
+             (m.run_list.map(&:name).include?('vault-sensor') || m.run_list.map(&:name).include?('cep-sensor'))
+            sensors << m
+          end
+        else
+          if m.respond_to?('run_list') &&
+             m.run_list.map(&:name).include?(sensor_type)
+            sensors << m
           end
         end
       end
       sensors
     end
 
-    def check_proxy_monitors(device_nodes)
-      has_redfish_monitors = false
-      has_bulkstats_monitors = false
+    def bulkstats_monitors?(device_nodes)
+      return false unless device_nodes
 
-      unless device_nodes.nil?
-        device_nodes.each do |monitor|
-          if monitor["redborder"]["monitors"]
-            monitor["redborder"]["monitors"].each do |dmonitor|
-              has_redfish_monitors =  (dmonitor["system"].split().first == "redfish" or has_redfish_monitors)
-              has_bulkstats_monitors = (dmonitor["system"].to_s.start_with? "bulkstats" or has_bulkstats_monitors)
-            end
-          end
+      device_nodes.each do |monitor|
+        next unless monitor['redborder']['monitors']
+
+        monitor['redborder']['monitors'].each do |dmonitor|
+          return true if dmonitor['system'].to_s.start_with?('bulkstats')
         end
       end
-      return (has_bulkstats_monitors || has_redfish_monitors), has_bulkstats_monitors, has_redfish_monitors
+
+      false
+    end
+
+    def redfish_monitors?(device_nodes)
+      return false unless device_nodes
+
+      device_nodes.each do |monitor|
+        next unless monitor['redborder']['monitors']
+
+        monitor['redborder']['monitors'].each do |dmonitor|
+          return true if dmonitor['system'].split().first == 'redfish'
+        end
+      end
+
+      false
     end
 
     def is_proxy?
-      node['roles'].include? "proxy-sensor"
+      node.role?('proxy-sensor')
     end
 
     def is_manager?
-      node['roles'].include? "manager"
+      node.role?('manager')
     end
   end
 end

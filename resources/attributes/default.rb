@@ -1,3 +1,2 @@
-#Flags
-default["logstash"]["registered"] = false
-
+# Flags
+default['logstash']['registered'] = false
