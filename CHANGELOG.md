@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.0.5
+
+  - Miguel Negrón
+    - [028f051] Improvement/fix lint (#43)
+
 ## 2.0.4
 
   - nilsver
