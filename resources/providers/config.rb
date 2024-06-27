@@ -826,7 +826,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed 
+        notifies :restart, 'service[logstash]', :delayed
       end
 
       template "#{pipelines_dir}/intrusion/02_geoenrich.conf" do
