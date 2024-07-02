@@ -1,0 +1,8 @@
+filter {
+  intrusion { 
+  }
+
+  mutate {
+    remove_field => ["@version","@timestamp"]
+  }
+}

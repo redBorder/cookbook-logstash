@@ -63,6 +63,11 @@
   path.config: "/etc/logstash/pipelines/monitor"
   pipeline.workers: 1
   <% end %>
+  <% if @pipelines.include?("intrusion-pipeline") %>
+- pipeline.id: intrusion-pipeline
+  path.config: "/etc/logstash/pipelines/intrusion"
+  pipeline.workers: 1
+  <% end %>
   <% end %>
   <% if @is_manager or @is_proxy %>
   <% if @pipelines.include?("bulkstats-pipeline") %>
