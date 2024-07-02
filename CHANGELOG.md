@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.1.0
+
+  - Rafael Gomez
+    - [b29061a] Feature/#17820 Add intrusion pipeline
+
 ## 2.0.5
 
   - Miguel Negrón
