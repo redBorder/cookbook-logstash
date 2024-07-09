@@ -68,6 +68,11 @@ filter {
 									"
 			}
 
+  # Set observation_id: (if 4294967295 -> "default")
+  if [tag2] and [tag2] != 4294967295 {
+    mutate { replace =>  { "observation_id" => "%{tag2}" } }
+  }
+
   mutate {
 
    add_field => {
@@ -83,7 +88,7 @@ filter {
         "peer_ip_src" => "sensor_ip"
    }
 
-   remove_field => [ "ip_proto", "tag", "stamp_updated", "event_type", "@version", "stamp_inserted", "writer_id", "timestamp_arrival", "@timestamp", "sampling_rate" ]
+   remove_field => [ "ip_proto", "tag", "tag2", "stamp_updated", "event_type", "@version", "stamp_inserted", "writer_id", "timestamp_arrival", "@timestamp", "sampling_rate" ]
 
   }
 
