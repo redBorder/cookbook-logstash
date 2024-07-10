@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.2.0
+
+  - David Vanhoucke
+    - [4a3bc21] add observation id for sflow
+
 ## 2.1.0
 
   - Rafael Gomez
