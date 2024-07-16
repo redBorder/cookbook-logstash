@@ -1,6 +1,19 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.3.0
+
+  - Miguel Negrón
+    - [cdc7551] Merge pull request #48 from redBorder/feature/incident_response
+  - JuanSheba
+    - [6fa06e7] Release 2.2.0
+  - Juan Soto
+    - [0411ec3] Merge pull request #47 from redBorder/feature/#17754_oberservation_id
+  - Miguel Negron
+    - [5b77a31] add incident enrichment
+  - David Vanhoucke
+    - [4a3bc21] add observation id for sflow
+
 ## 2.2.0
 
   - David Vanhoucke

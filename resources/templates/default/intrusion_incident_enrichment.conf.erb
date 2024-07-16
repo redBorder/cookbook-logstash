@@ -1,0 +1,6 @@
+filter {
+  incident_enrichment { 
+    incident_fields => ["src","src_port", "dst", "dst_port"]
+    source => "redBorder Intrusion"
+  }
+}
