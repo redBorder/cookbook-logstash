@@ -861,6 +861,16 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
+      template "#{pipelines_dir}/intrusion/05_incident_enrichment.conf" do
+        source 'intrusion_incident_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
       template "#{pipelines_dir}/intrusion/98_encode.conf" do
         source 'intrusion_encode.conf.erb'
         owner user
