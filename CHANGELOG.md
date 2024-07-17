@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.3.1
+
+  - Miguel Negron
+    - [1830258] Add missing default values on sflow normalization step
+
 ## 2.3.0
 
   - Miguel Negrón
