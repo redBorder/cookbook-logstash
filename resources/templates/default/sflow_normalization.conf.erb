@@ -1,5 +1,22 @@
 filter {
 
+  # Default values
+  mutate {
+    add_field => {
+      "type" => "sflowv5"  
+      "ip_protocol_version" => 4
+      "input_vrf" => 0
+      "output_vrf" => 0
+      "observation_id" => "default"
+    } 
+    rename => {
+      "packets" => "pkts"
+      "export_proto_seqno" => "flow_sequence"
+      "peer_ip_src" => "sensor_ip"
+    }
+  }
+
+  # Set ip_proto
   if [ip_proto] == "udp" {
      mutate {
     	add_field => {
