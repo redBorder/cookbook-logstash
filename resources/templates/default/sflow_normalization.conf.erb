@@ -3,12 +3,12 @@ filter {
   # Default values
   mutate {
     add_field => {
-      "type" => "sflowv5"  
+      "type" => "sflowv5"
       "ip_protocol_version" => 4
       "input_vrf" => 0
       "output_vrf" => 0
       "observation_id" => "default"
-    } 
+    }
     rename => {
       "packets" => "pkts"
       "export_proto_seqno" => "flow_sequence"
@@ -19,15 +19,15 @@ filter {
   # Set ip_proto
   if [ip_proto] == "udp" {
      mutate {
-    	add_field => {
-        	"l4_proto" => 17
+      add_field => {
+          "l4_proto" => 17
         }
      }
   } else if [ip_proto] == "tcp" {
      mutate {
-      	add_field => {
-		"l4_proto" => 6
-      	}
+        add_field => {
+    "l4_proto" => 6
+        }
      }
   }
 
@@ -64,26 +64,27 @@ filter {
       }
     }
   } else if [tag] == 3 {
-		mutate {
-			rename => {
-				"ip_src" => "wan_ip"
-				"ip_dst" => "lan_ip"
-				"port_src" => "wan_l4_port"
-				"port_dst" => "lan_l4_port"
-				"country_ip_src" => "wan_ip_country_code"
-				"country_ip_dst" => "lan_ip_country_code"
-			}
+    mutate {
+      rename => {
+        "ip_src" => "wan_ip"
+        "ip_dst" => "lan_ip"
+        "port_src" => "wan_l4_port"
+        "port_dst" => "lan_l4_port"
+        "country_ip_src" => "wan_ip_country_code"
+        "country_ip_dst" => "lan_ip_country_code"
+      }
 
-			add_field => {
-				"direction" => "internal"
-			}
-		}
-	}
+      add_field => {
+        "direction" => "internal"
+      }
+    }
+  }
 
   ruby { code => "event.set('timestamp', event.get('@timestamp').to_i);
-									event.set('bytes', event.get('bytes').to_i * (Integer(event.get('sampling_rate')) rescue 1))
-									"
-			}
+                  event.set('bytes', event.get('bytes').to_i * (Integer(event.get('sampling_rate')) rescue 1))
+                  event.set('application_id_name', event.get('class').split('/').last) if event.get('class')
+                 "
+      }
 
   # Set observation_id: (if 4294967295 -> "default")
   if [tag2] and [tag2] != 4294967295 {
@@ -93,14 +94,14 @@ filter {
   mutate {
 
    add_field => {
-	"type" => "sflowv5"
-	"ip_protocol_version" => 4
+  "type" => "sflowv5"
+  "ip_protocol_version" => 4
         "input_vrf" => 0
         "output_vrf" => 0
    }
 
    rename => {
-	"packets" => "pkts"
+  "packets" => "pkts"
         "export_proto_seqno" => "flow_sequence"
         "peer_ip_src" => "sensor_ip"
    }
