@@ -1,6 +1,18 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.3.3
+
+  - Miguel Negron
+    - [eed18f3] Fix bug consul port as string
+
+## 2.3.2
+
+  - Miguel Negron
+    - [564144d] Add Application to sflow
+    - [c4aacf7] Bump version
+    - [1830258] Add missing default values on sflow normalization step
+
 ## 2.3.1
 
   - Miguel Negron
