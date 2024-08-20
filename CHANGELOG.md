@@ -1,6 +1,12 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.3.4
+
+  - Pablo Pérez
+    - [e5d879a] Merge pull request #56 from redBorder/bugfix/#18398_fix_radius_output
+    - [ada6b97] Fix
+
 ## 2.3.3
 
   - Miguel Negron
