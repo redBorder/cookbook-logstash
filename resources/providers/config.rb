@@ -257,15 +257,6 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-      template "#{pipelines_dir}/sflow/91_rename.conf" do
-        source 'sflow_rename.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
-      end
 
       template "#{pipelines_dir}/sflow/99_output.conf" do
         source 'output_kafka.conf.erb'
