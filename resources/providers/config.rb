@@ -657,7 +657,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(output_topic: '"rb_location')
+        variables(output_topic: 'rb_location')
         notifies :restart, 'service[logstash]', :delayed
       end
     end
