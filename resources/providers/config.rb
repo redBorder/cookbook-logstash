@@ -257,7 +257,6 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-
       template "#{pipelines_dir}/sflow/99_output.conf" do
         source 'output_kafka.conf.erb'
         owner user
