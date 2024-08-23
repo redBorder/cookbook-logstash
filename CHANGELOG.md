@@ -1,6 +1,15 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.4.0
+
+  - JuanSheba
+    - [48467fe] Remove sflow_rename.conf template and corresponding resource from config.rb.
+    - [a233ae8] Refactor Logstash filter to simplify direction-based field renaming, set default values, handle observation_id, and optimize data processing
+    - [a622562] Refactor filter to set default 'direction' as 'upstream' and determine 'direction' dynamically based on IP match within homenets
+  - Pablo Pérez
+    - [ada6b97] Fix Radius output
+
 ## 2.3.3
 
   - Miguel Negron

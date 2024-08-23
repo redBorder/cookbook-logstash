@@ -1,32 +1,35 @@
 filter {
-<% @flow_nodes.each do |flow_node| %>
-  <% if !flow_node[:ipaddress].nil? and !flow_node["redborder"].nil? and flow_node["redborder"]["blocked"]!=true %>
-    if [tag] ==  0 and [peer_ip_src] == "<%=flow_node[:ipaddress]%>" {
-      ruby {
-        code => " # loop in all the homenets
-          require 'ipaddr'
+  
+  # Default direction
+  mutate {
+    add_field => {
+      "direction" => "upstream"
+    }
+  }
 
-          internal = []
-          <% flow_node["redborder"]["homenets"].each do |x| %>
-            internal.push(IPAddr.new('<%=x["value"]%>'))
-          <% end %>
+  if ![tag] or [tag] == 0 {
+    <% @flow_nodes.select{|s| s[:ipaddress] and s["redborder"] and s["redborder"]["homenets"] and !s["redborder"]["blocked"]}.each do |flow_node| %>
+    if [peer_ip_src] == "<%=flow_node[:ipaddress]%>" {
+      # Determine if direction is different than "upstream"
+      ruby { 
+        code => " require 'ipaddr'
+                  
+                  homenets = [<%=flow_node["redborder"]["homenets"].map{|h| "IPAddr.new('#{h["value"]}')"} .join(",")%>]
 
-          ip_src = IPAddr.new(event.get('ip_src'))
-          ip_dst = IPAddr.new(event.get('ip_dst'))
-          tag = 1
-          if internal.any? {|subnet| subnet.include?(ip_src) }
-            if internal.any? {|subnet| subnet.include?(ip_dst) }
-              tag = 3
-            else
-              tag = 2
-            end
-          end
-
-          event.set('tag', tag);
-
-        "
+                  if homenets.any? {|subnet| subnet.include?(event.get('ip_src')) } 
+                    if homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
+                      event.set('direction', 'internal')
+                    else                   
+                      event.set('direction', 'downstream') 
+                    end
+                  end
+                 "
       }
     }
-  <% end unless flow_node["redborder"]["homenets"].nil?  %>
-<% end %>
+  <% end %>
+  } else if [tag] == 1 {
+      mutate { add_field => { "direction" => "downstream" } }
+  } else if [tag] == 3 {
+      mutate { add_field => { "direction" => "internal" } }
+  }
 }
