@@ -52,7 +52,8 @@ action :add do
       incidents_priority_filter = node['redborder']['incidents_priority_filter']
     rescue
       incidents_priority_filter = 'high'
-
+    end
+    
     begin
       monitors_dg = data_bag_item('rBglobal', 'monitors')
     rescue
