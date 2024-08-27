@@ -53,7 +53,7 @@ action :add do
     rescue
       incidents_priority_filter = 'high'
     end
-    
+
     begin
       monitors_dg = data_bag_item('rBglobal', 'monitors')
     rescue
