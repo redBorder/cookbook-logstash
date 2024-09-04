@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.4.1
+
+  - Pablo Pérez
+    - [3ef6f83] Added the incident priority filter
+
 ## 2.4.0
 
   - JuanSheba
