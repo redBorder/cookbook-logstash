@@ -4,8 +4,6 @@ cookbook-logstash CHANGELOG
 ## 2.4.1
 
   - Pablo Pérez
-    - [39bfe8b] lint
-    - [36ebff5] fix syntax
     - [3ef6f83] Added the incident priority filter
 
 ## 2.4.0
