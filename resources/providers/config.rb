@@ -49,6 +49,12 @@ action :add do
     end
 
     begin
+      incidents_priority_filter = node['redborder']['incidents_priority_filter']
+    rescue
+      incidents_priority_filter = 'high'
+    end
+
+    begin
       monitors_dg = data_bag_item('rBglobal', 'monitors')
     rescue
       monitors_dg = {}
@@ -858,6 +864,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        variables(incidents_priority_filter: incidents_priority_filter)
         notifies :restart, 'service[logstash]', :delayed
       end
 
