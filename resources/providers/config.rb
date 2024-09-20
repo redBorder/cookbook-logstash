@@ -185,7 +185,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-      template "#{pipelines_dir}/vault/06_addfields.conf" do
+      template "#{pipelines_dir}/vault/06_alarms.conf" do
+        source 'vault_alarms.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
+      template "#{pipelines_dir}/vault/07_addfields.conf" do
         source 'vault_addfields.conf.erb'
         owner user
         group user
