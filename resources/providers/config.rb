@@ -9,6 +9,7 @@ action :add do
     logstash_dir = new_resource.logstash_dir
     pipelines_dir = new_resource.pipelines_dir
     flow_nodes = new_resource.flow_nodes
+    proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
@@ -16,6 +17,7 @@ action :add do
     mongo_cve_database = new_resource.mongo_cve_database
     mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
+    split_traffic_logstash = new_resource.split_traffic_logstash
     is_proxy = is_proxy?
     is_manager = is_manager?
 
@@ -228,7 +230,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes)
+        variables(flow_nodes: flow_nodes, proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed
       end
 
@@ -249,7 +251,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes)
+        variables(flow_nodes: flow_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed
       end
 
