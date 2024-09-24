@@ -16,6 +16,7 @@ action :add do
     mongo_cve_database = new_resource.mongo_cve_database
     mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
+    incidents_priority_filter = new_resource.incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
 
@@ -46,12 +47,6 @@ action :add do
     rescue
       logstash_hash_item = { hash_key: node['redborder']['rsyslog']['hash_key'],
                              hash_function: node['redborder']['rsyslog']['hash_function'] }
-    end
-
-    begin
-      incidents_priority_filter = node['redborder']['incidents_priority_filter']
-    rescue
-      incidents_priority_filter = 'high'
     end
 
     begin
