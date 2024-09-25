@@ -195,6 +195,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
+      template "#{pipelines_dir}/vault/07_incident_enrichment.conf" do
+        source 'vault_incident_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(incidents_priority_filter: incidents_priority_filter)
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
       template "#{pipelines_dir}/vault/99_output.conf" do
         source 'output_kafka_namespace.conf.erb'
         owner user

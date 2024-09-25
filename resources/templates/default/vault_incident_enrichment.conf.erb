@@ -1,0 +1,13 @@
+filter {
+  incident_enrichment {
+    incident_fields => ["syslogseverity_text","hostname", "message", "source", "target", "fromhost_ip"]
+    source => "redBorder Vault"
+    incidents_priority_filter => "<%= @incidents_priority_filter %>"
+    field_scores => {
+      "fromhost_ip" => 100
+    }
+    field_map => {
+      "fromhost_ip" => "ip"
+    }
+  }
+}
