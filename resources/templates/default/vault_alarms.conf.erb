@@ -1,4 +1,5 @@
 filter {
+  if "alarmsjob" in [app_name] {
     grok {
         match => { "raw-message" => "(?<message>[^|]+)\|%{GREEDYDATA:json_payload}$" }
         tag_on_failure => ["grok_failure"]   # Tag failures for better debugging
@@ -56,4 +57,5 @@ filter {
         }
         remove_field => ["raw-message","@version","@timestamp","parsed_json"]
     }
+  }
 }
