@@ -7,7 +7,6 @@ filter {
         if message
           regex = /(\w+)="([^"]*)"/
           message.scan(regex).each do |field, value|
-            puts "matching with field #{field}"
             event.set(field, value)
           end
         end

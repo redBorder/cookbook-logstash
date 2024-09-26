@@ -194,7 +194,7 @@ action :add do
       file "#{pipelines_dir}/vault/06_addfields.conf" do
         action :delete
       end
-       
+
       template "#{pipelines_dir}/vault/07_addfields.conf" do
         source 'vault_addfields.conf.erb'
         owner user
