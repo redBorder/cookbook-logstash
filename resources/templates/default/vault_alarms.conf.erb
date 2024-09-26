@@ -1,61 +1,31 @@
 filter {
   if "alarmsjob" in [app_name] {
-    grok {
-        match => { "raw-message" => "(?<message>[^|]+)\|%{GREEDYDATA:json_payload}$" }
-        tag_on_failure => ["grok_failure"]   # Tag failures for better debugging
-    }
+  ruby {
+      code => '
+        message = event.get("message")
 
-    if "grok_failure" not in [tags] {
-        json {
-            source => "json_payload"
-            target => "parsed_json"
-            remove_field => ["json_payload"]
-        }
-    }
+        if message
+          regex = /(\w+)="([^"]*)"/
+          message.scan(regex).each do |field, value|
+            puts "matching with field #{field}"
+            event.set(field, value)
+          end
+        end
 
-    ruby {
-        code => "
-            if event.get('message').is_a?(Array) && !event.get('message').empty?
-                first_message = event.get('message')[0]
-                message_part = first_message.split('|')[0].strip
-                event.set('message', message_part)
-            end
-        "
-    }
+        alert_msg = event.get("alert_msg")
+        if alert_msg
+          event.set("message", alert_msg)
+          event.remove("alert_msg")
+        end
 
-    if [parsed_json] {
-        ruby {
-            code => "
-                if event.get('parsed_json').empty?
-                    event.set('json_parsing_error', 'JSON payload is empty')
-                else
-                    fields_to_check = ['name', 'uuid', 'service_provider', 'service_provider_uuid', 'namespace', 'namespace_uuid', 'organization', 'organization_uuid', 'sensor_uuid', 'deployment', 'deployment_uuid', 'market', 'market_uuid', 'campus', 'campus_uuid', 'building', 'building_uuid', 'floor', 'floor_uuid']
-                    fields_to_check.each do |field|
-                        value = event.get('parsed_json')[field]
-                        unless value.nil? || value.empty?
-                            event.set(field, value)
-                        end
-                    end
-                end
-            "
-        }
-    } else {
-        mutate {
-            add_field => { "json_parsing_error" => "JSON payload is missing" }
-        }
-    }
-
-    mutate {
-        rename => {
-            "app-name" => "app_name"
-            "syslogseverity-text" => "syslogseverity_text"
-            "fromhost-ip" => "fromhost_ip"
-            "name" => "sensor_name"
-            "uuid" => "sensor_uuid"
-            "syslogfacility-text" => "syslogfacility_text"
-            "pri-text" => "pri_text"
-        }
-        remove_field => ["raw-message","@version","@timestamp","parsed_json"]
+        # We "simulate" the alert comes from the sensor_ip
+        # To correlate later with the incidents
+        # TODO: find a nicer way of doing this
+        sensor_ip = event.get("sensor_ip")
+        if sensor_ip
+          event.set("fromhost_ip", sensor_ip)
+        end
+      '
     }
   }
 }
