@@ -1,0 +1,30 @@
+filter {
+  if "alarmsjob" in [app_name] {
+  ruby {
+      code => '
+        message = event.get("message")
+
+        if message
+          regex = /(\w+)="([^"]*)"/
+          message.scan(regex).each do |field, value|
+            event.set(field, value)
+          end
+        end
+
+        alert_msg = event.get("alert_msg")
+        if alert_msg
+          event.set("message", alert_msg)
+          event.remove("alert_msg")
+        end
+
+        # We "simulate" the alert comes from the sensor_ip
+        # To correlate later with the incidents
+        # TODO: find a nicer way of doing this
+        sensor_ip = event.get("sensor_ip")
+        if sensor_ip
+          event.set("fromhost_ip", sensor_ip)
+        end
+      '
+    }
+  }
+}
