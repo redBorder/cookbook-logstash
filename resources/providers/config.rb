@@ -205,7 +205,12 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-      template "#{pipelines_dir}/vault/07_incident_enrichment.conf" do
+      # Renamed to 07 -> 08, this cleans curren installations
+      file "#{pipelines_dir}/vault/07_incident_enrichment.conf" do
+        action :delete
+      end
+
+      template "#{pipelines_dir}/vault/08_incident_enrichment.conf" do
         source 'vault_incident_enrichment.conf.erb'
         owner user
         group user
