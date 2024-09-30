@@ -18,6 +18,7 @@ action :add do
     mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
+    incidents_priority_filter = new_resource.incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
 
@@ -48,12 +49,6 @@ action :add do
     rescue
       logstash_hash_item = { hash_key: node['redborder']['rsyslog']['hash_key'],
                              hash_function: node['redborder']['rsyslog']['hash_function'] }
-    end
-
-    begin
-      incidents_priority_filter = node['redborder']['incidents_priority_filter']
-    rescue
-      incidents_priority_filter = 'high'
     end
 
     begin
@@ -187,7 +182,22 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-      template "#{pipelines_dir}/vault/06_addfields.conf" do
+      template "#{pipelines_dir}/vault/06_alarms.conf" do
+        source 'vault_alarms.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
+      # Renamed to 07, this cleans curren installations
+      file "#{pipelines_dir}/vault/06_addfields.conf" do
+        action :delete
+      end
+
+      template "#{pipelines_dir}/vault/07_addfields.conf" do
         source 'vault_addfields.conf.erb'
         owner user
         group user
