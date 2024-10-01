@@ -32,4 +32,59 @@ filter {
   } else if [tag] == 3 {
       mutate { add_field => { "direction" => "internal" } }
   }
+
+  <% if @split_traffic_logstash %>
+  if [tag2] {
+    <% @proxy_nodes.each do |proxy_node| %>
+      <% if !proxy_node["redborder"].nil? and proxy_node["redborder"]["blocked"]!=true %>
+      #if [peer_ip_src] == "<%=proxy_node[:ipaddress]%>" {
+        ruby {
+          code => "
+            require 'ipaddr'
+  
+            ip_src = IPAddr.new(event.get('ip_src'))
+            ip_dst = IPAddr.new(event.get('ip_dst'))
+  
+            tag2 = event.get('tag2')
+            observation_tag2 = tag2
+  
+            <% if proxy_node['interfaces'] && !proxy_node['interfaces'].empty? %>
+              <% proxy_node['interfaces'].each do |iface_key, _orig_iface| %>
+              <% unless proxy_node['interfaces'][iface_key]['observation_id_filters'].empty? %>
+              observation_id_filters = <%= proxy_node['interfaces'][iface_key]['observation_id_filters'].to_s.gsub('"', "'") %>
+  
+              observation_id_filters.each do |filter|
+                subnet = IPAddr.new(filter['subnet'])
+                observation_id = filter['observation_id']
+  
+                if subnet.include?(ip_src)
+                  observation_tag2 = observation_id
+                  break
+                end
+              end
+  
+              if observation_tag2 == tag2
+                observation_id_filters.each do |filter|
+                  subnet = IPAddr.new(filter['subnet'])
+                  observation_id = filter['observation_id']
+  
+                  if subnet.include?(ip_dst)
+                    observation_tag2 = observation_id
+                    break
+                  end
+                end
+              end
+              <% end %>
+              <% end %>
+            <%end %>
+  
+            event.set('tag2', observation_tag2) if tag2 != observation_tag2
+  
+            "
+          }
+        #}
+      <% end %>
+    <% end %>
+    }
+  <% end %>
 }

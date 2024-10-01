@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.7.0
+
+  - David Vanhoucke
+    - [c64ad3d] add method to activate the split of the traffic through logstash
+
 ## 2.6.0
 
   - Miguel Negrón
