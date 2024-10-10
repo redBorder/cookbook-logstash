@@ -26,6 +26,9 @@ chmod -R 0755 %{buildroot}%{cookbook_path}
 install -D -m 0644 README.md %{buildroot}%{cookbook_path}/README.md
 
 %pre
+if [ -d /var/chef/cookbooks/logstash ]; then
+    rm -rf /var/chef/cookbooks/logstash
+fi
 
 %post
 case "$1" in
@@ -40,6 +43,12 @@ case "$1" in
 esac
 mkdir -p /share/logstash-rules
 
+%postun
+# Deletes directory when uninstall the package
+if [ "$1" = 0 ] && [ -d /var/chef/cookbooks/logstash ]; then
+  rm -rf /var/chef/cookbooks/logstash
+fi
+
 %files
 %defattr(0755,root,root)
 %{cookbook_path}
@@ -49,23 +58,26 @@ mkdir -p /share/logstash-rules
 %doc
 
 %changelog
-* Fri Jan 19 2023 David Vanhoucke <dvanhoucke@redborder.com> - 2.0.1-1
+* Thu Oct 10 2024 Miguel Negrón <manegron@redborder.com>
+- Add pre and postun
+
+* Fri Jan 19 2023 David Vanhoucke <dvanhoucke@redborder.com>
 - Add apstate pipeline
 
-* Fri Sep 22 2023 Miguel Negrón <manegron@redborder.com> - 2.0.0-1
+* Fri Sep 22 2023 Miguel Negrón <manegron@redborder.com>
 - Remove social
 
-* Tue Apr 18 2023 Luis J. Blanco <ljblanco@redborder.com> - 1.0.21-1
+* Tue Apr 18 2023 Luis J. Blanco <ljblanco@redborder.com>
 - Monitor pipeline
 
-* Wed Nov 17 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.3-1
+* Wed Nov 17 2021 Javier Rodriguez <javiercrg@redborder.com>
 - Vault pipeline enrichment
 
-* Fri Oct 22 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.2-1
+* Fri Oct 22 2021 Javier Rodriguez <javiercrg@redborder.com>
 - Netflow pipeline enrichment
 
-* Tue Oct 19 2021 Javier Rodriguez <javiercrg@redborder.com> - 1.0.1-1
+* Tue Oct 19 2021 Javier Rodriguez <javiercrg@redborder.com>
 - Sflow pipeline enrichment
 
-* Thu Jan 25 2018 Juan J. Prieto <jjprieto@redborder.com> - 1.0.0-1
+* Thu Jan 25 2018 Juan J. Prieto <jjprieto@redborder.com>
 - first spec version
