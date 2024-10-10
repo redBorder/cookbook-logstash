@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 2.8.1
+
+  - Miguel Negrón
+    - [270fa47] Add pre and postun to clean the cookbook
+
 ## 2.8.0
 
   - Miguel Negrón
@@ -11,7 +16,7 @@ cookbook-logstash CHANGELOG
     - [0dbb598] Merge pull request #53 from redBorder/development
     - [c3ca31a] Merge pull request #52 from redBorder/development
     - [3efc332] Merge pull request #51 from redBorder/development
-  - Miguel Negron
+  - Miguel Negrón
     - [8a6b586] Merge branch 'development' into feature/#18086_incident_enrichment_vault
     - [1d0ed2a] Add comments
     - [fd66a8c] Rename 07 to 08
@@ -79,7 +84,7 @@ cookbook-logstash CHANGELOG
     - [0dbb598] Merge pull request #53 from redBorder/development
     - [c3ca31a] Merge pull request #52 from redBorder/development
     - [3efc332] Merge pull request #51 from redBorder/development
-  - Miguel Negron
+  - Miguel Negrón
     - [f37905c] Fix lint
     - [45335ef] Update vault alarms
     - [861f9ab] clean 06
@@ -154,7 +159,7 @@ cookbook-logstash CHANGELOG
     - [48467fe] Remove sflow_rename.conf template and corresponding resource from config.rb.
     - [a233ae8] Refactor Logstash filter to simplify direction-based field renaming, set default values, handle observation_id, and optimize data processing
     - [a622562] Refactor filter to set default 'direction' as 'upstream' and determine 'direction' dynamically based on IP match within homenets
-  - Miguel Negron
+  - Miguel Negrón
     - [3778a2a] Release 2.3.3
     - [eed18f3] Fix bug consul port as string
     - [564144d] Add Application to sflow
@@ -177,19 +182,19 @@ cookbook-logstash CHANGELOG
 
 ## 2.3.3
 
-  - Miguel Negron
+  - Miguel Negrón
     - [eed18f3] Fix bug consul port as string
 
 ## 2.3.2
 
-  - Miguel Negron
+  - Miguel Negrón
     - [564144d] Add Application to sflow
     - [c4aacf7] Bump version
     - [1830258] Add missing default values on sflow normalization step
 
 ## 2.3.1
 
-  - Miguel Negron
+  - Miguel Negrón
     - [1830258] Add missing default values on sflow normalization step
 
 ## 2.3.0
@@ -200,7 +205,7 @@ cookbook-logstash CHANGELOG
     - [6fa06e7] Release 2.2.0
   - Juan Soto
     - [0411ec3] Merge pull request #47 from redBorder/feature/#17754_oberservation_id
-  - Miguel Negron
+  - Miguel Negrón
     - [5b77a31] add incident enrichment
   - David Vanhoucke
     - [4a3bc21] add observation id for sflow
