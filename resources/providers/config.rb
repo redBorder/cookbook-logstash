@@ -1076,9 +1076,20 @@ action :add do
     service 'logstash' do
       service_name 'logstash'
       ignore_failure true
-      supports status: true, reload: true, restart: true, enable: true
-      action [:start, :enable] if is_manager || (activate_logstash && is_proxy)
-      action [:stop, :disable] if !activate_logstash && is_proxy
+      supports status: true, reload: true, restart: true, enable: true, stop: true     
+      if is_manager
+        if node['redborder']['leader_configuring']
+          action [:enable, :stop] 
+        else 
+          action [:enable, start]
+        end        
+      else # is_proxy
+        if activate_logstash
+          action [:enable, start]
+        else
+          action [:stop, :disable]
+        end
+      end
     end
 
     Chef::Log.info('Logstash cookbook has been processed')
