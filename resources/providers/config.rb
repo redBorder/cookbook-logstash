@@ -1076,7 +1076,7 @@ action :add do
     service 'logstash' do
       service_name 'logstash'
       ignore_failure true
-      supports status: true, reload: true, restart: true, enable: true, stop: true
+      supports status: true, reload: true, restart: true, enable: true, stop: true, start: true
       if is_manager
         if node['redborder']['leader_configuring']
           action [:enable, :stop]
