@@ -1081,10 +1081,10 @@ action :add do
         if node['redborder']['leader_configuring']
           action [:enable, :stop]
         else
-          action [:enable, start]
+          action [:enable, :start]
         end
       elsif activate_logstash # is_proxy
-        action [:enable, start]
+        action [:enable, :start]
       else
         action [:stop, :disable]
       end
