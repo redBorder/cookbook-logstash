@@ -21,4 +21,5 @@ attribute :mongo_cve_database, kind_of: String, default: 'cvedb'
 attribute :mongo_port, kind_of: String, default: '27017'
 attribute :logstash_pipelines, kind_of: Array, default: []
 attribute :split_traffic_logstash, kind_of: [TrueClass, FalseClass], default: false
+attribute :split_intrusion_logstash, kind_of: [TrueClass, FalseClass], default: false
 attribute :incidents_priority_filter, kind_of: String, default: 'high'
