@@ -27,7 +27,7 @@ action :add do
     rescue
       sensors_data = { 'sensors' => {} }
     end
-    
+
     dnf_package 'logstash-rules' do
       only_if { is_manager }
       action :upgrade
