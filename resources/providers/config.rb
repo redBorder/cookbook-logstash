@@ -22,7 +22,12 @@ action :add do
     incidents_priority_filter = new_resource.incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
-    sensors_data = YAML.load(::File.open('/root/sensors_data.yml')) rescue { 'sensors' => {} }
+    begin
+      sensors_data = YAML.load(::File.open('/root/sensors_data.yml'))
+    rescue
+      sensors_data = { 'sensors' => {} }
+    end
+    
 
     dnf_package 'logstash-rules' do
       only_if { is_manager }
