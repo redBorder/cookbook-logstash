@@ -28,7 +28,6 @@ action :add do
       sensors_data = { 'sensors' => {} }
     end
     
-
     dnf_package 'logstash-rules' do
       only_if { is_manager }
       action :upgrade
@@ -903,9 +902,9 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-      #This is related with this task
-      #https://redmine.redborder.lan/issues/18682
-      #We should improve it but do not delete it
+      # This is related with this task
+      # https://redmine.redborder.lan/issues/18682
+      # We should improve it but do not delete it
       template "#{pipelines_dir}/intrusion/06_intrusion_tagging.conf" do
         source 'intrusion_tagging.conf.erb'
         owner user
