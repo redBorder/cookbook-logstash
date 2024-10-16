@@ -18,9 +18,11 @@ action :add do
     mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
+    split_intrusion_logstash = new_resource.split_intrusion_logstash
     incidents_priority_filter = new_resource.incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+    sensors_data = YAML.load(::File.open('/root/sensors_data.yml')) rescue { 'sensors' => {} }
 
     dnf_package 'logstash-rules' do
       only_if { is_manager }
@@ -877,6 +879,17 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(incidents_priority_filter: incidents_priority_filter)
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
+      template "#{pipelines_dir}/intrusion/06_intrusion_tagging.conf" do
+        source 'intrusion_tagging.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(sensors: sensors_data['sensors'])
         notifies :restart, 'service[logstash]', :delayed
       end
 
