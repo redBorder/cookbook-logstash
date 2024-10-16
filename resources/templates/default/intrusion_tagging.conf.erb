@@ -1,0 +1,29 @@
+<% if @split_intrusion_logstash %>
+  filter {
+    <% @sensors.each do |sensor_name, sensor_data| %>
+      cidr {
+        address => [ "%{src}" ]
+        network => [
+          <% sensor_data['subnets'].each_with_index do |subnet, index| %>
+            "<%= subnet %>"<% if index < sensor_data['subnets'].length - 1 %>,<% end %>
+          <% end %>
+        ]
+        add_tag => [ "_cidr_match_<%= sensor_name %>" ]
+      }
+
+      if "_cidr_match_<%= sensor_name %>" in [tags] {
+        mutate {
+          add_field => {
+            "organization" => "<%= sensor_data['fields']['organization'] %>"
+            "organization_uuid" => "<%= sensor_data['fields']['organization_uuid']%>"
+            "service_provider" => "<%= sensor_data['fields']['service_provider'] %>"
+            "service_provider_uuid" => "<%= sensor_data['fields']['service_provider_uuid'] %>"
+          }
+        }
+      }
+    <% end %>
+  }
+<% else %>
+  filter {
+  }
+<% end %>
