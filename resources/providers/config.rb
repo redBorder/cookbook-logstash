@@ -194,7 +194,7 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
-      # Renamed to 07, this cleans curren installations
+      # Renamed so we clean the old file
       file "#{pipelines_dir}/vault/06_addfields.conf" do
         action :delete
       end
@@ -206,6 +206,22 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
+      # Renamed so we clean the old file
+      file "#{pipelines_dir}/vault/07_incident_enrichment.conf" do
+        action :delete
+      end
+
+      template "#{pipelines_dir}/vault/08_incident_enrichment.conf" do
+        source 'vault_incident_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(incidents_priority_filter: incidents_priority_filter)
         notifies :restart, 'service[logstash]', :delayed
       end
 
