@@ -898,6 +898,9 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
+      #This is related with this task
+      #https://redmine.redborder.lan/issues/18682
+      #We should improve it but do not delete it
       template "#{pipelines_dir}/intrusion/06_intrusion_tagging.conf" do
         source 'intrusion_tagging.conf.erb'
         owner user
