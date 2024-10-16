@@ -14,6 +14,8 @@
       if "_cidr_match_<%= sensor_name %>" in [tags] {
         mutate {
           add_field => {
+            "namespace" => "<%= sensor_data['fields']['namespace'] %>"
+            "namespace_uuid" => "<%= sensor_data['fields']['namespace_uuid'] %>"
             "organization" => "<%= sensor_data['fields']['organization'] %>"
             "organization_uuid" => "<%= sensor_data['fields']['organization_uuid']%>"
             "service_provider" => "<%= sensor_data['fields']['service_provider'] %>"
