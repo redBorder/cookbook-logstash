@@ -908,7 +908,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(sensors: sensors_data['sensors'])
+        variables(sensors: sensors_data['sensors'], split_intrusion_logstash: split_intrusion_logstash)
         notifies :restart, 'service[logstash]', :delayed
       end
 
