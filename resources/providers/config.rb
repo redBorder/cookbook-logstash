@@ -104,7 +104,7 @@ action :add do
       ignore_failure true
       cookbook 'logstash'
       variables(user: user)
-      notifies :restart, 'service[logstash]', :delayed
+      notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
     end
 
     template "#{logstash_dir}/pipelines.yml" do
@@ -115,7 +115,7 @@ action :add do
       ignore_failure true
       cookbook 'logstash'
       variables(is_manager: is_manager, is_proxy: is_proxy, pipelines: logstash_pipelines)
-      notifies :restart, 'service[logstash]', :delayed
+      notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
     end
 
     # Vault pipeline
@@ -128,7 +128,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_vault'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/01_generic.conf" do
@@ -139,7 +139,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(hash_key: logstash_hash_item[:hash_key], hash_function: logstash_hash_item[:hash_function])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/02_sshd.conf" do
@@ -149,7 +149,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/03_iptables.conf" do
@@ -159,7 +159,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/04_nginx.conf" do
@@ -169,7 +169,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/05_dnsmasq.conf" do
@@ -179,7 +179,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/06_alarms.conf" do
@@ -189,7 +189,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       # Renamed so we clean the old file
@@ -204,7 +204,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       # Renamed so we clean the old file
@@ -220,7 +220,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(incidents_priority_filter: incidents_priority_filter)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/vault/99_output.conf" do
@@ -232,7 +232,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_vault_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -246,7 +246,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['sflow'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/sflow/01_tagging.conf" do
@@ -257,7 +257,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(flow_nodes: flow_nodes, proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/sflow/02_normalization.conf" do
@@ -267,7 +267,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
@@ -278,7 +278,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(flow_nodes: flow_nodes, split_traffic_logstash: split_traffic_logstash)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/sflow/04_field_conversion.conf" do
@@ -288,7 +288,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/sflow/99_output.conf" do
@@ -300,7 +300,7 @@ action :add do
         cookbook 'logstash'
         variables(input_topics: ['sflow'],
                   output_topic: 'rb_flow')
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -314,7 +314,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_flow'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/01_macscrambling.conf" do
@@ -325,7 +325,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/02_geoenrich.conf" do
@@ -335,7 +335,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/03_macvendor.conf" do
@@ -347,7 +347,7 @@ action :add do
         cookbook 'logstash'
         variables(memcached_server: memcached_server,
                   mac_vendors: mac_vendors)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/04_darklist.conf" do
@@ -358,7 +358,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/90_splitflow.conf" do
@@ -369,7 +369,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/91_rename.conf" do
@@ -379,7 +379,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/netflow/99_output.conf" do
@@ -391,7 +391,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_flow_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -405,7 +405,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_scanner'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/scanner/01_normalization.conf" do
@@ -415,7 +415,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/scanner/02_mongocve.conf" do
@@ -426,7 +426,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(mongo_port: mongo_port, mongo_cve_database: mongo_cve_database)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/scanner/99_output.conf" do
@@ -438,7 +438,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_scanner_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -452,7 +452,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_nmsp'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/nmsp/01_macscrambling.conf" do
@@ -463,7 +463,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/nmsp/03_nmsp.conf" do
@@ -475,7 +475,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/nmsp/99_output.conf" do
@@ -488,7 +488,7 @@ action :add do
         variables(output_topics: ['rb_location'],
                   output_namespace_topic: 'rb_wireless',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -502,7 +502,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_loc'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/location/01_macscrambling.conf" do
@@ -513,7 +513,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/location/02_macvendor.conf" do
@@ -524,7 +524,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(mac_vendors: mac_vendors)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/location/10_location.conf" do
@@ -535,7 +535,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/location/99_output.conf" do
@@ -548,7 +548,7 @@ action :add do
         variables(output_topics: ['rb_location'],
                   output_namespace_topic: 'rb_wireless',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -562,7 +562,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_location'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/mobility/01_mobility.conf" do
@@ -574,7 +574,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/mobility/99_output.conf" do
@@ -586,7 +586,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_loc_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -600,7 +600,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['sflow'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/meraki/01_macscrambling.conf" do
@@ -611,7 +611,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/meraki/03_meraki.conf" do
@@ -623,7 +623,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/meraki/99_output.conf" do
@@ -634,7 +634,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(output_topic: 'rb_location')
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -648,7 +648,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_radius'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/radius/01_macscrambling.conf" do
@@ -659,7 +659,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/radius/03_radius.conf" do
@@ -671,7 +671,7 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/radius/99_output.conf" do
@@ -682,7 +682,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(output_topic: 'rb_location')
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -696,7 +696,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_state'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/apstate/01_apstate.conf" do
@@ -706,7 +706,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/apstate/99_output.conf" do
@@ -718,7 +718,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_state_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -734,7 +734,7 @@ action :add do
         retries 2
         variables(memcached_server: memcached_server, database_name: database_name, host: host,
                   password: password, user: username, port: port)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/rbwindow/99_output.conf" do
@@ -744,7 +744,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -757,7 +757,7 @@ action :add do
         mode '0644'
         cookbook 'logstash'
         retries 2
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/bulkstats/01_bulkstats.conf" do
@@ -768,7 +768,7 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(device_nodes: device_nodes)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/bulkstats/02_enrichment.conf" do
@@ -779,7 +779,7 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(device_nodes: device_nodes)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/bulkstats/99_output.conf" do
@@ -790,7 +790,7 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(output_topic: 'rb_monitor')
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -804,7 +804,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_monitor'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/monitor/01_monitor.conf" do
@@ -814,7 +814,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/monitor/99_output.conf" do
@@ -826,7 +826,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_monitor_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -840,7 +840,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(topics: ['rb_event'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/01_intrusion.conf" do
@@ -850,7 +850,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/02_geoenrich.conf" do
@@ -860,7 +860,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/03_macvendor.conf" do
@@ -872,7 +872,7 @@ action :add do
         cookbook 'logstash'
         variables(memcached_server: memcached_server,
                   mac_vendors: mac_vendors)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/04_darklist.conf" do
@@ -882,7 +882,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/05_incident_enrichment.conf" do
@@ -893,7 +893,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(incidents_priority_filter: incidents_priority_filter)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/98_encode.conf" do
@@ -903,7 +903,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/99_output.conf" do
@@ -915,7 +915,7 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_event_post',
                   namespaces: namespaces)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -930,7 +930,7 @@ action :add do
         cookbook 'logstash'
         variables(device_nodes: device_nodes,
                   monitors: monitors_dg['monitors'])
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/redfish/01_normalize.conf" do
@@ -940,7 +940,7 @@ action :add do
         mode '0644'
         retries 2
         cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/redfish/02_enrichment.conf" do
@@ -951,7 +951,7 @@ action :add do
         retries 2
         cookbook 'logstash'
         variables(device_nodes: device_nodes)
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/redfish/99_output.conf" do
@@ -963,7 +963,7 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(output_topic: 'rb_monitor')
-        notifies :restart, 'service[logstash]', :delayed
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
 
@@ -1076,9 +1076,18 @@ action :add do
     service 'logstash' do
       service_name 'logstash'
       ignore_failure true
-      supports status: true, reload: true, restart: true, enable: true
-      action [:start, :enable] if is_manager || (activate_logstash && is_proxy)
-      action [:stop, :disable] if !activate_logstash && is_proxy
+      supports status: true, reload: true, restart: true, enable: true, stop: true, start: true
+      if is_manager
+        if node['redborder']['leader_configuring']
+          action [:enable, :stop]
+        else
+          action [:enable, :start]
+        end
+      elsif activate_logstash # is_proxy
+        action [:enable, :start]
+      else
+        action [:stop, :disable]
+      end
     end
 
     Chef::Log.info('Logstash cookbook has been processed')
