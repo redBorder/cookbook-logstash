@@ -18,7 +18,8 @@ action :add do
     mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
-    incidents_priority_filter = new_resource.incidents_priority_filter
+    intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
+    vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
 
@@ -219,7 +220,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(incidents_priority_filter: incidents_priority_filter)
+        variables(vault_incidents_priority_filter: vault_incidents_priority_filter)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -892,7 +893,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(incidents_priority_filter: incidents_priority_filter)
+        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
