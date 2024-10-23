@@ -1,6 +1,14 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 3.1.0
+
+  - Miguel Negrón
+    - [c944474] Merge pull request #71 from redBorder/feature/#18816_Split_Filter_Incident_Priority
+  - ptorresred
+    - [9d73f72] feature/#18816: Added intrusion variables
+    - [ba978a3] feature/#18816: changes to use the splitted incident priority filter
+
 ## 3.0.0
 
   - Miguel Negrón
