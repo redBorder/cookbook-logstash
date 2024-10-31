@@ -24,7 +24,7 @@ action :add do
     is_proxy = is_proxy?
     is_manager = is_manager?
     begin
-      sensors_data = YAML.load(::File.open('/root/sensors_data.yml'))
+      sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
     rescue
       sensors_data = { 'sensors' => {} }
     end
