@@ -892,21 +892,10 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/intrusion/05_incident_enrichment.conf" do
-        source 'intrusion_incident_enrichment.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
       # This is related with this task
       # https://redmine.redborder.lan/issues/18682
       # We should improve it but do not delete it
-      template "#{pipelines_dir}/intrusion/06_intrusion_tagging.conf" do
+      template "#{pipelines_dir}/intrusion/05_intrusion_tagging.conf" do
         source 'intrusion_tagging.conf.erb'
         owner user
         group user
@@ -915,6 +904,17 @@ action :add do
         cookbook 'logstash'
         variables(sensors: sensors_data['sensors'], split_intrusion_logstash: split_intrusion_logstash)
         notifies :restart, 'service[logstash]', :delayed
+      end
+
+      template "#{pipelines_dir}/intrusion/06_incident_enrichment.conf" do
+        source 'intrusion_incident_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
       template "#{pipelines_dir}/intrusion/98_encode.conf" do
