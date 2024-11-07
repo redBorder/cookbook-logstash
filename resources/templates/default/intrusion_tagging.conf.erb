@@ -1,9 +1,9 @@
+<% if @split_intrusion_logstash %>
 filter {
   ruby {
     code => "
       require 'ipaddr'
 
-      # Check all subnets for src in all sensors
       event_ip = event.get('src')
       if event_ip && !event.get('organization')
         ip_src = IPAddr.new(event_ip) rescue nil
@@ -18,13 +18,13 @@ filter {
               <% sensor_data['fields'].each do |field_name, field_value| %>
                 event.set('<%= field_name %>', '<%= field_value.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?').gsub("'", "\\\\'") %>')
               <% end %>
-              break  # Exit if match found in src
+              break  # If found a match
             end
           <% end %>
         end
       end
 
-      # If no match found in src, check dst in all sensors
+      # If there is not match in src ip's
       if !event.get('organization')
         event_ip = event.get('dst')
         if event_ip
@@ -40,7 +40,7 @@ filter {
                 <% sensor_data['fields'].each do |field_name, field_value| %>
                   event.set('<%= field_name %>', '<%= field_value.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?').gsub("'", "\\\\'") %>')
                 <% end %>
-                break  # Exit if match found in dst
+                break # If found a match
               end
             <% end %>
           end
