@@ -1,6 +1,15 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 3.2.0
+
+  - Pablo Pérez
+    - [e92ec9a] Merge pull request #73 from redBorder/bugfix/#19198_vault_priorities_incorrect_values
+  - Juan Soto
+    - [e42caa4] Feature/#18682 add way to split instrusion (#69)
+  - ptorresred
+    - [3e65dd8] Redmine bugfix #19198: Change vault default priority filter
+
 ## 3.1.0
 
   - Miguel Negrón
