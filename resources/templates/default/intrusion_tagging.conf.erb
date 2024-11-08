@@ -1,0 +1,55 @@
+<% if @split_intrusion_logstash %>
+filter {
+  ruby {
+    code => "
+      require 'ipaddr'
+
+      event_ip = event.get('src')
+      if event_ip && !event.get('organization')
+        ip_src = IPAddr.new(event_ip) rescue nil
+        if ip_src
+          <% @sensors.each do |sensor_name, sensor_data| %>
+            subnets = [
+              <% sensor_data['subnets'].each_with_index do |subnet, index| %>
+                IPAddr.new('<%= subnet.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') %>')<%= ',' unless index == sensor_data['subnets'].length - 1 %>
+              <% end %>
+            ]
+            if subnets.any? { |subnet| subnet.include?(ip_src) }
+              <% sensor_data['fields'].each do |field_name, field_value| %>
+                event.set('<%= field_name %>', '<%= field_value.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?').gsub("'", "\\\\'") %>')
+              <% end %>
+              break  # If found a match
+            end
+          <% end %>
+        end
+      end
+
+      # If there is not match in src ip's
+      if !event.get('organization')
+        event_ip = event.get('dst')
+        if event_ip
+          ip_dst = IPAddr.new(event_ip) rescue nil
+          if ip_dst
+            <% @sensors.each do |sensor_name, sensor_data| %>
+              subnets = [
+                <% sensor_data['subnets'].each_with_index do |subnet, index| %>
+                  IPAddr.new('<%= subnet.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') %>')<%= ',' unless index == sensor_data['subnets'].length - 1 %>
+                <% end %>
+              ]
+              if subnets.any? { |subnet| subnet.include?(ip_dst) }
+                <% sensor_data['fields'].each do |field_name, field_value| %>
+                  event.set('<%= field_name %>', '<%= field_value.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?').gsub("'", "\\\\'") %>')
+                <% end %>
+                break # If found a match
+              end
+            <% end %>
+          end
+        end
+      end
+    "
+  }
+}
+<% else %>
+filter {
+}
+<% end %>

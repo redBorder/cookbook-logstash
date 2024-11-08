@@ -18,10 +18,16 @@ action :add do
     mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
+    split_intrusion_logstash = new_resource.split_intrusion_logstash
     intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+    begin
+      sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
+    rescue
+      sensors_data = { 'sensors' => {} }
+    end
 
     dnf_package 'logstash-rules' do
       only_if { is_manager }
@@ -886,7 +892,21 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/intrusion/05_incident_enrichment.conf" do
+      # This is related with this task
+      # https://redmine.redborder.lan/issues/18682
+      # We should improve it but do not delete it
+      template "#{pipelines_dir}/intrusion/05_intrusion_tagging.conf" do
+        source 'intrusion_tagging.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(sensors: sensors_data['sensors'], split_intrusion_logstash: split_intrusion_logstash)
+        notifies :restart, 'service[logstash]', :delayed
+      end
+
+      template "#{pipelines_dir}/intrusion/06_incident_enrichment.conf" do
         source 'intrusion_incident_enrichment.conf.erb'
         owner user
         group user
