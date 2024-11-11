@@ -1,5 +1,11 @@
 filter {
   
+  # Default direction
+  mutate {
+    add_field => {
+      "direction" => "upstream"
+    }
+  }
 
   if ![tag] or [tag] == 0 {
     <% @flow_nodes.select{|s| s[:ipaddress] and s["redborder"] and s["redborder"]["homenets"] and !s["redborder"]["blocked"]}.each do |flow_node| %>
