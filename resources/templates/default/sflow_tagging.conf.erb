@@ -19,9 +19,11 @@ filter {
                   if homenets.any? {|subnet| subnet.include?(event.get('ip_src')) } 
                     if homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
                       event.set('direction', 'internal')
-                    else                   
-                      event.set('direction', 'downstream') 
+                    else
+                      event.set('direction', 'upstream')
                     end
+                  elsif homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
+                    event.set('direction', 'downstream')
                   end
                  "
       }
