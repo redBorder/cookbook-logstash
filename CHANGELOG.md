@@ -1,6 +1,12 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 3.2.1
+
+  - Juan Soto
+    - [2beed53] Put default direction back
+    - [9f3d8c6] Add way to manage three scenearios to tagging
+
 ## 3.2.0
 
   - Pablo Pérez
