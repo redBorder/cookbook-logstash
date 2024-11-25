@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 3.3.0
+
+  - Miguel Negrón
+    - [040d65c] Fix geoip filter for intrusion pipeline
+
 ## 3.2.1
 
   - Juan Soto
