@@ -1,14 +1,14 @@
 filter {
-  if [lan_ip] {
+  if [src] {
     cidr {
-      address => [ "%{lan_ip}" ]
+      address => [ "%{src}" ]
       network => [ "0.0.0.0/32", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7", "127.0.0.0/8", "::1/128","169.254.0.0/16", "fe80::/10","224.0.0.0/4", "ff00::/8","255.255.255.255/32" ]
       add_field => { "[src_locality]" => "private" }
     }
   }
-  if [wan_ip]{
+  if [dst]{
     cidr {
-      address => [ "%{wan_ip}" ]
+      address => [ "%{dst}" ]
       network => [ "0.0.0.0/32", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7", "127.0.0.0/8", "::1/128","169.254.0.0/16", "fe80::/10","224.0.0.0/4", "ff00::/8","255.255.255.255/32" ]
       add_field => { "[dst_locality]" => "private" }
     }
@@ -17,14 +17,14 @@ filter {
   if [src_locality] != "private" {
     geoip {
       id => "geoip_city_lan"
-      source => "lan_ip"
+      source => "src"
       default_database_type => "City"
       target => "city_lan"
       fields => [COUNTRY_CODE2]
     }
     geoip {
       id => "geoip_asn_lan"
-      source => "lan_ip"
+      source => "src"
       default_database_type => "ASN"
       target => "asn_lan"
       fields => [AUTONOMOUS_SYSTEM_ORGANIZATION]
@@ -34,21 +34,21 @@ filter {
   if [dst_locality] != "private" {
     geoip {
       id => "geoip_city_wan"
-      source => "wan_ip"
+      source => "dst"
       default_database_type => "City"
       target => "city_wan"
       fields => [COUNTRY_CODE2]
     }
     geoip {
       id => "geoip_asn_wan"
-      source => "wan_ip"
+      source => "dst"
       default_database_type => "ASN"
       target => "asn_wan"
       fields => [AUTONOMOUS_SYSTEM_ORGANIZATION]
     } 
   }
 
-  if [lan_ip] {
+  if [src] {
     if [city_lan][country_code2] {
       mutate {
         add_field => { "src_country_code" => "%{[city_lan][country_code2]}" }
@@ -62,23 +62,20 @@ filter {
     if [src_country_code] {
       mutate {
         replace  => {
-          "public_ip" => "%{wan_ip}"
-          "ip_country_code" => "%{src_country_code}"
-          "lan_ip_country_code" => "%{src_country_code}"
+          "src_country_code" => "%{src_country_code}"
         }
       }
     }
     if [src_asn_name] {
       mutate {
         add_field => {
-          "lan_ip_as_name" => "%{src_asn_name}"
-          "ip_as_name" => "%{src_asn_name}"
+          "src_as_name" => "%{src_asn_name}"
         }
       }
     }
   }
 
-  if [wan_ip]{
+  if [dst]{
     if [city_wan][country_code2] {
       mutate {
         add_field => { "dst_country_code" => "%{[city_wan][country_code2]}" }
@@ -92,24 +89,21 @@ filter {
     if [dst_country_code]{
       mutate {
         replace  => {
-          "public_ip" => "%{wan_ip}"
-          "ip_country_code" => "%{dst_country_code}"
-          "wan_ip_country_code" => "%{dst_country_code}"
+          "dst_country_code" => "%{dst_country_code}"
         }
       }
     }
     if [dst_asn_name]{
       mutate {
         replace => {
-          "wan_ip_as_name" => "%{dst_asn_name}"
-          "ip_as_name" => "%{dst_asn_name}"
+          "dst_as_name" => "%{dst_asn_name}"
         }
       }
     } 
   }
 
   mutate {
-    remove_field => ["@version","@timestamp", "asn_wan", "asn_lan", "city_wan", "city_lan", "src_country_code", "src_asn_name", "dst_country_code", "dst_asn_name", "src_locality", "dst_locality"]
+    remove_field => ["@version","@timestamp", "asn_wan", "asn_lan", "city_wan", "city_lan", "src_asn_name", "dst_asn_name", "src_locality", "dst_locality"]
   }
 }
 
