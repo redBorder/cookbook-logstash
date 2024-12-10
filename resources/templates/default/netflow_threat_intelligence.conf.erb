@@ -1,0 +1,9 @@
+filter {
+  threatintelligence {
+    key_mapping => {
+      "lan_ip" => "lan_ip_is_malicious"
+      "wan_ip" => "wan_ip_is_malicious"
+      "public_ip" => "public_ip_is_malicious"
+    }
+  }
+}
