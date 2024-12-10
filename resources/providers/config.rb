@@ -368,6 +368,16 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/netflow/05_threat_intelligence.conf" do
+        source 'netflow_threat_intelligence.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/netflow/90_splitflow.conf" do
         source 'netflow_splitflow.conf.erb'
         owner user
@@ -914,6 +924,16 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/intrusion/07_threat_intelligence.conf" do
+        source 'intrusion_threat_intelligence.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
