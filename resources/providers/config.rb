@@ -189,14 +189,9 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/vault/06_alarms.conf" do
-        source 'vault_alarms.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # We dont need this file anymore as is parsed by rsyslog
+      file "#{pipelines_dir}/vault/06_alarms.conf" do
+        action :delete
       end
 
       # Renamed so we clean the old file
