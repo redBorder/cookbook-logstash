@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 4.0.0
+
+  - manegron
+    - [bd193fc] remove space
+    - [69bb4b7] Dont incident_enrichment if is already enriched
+    - [43b5113] Remove alarms from vault pipeline
+
 ## 3.3.0
 
   - Miguel Negrón
