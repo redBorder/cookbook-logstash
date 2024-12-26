@@ -368,6 +368,8 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      memcached_servers = node['redborder']['memcached']['hosts']
+
       template "#{pipelines_dir}/netflow/05_threat_intelligence.conf" do
         source 'netflow_threat_intelligence.conf.erb'
         owner user
@@ -375,6 +377,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        variables(memcached_servers: memcached_servers)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -934,6 +937,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        variables(memcached_servers: memcached_servers)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
