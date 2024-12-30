@@ -1,0 +1,13 @@
+filter {
+  threatintelligence {
+    memcached_servers => <%=@memcached_servers%>
+    key_mapping => {
+      "src" => "src_is_malicious"
+      "dst" => "dst_is_malicious"
+      "public_ip" => "src_is_malicious"
+      "sha256" => "sha256_is_malicious"
+      "file_uri" => "file_uri_is_malicious"
+      "file_hostname" => "file_hostname_is_malicious"
+    }
+  }
+}

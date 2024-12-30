@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 5.0.0
+
+  - Miguel Álvarez
+    - [fcbea79] Add new filters for flow and intrusion (#79)
+
 ## 4.0.0
 
   - manegron
