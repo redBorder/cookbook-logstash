@@ -49,11 +49,14 @@ filter {
   
             tag2 = event.get('tag2')
             observation_tag2 = tag2
-  
-            <% if proxy_node['interfaces'] && !proxy_node['interfaces'].empty? %>
-              <% proxy_node['interfaces'].each do |iface_key, _orig_iface| %>
-              <% unless proxy_node['interfaces'][iface_key]['observation_id_filters'].empty? %>
-              observation_id_filters = <%= proxy_node['interfaces'][iface_key]['observation_id_filters'].to_s.gsub('"', "'") %>
+
+            <% role_name = "rBsensor-#{proxy_node.name.gsub('rbproxy-','')}" %>
+            <% proxy_role = Chef::Role.load role_name rescue nil %>
+
+            <% if proxy_role && proxy_role.override_attributes && proxy_role.override_attributes['redborder'] && proxy_role.override_attributes['redborder']['interfaces'] && !proxy_role.override_attributes['redborder']['interfaces'].empty? %>
+              <% proxy_role.override_attributes['redborder']['interfaces'].each do |iface_key, _orig_iface| %>
+              <% unless proxy_role.override_attributes['redborder']['interfaces'][iface_key]['observation_id_filters'].empty? %>
+              observation_id_filters = <%= proxy_role.override_attributes['redborder']['interfaces'][iface_key]['observation_id_filters'].to_s.gsub('"', "'") %>
   
               observation_id_filters.each do |filter|
                 subnet = IPAddr.new(filter['subnet'])
