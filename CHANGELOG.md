@@ -1,6 +1,17 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 6.0.0
+
+  - Miguel Negrón
+    - [94bcd8f] Merge pull request #83 from redBorder/bugfix/#19815_fix_splitting_traffic_sflow_pipeline
+    - [940b53d] Fix last row
+    - [6feffeb] Load interfaces proxy from the role instead of role
+  - nilsver
+    - [7cd2f65] Release
+  - Miguel Álvarez
+    - [fcbea79] Add new filters for flow and intrusion (#79)
+
 ## 5.0.0
 
   - Miguel Álvarez
