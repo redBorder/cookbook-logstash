@@ -1,6 +1,6 @@
 filter {
   threatintelligence {
-    memcached_servers => <%=@memcached_servers%>
+    memcached_server => <%= @memcached_server %>
     key_mapping => {
       "src" => "src_is_malicious"
       "dst" => "dst_is_malicious"
