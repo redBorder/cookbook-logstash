@@ -37,10 +37,28 @@ filter {
         "mac_dst" => "client_mac"
         "cisco_src_vlan" => "wan_vlan"
         "cisco_dst_vlan" => "lan_vlan"
-        "src_vlan" => "wan_vlan"
-        "dst_vlan" => "lan_vlan"
-        "vlan_in" => "wan_vlan"
-        "vlan_out" => "lan_vlan"
+        }
+    }
+    if ![tag] or [tag] == 0 {
+      mutate {
+        rename => {
+          "vlan" => "lan_vlan"
+          "src_vlan" => "lan_vlan"
+          "dst_vlan" => "wan_vlan"
+          "vlan_in" => "lan_vlan"
+          "vlan_out" => "wan_vlan"
+        }
+        }
+    }
+    else {
+      mutate {
+        rename => {
+          "vlan" => "wan_vlan"
+          "src_vlan" => "wan_vlan"
+          "dst_vlan" => "lan_vlan"
+          "vlan_in" => "wan_vlan"
+          "vlan_out" => "lan_vlan"
+        }
       }
     }
   } else { # Egress when direction is upstream or internal..
@@ -55,6 +73,7 @@ filter {
         "mac_src" => "client_mac"
         "cisco_src_vlan" => "lan_vlan"
         "cisco_dst_vlan" => "wan_vlan"
+        "vlan" => "lan_vlan"
         "src_vlan" => "lan_vlan"
         "dst_vlan" => "wan_vlan"
         "vlan_in" => "lan_vlan"

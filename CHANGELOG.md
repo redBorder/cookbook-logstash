@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 6.1.0
+
+  - David Vanhoucke
+    - [51f427d] add vlan normalization
+
 ## 6.0.0
 
   - Miguel Negrón
