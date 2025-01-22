@@ -1,6 +1,34 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 6.1.0
+
+  - David Vanhoucke
+    - [51f427d] add vlan normalization
+
+## 6.0.0
+
+  - Miguel Negrón
+    - [94bcd8f] Merge pull request #83 from redBorder/bugfix/#19815_fix_splitting_traffic_sflow_pipeline
+    - [940b53d] Fix last row
+    - [6feffeb] Load interfaces proxy from the role instead of role
+  - nilsver
+    - [7cd2f65] Release
+  - Miguel Álvarez
+    - [fcbea79] Add new filters for flow and intrusion (#79)
+
+## 5.0.0
+
+  - Miguel Álvarez
+    - [fcbea79] Add new filters for flow and intrusion (#79)
+
+## 4.0.0
+
+  - manegron
+    - [bd193fc] remove space
+    - [69bb4b7] Dont incident_enrichment if is already enriched
+    - [43b5113] Remove alarms from vault pipeline
+
 ## 3.3.0
 
   - Miguel Negrón

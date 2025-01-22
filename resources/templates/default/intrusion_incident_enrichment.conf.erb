@@ -1,7 +1,9 @@
 filter {
-  incident_enrichment { 
-    incident_fields => ["src","src_port", "dst", "dst_port"]
-    source => "redBorder Intrusion"
-    incidents_priority_filter => "<%= @intrusion_incidents_priority_filter %>"
+  if ![incident_uuid] {
+    incident_enrichment {
+      incident_fields => ["src","src_port", "dst", "dst_port"]
+      source => "redBorder Intrusion"
+      incidents_priority_filter => "<%= @intrusion_incidents_priority_filter %>"
+    }
   }
 }
