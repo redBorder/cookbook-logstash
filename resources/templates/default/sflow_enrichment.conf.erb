@@ -1,7 +1,7 @@
 filter {
   <% @flow_nodes.each do |flow_node| %>
     <% if !flow_node[:ipaddress].nil? and !flow_node["redborder"].nil? and flow_node["redborder"]["blocked"]!=true %>
-    <% if @split_traffic_logstash %>
+    <% unless @split_traffic_logstash %>
     if [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>" {
     <% end %>
      <% @observation_id = (flow_node["redborder"]["observation_id"] and !flow_node["redborder"]["observation_id"].empty?) ? flow_node["redborder"]["observation_id"] : "default" %>
@@ -19,8 +19,8 @@ filter {
            }
          }
        }
-     <% if @split_traffic_logstash %>
-     } # if [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>"
+     <% unless @split_traffic_logstash %>
+     } # unless [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>"
      <% end %>
     <% end %>
   <% end %>
