@@ -1,6 +1,12 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 6.1.1
+
+  - nilsver
+    - [a0a9c77] check should be reversed
+    - [bc111d6] remove splittraffic_check
+
 ## 6.1.0
 
   - David Vanhoucke
