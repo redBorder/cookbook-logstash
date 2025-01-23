@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 6.1.2
+
+  - Juan Soto
+    - [819cc43] Bugfix/#20011 default magic number is not working (#88)
+
 ## 6.1.1
 
   - nilsver

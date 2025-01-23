@@ -83,9 +83,11 @@ filter {
   }
 
   # Set observation_id: (if 4294967295 -> "default")
-  if [tag2] and [tag2] != 4294967295 {
-    mutate { replace =>  { "observation_id" => "%{tag2}" } }
-  }
+  <% if @split_traffic_logstash %>
+    if [tag2] and [tag2] != 4294967295 {
+      mutate { replace =>  { "observation_id" => "%{tag2}" } }
+    }
+  <% end %>
 
   # Set timestamp, bytes and application_id_name  
   ruby { code => " event.set('timestamp', event.get('@timestamp').to_i);
