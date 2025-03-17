@@ -46,6 +46,12 @@ filter {
           end
         end
       end
+
+      if !event.get('organization')
+        <% @default_sensor['fields'].each do |field_name, field_value| %>
+          event.set('<%= field_name %>', '<%= field_value.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?').gsub("'", "\\\\'") %>')
+        <% end %>
+      end
     "
   }
 }
