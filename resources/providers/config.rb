@@ -23,6 +23,8 @@ action :add do
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+    flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
+    flow_nodes_with_proxy = new_resource.flow_nodes_with_proxy
     begin
       sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
     rescue
@@ -280,7 +282,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes, split_traffic_logstash: split_traffic_logstash)
+        variables(split_traffic_logstash: split_traffic_logstash, flow_nodes_without_proxy: flow_nodes_without_proxy, flow_nodes_with_proxy: flow_nodes_with_proxy)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
