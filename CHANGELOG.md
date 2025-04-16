@@ -1,6 +1,12 @@
 cookbook-logstash CHANGELOG
 ===============
 
+
+## 6.1.4
+
+  - Juan Soto
+    - [8847861]  Improvement/#20539 add way to split intrusion with default sensor #90 : Add default sensor for traffic outside organizations
+
 ## 6.1.3
 
   - Rafa Gómez
