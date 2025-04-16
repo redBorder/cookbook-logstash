@@ -372,7 +372,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers)
+        variables(memcached_servers: memcached_servers, flow_nodes: flow_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
