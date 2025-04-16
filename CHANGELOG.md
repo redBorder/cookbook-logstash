@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 6.1.3
+
+  - Rafa Gómez
+    - [c81e08e] refactor: update source names in incident enrichment configurations (#92)
+
 ## 6.1.2
 
   - Juan Soto
