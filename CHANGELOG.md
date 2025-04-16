@@ -1,6 +1,7 @@
 cookbook-logstash CHANGELOG
 ===============
 
+
 ## 6.1.4
 
   - Juan Soto
