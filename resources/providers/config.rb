@@ -365,8 +365,8 @@ action :add do
 
       memcached_servers = node['redborder']['memcached']['hosts']
 
-      template "#{pipelines_dir}/netflow/05_threat_intelligence.conf" do
-        source 'netflow_threat_intelligence.conf.erb'
+      template "#{pipelines_dir}/netflow/05_flow_reputation.conf" do
+        source 'netflow_flow_reputation.conf.erb'
         owner user
         group user
         mode '0644'
