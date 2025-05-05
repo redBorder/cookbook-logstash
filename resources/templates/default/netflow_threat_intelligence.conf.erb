@@ -1,6 +1,6 @@
 filter {
   threatintelligence {
-    memcached_servers => <%=@memcached_servers%>
+    memcached_server => <%= @memcached_server %>
     key_mapping => {
       "lan_ip" => "lan_ip_is_malicious"
       "wan_ip" => "wan_ip_is_malicious"
