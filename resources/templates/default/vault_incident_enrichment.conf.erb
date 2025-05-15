@@ -2,7 +2,7 @@ filter {
   if ![incident_uuid] {
     incident_enrichment {
       incident_fields => ["fromhost_ip"]
-      source => "redBorder Vault"
+      source => "Vault"
       incidents_priority_filter => "<%= @vault_incidents_priority_filter %>"
       field_scores => {
         "fromhost_ip" => 100
