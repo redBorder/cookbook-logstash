@@ -368,14 +368,14 @@ action :add do
 
       memcached_servers = node['redborder']['memcached']['hosts']
 
-      template "#{pipelines_dir}/netflow/05_threat_intelligence.conf" do
-        source 'netflow_threat_intelligence.conf.erb'
+      template "#{pipelines_dir}/netflow/05_flow_reputation.conf" do
+        source 'netflow_flow_reputation.conf.erb'
         owner user
         group user
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers)
+        variables(memcached_servers: memcached_servers, flow_nodes: flow_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
