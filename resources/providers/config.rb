@@ -136,7 +136,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(topics: %w(rb_vault rb_limits))
+        variables(topics: ['rb_vault'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -249,7 +249,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(topics: %w(sflow rb_limits))
+        variables(topics: ['sflow'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -318,7 +318,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(topics: %w(rb_flow rb_limits))
+        variables(topics: ['rb_flow'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -422,7 +422,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(topics: %w(rb_scanner rb_limits))
+        variables(topics: ['rb_scanner'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -579,7 +579,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(topics: %w(rb_location rb_limits))
+        variables(topics: ['rb_location'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -857,7 +857,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(topics: %w(rb_event rb_limits))
+        variables(topics: ['rb_event'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
