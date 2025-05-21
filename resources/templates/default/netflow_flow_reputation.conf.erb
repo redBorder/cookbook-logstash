@@ -8,7 +8,7 @@ filter {
     memcached_servers => <%= @memcached_servers %>
     sensor_policy_map => {
 <% valid_nodes.each_with_index do |node, i| %>
-      "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['flow_reputation_id'], 'name' => node['redborder']['flow_reputation_name'] }.to_json %>'
+      "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['flow_reputation_id'], 'name' => node['redborder']['flow_reputation_name'], 'threshold' => node['redborder']['flow_reputation_threshold'] }.to_json %>'
 <% end %>
     }
   }
