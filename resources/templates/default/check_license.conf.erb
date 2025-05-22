@@ -1,0 +1,11 @@
+filter {
+  <% @nodes.each do |node| %>
+    <% if node['redborder'] && node['redborder']['blocked'] %>
+      if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
+        mutate {
+          add_field => { "sensor_blocked" => "true" }
+        }
+      }
+    <% end %>
+  <% end %>
+}
