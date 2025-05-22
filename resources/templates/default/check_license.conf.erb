@@ -1,11 +1,23 @@
 filter {
-  <% @nodes.each do |node| %>
-    <% if node['redborder'] && node['redborder']['blocked'] %>
-      if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
-        mutate {
-          add_field => { "sensor_blocked" => "true" }
+  <% if @nodes.is_a?(Hash) %>
+    <% @nodes.each do |_, node| %>
+      <% if node['redborder'] && node['redborder']['blocked'] %>
+        if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
+          mutate {
+            add_field => { "sensor_blocked" => "true" }
+          }
         }
-      }
+      <% end %>
+    <% end %>
+  <% elsif @nodes.is_a?(Array) %>
+    <% @nodes.each do |node| %>
+      <% if node['redborder'] && node['redborder']['blocked'] %>
+        if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
+          mutate {
+            add_field => { "sensor_blocked" => "true" }
+          }
+        }
+      <% end %>
     <% end %>
   <% end %>
 }
