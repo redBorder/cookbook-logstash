@@ -11,6 +11,10 @@ action :add do
     flow_nodes = new_resource.flow_nodes
     proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
+    vault_nodes = new_resource.vault_nodes
+    scanner_nodes = new_resource.scanner_nodes
+    ips_nodes = new_resource.ips_nodes
+    mobility_nodes = new_resource.mobility_nodes
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
@@ -227,6 +231,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/vault/09_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: vault_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/vault/99_output.conf" do
         source 'output_kafka_namespace.conf.erb'
         owner user
@@ -379,6 +394,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/netflow/06_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: flow_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/netflow/90_splitflow.conf" do
         source 'netflow_splitflow.conf.erb'
         owner user
@@ -444,6 +470,17 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(mongo_port: mongo_port, mongo_cve_database: mongo_cve_database)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/scanner/03_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: scanner_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -592,6 +629,17 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_server: memcached_server)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/mobility/02_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: mobility_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -936,6 +984,17 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(memcached_servers: memcached_servers)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/intrusion/08_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: ips_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
