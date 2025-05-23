@@ -127,6 +127,12 @@ action :add do
       notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
     end
 
+    # Renamed so we clean the old file
+    file '/etc/logstash/pipelines/netflow/05_threat_intelligence.conf' do
+      action :delete
+      only_if { ::File.exist?('/etc/logstash/pipelines/netflow/05_threat_intelligence.conf') }
+    end
+    
     # Vault pipeline
     if is_manager
       template "#{pipelines_dir}/vault/00_input.conf" do
