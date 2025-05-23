@@ -27,8 +27,10 @@ action :add do
     flow_nodes_with_proxy = new_resource.flow_nodes_with_proxy
     begin
       sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
+      default_sensor = YAML.load(::File.open('/etc/logstash/default_sensor.yml'))
     rescue
       sensors_data = { 'sensors' => {} }
+      default_sensor = { 'sensor' => {} }
     end
 
     dnf_package 'logstash-rules' do
@@ -913,7 +915,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(sensors: sensors_data['sensors'], split_intrusion_logstash: split_intrusion_logstash)
+        variables(sensors: sensors_data['sensors'], default_sensor: default_sensor['default_sensor'], split_intrusion_logstash: split_intrusion_logstash)
         notifies :restart, 'service[logstash]', :delayed
       end
 
