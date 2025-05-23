@@ -132,7 +132,7 @@ action :add do
       action :delete
       only_if { ::File.exist?('/etc/logstash/pipelines/netflow/05_threat_intelligence.conf') }
     end
-    
+
     # Vault pipeline
     if is_manager
       template "#{pipelines_dir}/vault/00_input.conf" do
