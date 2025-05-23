@@ -1,12 +1,16 @@
 filter {
   <% if @nodes.is_a?(Hash) %>
-    <% @nodes.each do |_, node| %>
-      <% if node['redborder'] && node['redborder']['blocked'] %>
-        if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
-          mutate {
-            add_field => { "sensor_blocked" => "true" }
-          }
-        }
+    <% @nodes.each do |_, group| %>
+      <% if group.is_a?(Array) %>
+        <% group.each do |node| %>
+          <% if node['redborder'] && node['redborder']['blocked'] %>
+            if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
+              mutate {
+                add_field => { "sensor_blocked" => "true" }
+              }
+            }
+          <% end %>
+        <% end %>
       <% end %>
     <% end %>
   <% elsif @nodes.is_a?(Array) %>
