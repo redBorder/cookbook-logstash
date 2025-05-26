@@ -9,12 +9,14 @@ if valid_nodes && valid_nodes.any? %>
 filter {
   threat_intelligence {
     memcached_servers => <%= @memcached_servers %>
+
     sensors_policies => {
 <% valid_nodes.each_with_index do |node, i| %>
       "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['ti_policy_id'], 'name' => node['redborder']['ti_policy_name'], 'threshold' => node['redborder']['ti_policy_threshold'] }.to_json %>'
 <% end %>
     }
-    indicators_types => {
+
+    indicators_mapping => {
       "lan_ip" => "ip",
       "wan_ip" => "ip"
     }
