@@ -1,13 +1,29 @@
+<%
+valid_nodes = @intrusion_nodes.select do |node|
+  node.dig('rbname') &&
+  node.dig('redborder', 'ti_policy_id') &&
+  node.dig('redborder', 'ti_policy_name')
+end
+
+if valid_nodes && valid_nodes.any? %>
 filter {
-  threatintelligence {
-    memcached_servers => <%=@memcached_servers%>
-    key_mapping => {
-      "src" => "src_is_malicious"
-      "dst" => "dst_is_malicious"
-      "public_ip" => "src_is_malicious"
-      "sha256" => "sha256_is_malicious"
-      "file_uri" => "file_uri_is_malicious"
-      "file_hostname" => "file_hostname_is_malicious"
+  threat_intelligence {
+    memcached_servers => <%= @memcached_servers %>
+    sensors_policies => {
+<% valid_nodes.each_with_index do |node, i| %>
+      "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['ti_policy_id'], 'name' => node['redborder']['ti_policy_name'], 'threshold' => node['redborder']['ti_policy_threshold'] }.to_json %>'
+<% end %>
+    }
+    indicators_types => {
+      "src" => "ip"
+      "dst" => "ip"
+      "public_ip" => "ip"
+      "sha256" => "sha2"
+      "file_uri" => "url"
+      "file_hostname" => "domain"
     }
   }
 }
+<% else %>
+# No threat intelligence policies found.
+<% end %>

@@ -8,6 +8,7 @@ action :add do
     user = new_resource.user
     logstash_dir = new_resource.logstash_dir
     pipelines_dir = new_resource.pipelines_dir
+    intrusion_nodes = new_resource.intrusion_nodes
     flow_nodes = new_resource.flow_nodes
     proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
@@ -311,6 +312,8 @@ action :add do
 
     # netflow pipeline
     if is_manager
+      memcached_servers = node['redborder']['memcached']['hosts']
+
       template "#{pipelines_dir}/netflow/00_input.conf" do
         source 'input_kafka.conf.erb'
         owner user
@@ -365,8 +368,6 @@ action :add do
         variables(memcached_server: memcached_server)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
-
-      memcached_servers = node['redborder']['memcached']['hosts']
 
       template "#{pipelines_dir}/netflow/05_threat_intelligence.conf" do
         source 'netflow_threat_intelligence.conf.erb'
@@ -935,7 +936,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers)
+        variables(memcached_servers: memcached_servers, intrusion_nodes: intrusion_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
