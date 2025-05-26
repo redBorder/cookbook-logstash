@@ -14,7 +14,7 @@ filter {
       "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['ti_policy_id'], 'name' => node['redborder']['ti_policy_name'], 'threshold' => node['redborder']['ti_policy_threshold'] }.to_json %>'
 <% end %>
     }
-    key_mapping => {
+    indicators_types => {
       "lan_ip" => "ip",
       "wan_ip" => "ip"
     }
