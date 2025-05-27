@@ -2,7 +2,12 @@
 valid_nodes = @flow_nodes.select do |node|
   node.dig('rbname') &&
   node.dig('redborder', 'ti_policy_id') &&
-  node.dig('redborder', 'ti_policy_name')
+  node.dig('redborder', 'ti_policy_name') && 
+  node.dig('redborder', 'ti_policy_threshold_ip') && 
+  node.dig('redborder', 'ti_policy_threshold_sha1') && 
+  node.dig('redborder', 'ti_policy_threshold_sha2') && 
+  node.dig('redborder', 'ti_policy_threshold_url') && 
+  node.dig('redborder', 'ti_policy_threshold_domain') && 
 end
 
 if valid_nodes && valid_nodes.any? %>
@@ -12,7 +17,7 @@ filter {
 
     sensors_policies => {
 <% valid_nodes.each_with_index do |node, i| %>
-      "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['ti_policy_id'], 'name' => node['redborder']['ti_policy_name'], 'threshold' => node['redborder']['ti_policy_threshold'] }.to_json %>'
+      "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['ti_policy_id'], 'name' => node['redborder']['ti_policy_name'], 'threshold_ip' => node['redborder']['ti_policy_threshold_ip'] }.to_json, 'threshold_ip' => node['redborder']['ti_policy_threshold_sha1'] }.to_json, 'threshold_sha2' => node['redborder']['ti_policy_threshold_sha2'] }.to_json, 'threshold_url' => node['redborder']['ti_policy_threshold_url'] }.to_json, 'threshold_domain' => node['redborder']['ti_policy_threshold_domain'] }.to_json %>'
 <% end %>
     }
 
