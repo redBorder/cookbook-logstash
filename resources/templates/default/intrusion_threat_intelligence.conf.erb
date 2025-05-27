@@ -7,7 +7,7 @@ valid_nodes = @intrusion_nodes.select do |node|
   node.dig('redborder', 'ti_policy_threshold_sha1') && 
   node.dig('redborder', 'ti_policy_threshold_sha2') && 
   node.dig('redborder', 'ti_policy_threshold_url') && 
-  node.dig('redborder', 'ti_policy_threshold_domain') && 
+  node.dig('redborder', 'ti_policy_threshold_domain')
 end
 
 if valid_nodes && valid_nodes.any? %>
