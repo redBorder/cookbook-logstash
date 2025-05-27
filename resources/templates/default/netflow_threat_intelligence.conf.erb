@@ -17,12 +17,20 @@ filter {
 
     sensors_policies => {
 <% valid_nodes.each_with_index do |node, i| %>
-      "<%= node['rbname'] %>" => '<%= { 'id' => node['redborder']['ti_policy_id'], 'name' => node['redborder']['ti_policy_name'], 'threshold_ip' => node['redborder']['ti_policy_threshold_ip'] }.to_json, 'threshold_ip' => node['redborder']['ti_policy_threshold_sha1'] }.to_json, 'threshold_sha2' => node['redborder']['ti_policy_threshold_sha2'] }.to_json, 'threshold_url' => node['redborder']['ti_policy_threshold_url'] }.to_json, 'threshold_domain' => node['redborder']['ti_policy_threshold_domain'] }.to_json %>'
+    "<%= node['rbname'] %>" => <%= "{" %>
+      <%= "\"id\" => #{node['redborder']['ti_policy_id']}" %>
+      <%= "\"name\" => \"#{node['redborder']['ti_policy_name']}\"" %>
+      <%= "\"threshold_ip\" => #{node['redborder']['ti_policy_threshold_ip']}" %>
+      <%= "\"threshold_sha1\" => #{node['redborder']['ti_policy_threshold_sha1']}" %>
+      <%= "\"threshold_sha2\" => #{node['redborder']['ti_policy_threshold_sha2']}" %>
+      <%= "\"threshold_url\" => #{node['redborder']['ti_policy_threshold_url']}" %>
+      <%= "\"threshold_domain\" => #{node['redborder']['ti_policy_threshold_domain']}" %>
+      <%= "}" %>
 <% end %>
     }
 
     indicators_mapping => {
-      "lan_ip" => "ip",
+      "lan_ip" => "ip"
       "wan_ip" => "ip"
     }
   }
