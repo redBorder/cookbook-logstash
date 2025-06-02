@@ -1,0 +1,7 @@
+filter {
+  if ((![sensor_uuid] or [sensor_uuid] == "") and (![sensor_name] or [sensor_name] == "")) {
+    mutate {
+      add_field => { "sensor_blocked" => "true" }
+    }
+  }
+}
