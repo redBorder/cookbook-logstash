@@ -406,7 +406,7 @@ action :add do
       end
 
       template "#{pipelines_dir}/netflow/85_discard_events.conf" do
-        source 'discard_events.conf.erb'
+        source 'netflow_discard_events.conf.erb'
         owner user
         group user
         mode '0644'
