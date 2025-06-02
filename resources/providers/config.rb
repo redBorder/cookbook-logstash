@@ -405,6 +405,16 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/netflow/85_block_events_wihout_sensor_uuid_name.conf" do
+        source 'block_events_wihout_sensor_uuid_name.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/netflow/90_splitflow.conf" do
         source 'netflow_splitflow.conf.erb'
         owner user

@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 7.1.0
+
+  - Miguel Negrón
+    - [67a7e98] Merge pull request #98 from redBorder/bugfix/#21549_block_sensors_without_sensor_name_uuid
+    - [236a605] Update template
+    - [b6ef1b6] Add netflow step
+
 ## 7.0.0
 
   - Miguel Negrón
