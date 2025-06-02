@@ -405,8 +405,8 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/netflow/85_discard_events_without_sensor_uuid_name.conf" do
-        source 'discard_events_without_sensor_uuid_name.conf.erb'
+      template "#{pipelines_dir}/netflow/85_discard_events.conf" do
+        source 'discard_events.conf.erb'
         owner user
         group user
         mode '0644'
