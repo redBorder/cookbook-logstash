@@ -1,7 +1,7 @@
 output {
 <% if @output_topics %>
   <% @output_topics.each do |output_topic| %>
-    if [sensor_blocked] and [sensor_blocked] == "true" {
+    if [discard] and [discard] == "true" {
       kafka {
         codec => json
         topic_id => "<%= output_topic %>_discard"
@@ -19,7 +19,7 @@ output {
   if [namespace_uuid] {
     <% @namespaces.each do |namespace| %>
       if [namespace_uuid] == "<%= namespace %>" {
-        if [sensor_blocked] and [sensor_blocked] == "true" {
+        if [discard] and [discard] == "true" {
           kafka {
             codec => json
             topic_id => "<%= @output_namespace_topic + "_discard" %>"
@@ -35,7 +35,7 @@ output {
       }
     <% end %>
   } else {
-    if [sensor_blocked] and [sensor_blocked] == "true" {
+    if [discard] and [discard] == "true" {
       kafka {
         codec => json
         topic_id => "<%= @output_namespace_topic + "_discard" %>"
