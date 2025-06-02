@@ -1,6 +1,14 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 7.2.0
+
+  - Miguel Negrón
+    - [8fb2cf0] Merge pull request #100 from redBorder/improvement/#21553_rename_sensor_blocked_by_discard
+    - [1ea1ec9] Rename elements
+    - [238703b] Discard events
+    - [094ed98] Discard events instead of blocked
+
 ## 7.1.0
 
   - Miguel Negrón
