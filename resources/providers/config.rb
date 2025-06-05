@@ -8,7 +8,7 @@ action :add do
     user = new_resource.user
     logstash_dir = new_resource.logstash_dir
     pipelines_dir = new_resource.pipelines_dir
-    intrusion_nodes = new_resource.intrusion_nodes
+    ips_nodes = new_resource.ips_nodes
     flow_nodes = new_resource.flow_nodes
     proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
@@ -994,7 +994,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers, intrusion_nodes: intrusion_nodes)
+        variables(memcached_servers: memcached_servers, ips_nodes: ips_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 

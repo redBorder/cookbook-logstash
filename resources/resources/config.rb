@@ -9,7 +9,6 @@ attribute :logstash_dir, kind_of: String, default: '/etc/logstash'
 attribute :pipelines_dir, kind_of: String, default: '/etc/logstash/pipelines'
 attribute :cdomain, kind_of: String, default: 'redborder.cluster'
 attribute :managers_all, kind_of: Array, default: []
-attribute :intrusion_nodes, kind_of: Array, default: []
 attribute :flow_nodes, kind_of: Array, default: []
 attribute :proxy_nodes, kind_of: Array, default: []
 attribute :scanner_nodes, kind_of: Array, default: []
