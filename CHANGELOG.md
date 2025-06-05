@@ -1,6 +1,39 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 7.2.0
+
+  - Miguel Negrón
+    - [8fb2cf0] Merge pull request #100 from redBorder/improvement/#21553_rename_sensor_blocked_by_discard
+    - [1ea1ec9] Rename elements
+    - [238703b] Discard events
+    - [094ed98] Discard events instead of blocked
+
+## 7.1.0
+
+  - Miguel Negrón
+    - [67a7e98] Merge pull request #98 from redBorder/bugfix/#21549_block_sensors_without_sensor_name_uuid
+    - [236a605] Update template
+    - [b6ef1b6] Add netflow step
+
+## 7.0.0
+
+  - Miguel Negrón
+    - [fff8561] Merge pull request #95 from redBorder/feature/#21232_refactor_license_system_ng
+  - Rafael Gomez
+    - [a7eead6] Refactor check_license configuration to streamline handling of node groups and improve blocked sensor logic
+    - [e63952c] Refactor check_license configuration to iterate over node groups for improved handling of blocked sensors
+    - [0dfce08] Refactor check_license configuration to handle both Hash and Array types for nodes
+    - [9a37a12] Add mobility_nodes attribute to logstash config resource
+    - [866c052] Add mobility_nodes attribute to logstash config resource
+    - [bf92182] Enhance Kafka output configuration to handle sensor blocking logic for output topics and namespaces
+    - [62c4408] Add check_license configuration template for sensor blocking logic
+    - [86f0df1] Add default value for 'ips_nodes' attribute in logstash config
+    - [3413db4] Remove 'rb_limits' topic from logstash variable configurations
+    - [c0fac87] Fix linter: Update variable syntax for topics to use %w() format in logstash config
+    - [d43cac6] Refactor variable topic definitions to use %w syntax for linter
+    - [3d82218] Add 'rb_limits' topic to multiple logstash variable configurations
+
 
 ## 6.1.4
 
