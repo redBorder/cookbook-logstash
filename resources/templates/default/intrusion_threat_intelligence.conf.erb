@@ -2,20 +2,21 @@
 valid_nodes = []
 
 if @ips_nodes.is_a?(Hash)
-  @ips_nodes.each do |_, node|
-    next unless node.is_a?(Hash)
-
-    redborder = node['redborder']
-    if node['rbname'] &&
-       redborder.is_a?(Hash) &&
-       redborder['ti_policy_id'] &&
-       redborder['ti_policy_name'] &&
-       redborder['ti_policy_threshold_ip'] &&
-       redborder['ti_policy_threshold_sha1'] &&
-       redborder['ti_policy_threshold_sha2'] &&
-       redborder['ti_policy_threshold_url'] &&
-       redborder['ti_policy_threshold_domain']
-      valid_nodes << node
+  @ips_nodes.each do |_, group|
+    Array(group).each do |node|
+    
+      redborder = node['redborder']
+      if node['rbname'] &&
+        redborder.is_a?(Hash) &&
+        redborder['ti_policy_id'] &&
+        redborder['ti_policy_name'] &&
+        redborder['ti_policy_threshold_ip'] &&
+        redborder['ti_policy_threshold_sha1'] &&
+        redborder['ti_policy_threshold_sha2'] &&
+        redborder['ti_policy_threshold_url'] &&
+        redborder['ti_policy_threshold_domain']
+        valid_nodes << node
+      end
     end
   end
 end

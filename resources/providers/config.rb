@@ -8,7 +8,6 @@ action :add do
     user = new_resource.user
     logstash_dir = new_resource.logstash_dir
     pipelines_dir = new_resource.pipelines_dir
-    ips_nodes = new_resource.ips_nodes
     flow_nodes = new_resource.flow_nodes
     proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
