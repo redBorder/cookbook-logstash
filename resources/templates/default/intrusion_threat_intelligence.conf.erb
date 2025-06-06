@@ -1,14 +1,22 @@
 <%
-valid_nodes = @ips_nodes.select do |node|
-  if node.dig('rbname') &&
-      node.dig('redborder', 'ti_policy_id') &&
-      node.dig('redborder', 'ti_policy_name') && 
-      node.dig('redborder', 'ti_policy_threshold_ip') && 
-      node.dig('redborder', 'ti_policy_threshold_sha1') && 
-      node.dig('redborder', 'ti_policy_threshold_sha2') && 
-      node.dig('redborder', 'ti_policy_threshold_url') && 
-      node.dig('redborder', 'ti_policy_threshold_domain')
-    valid_nodes << node
+valid_nodes = []
+
+if @ips_nodes.is_a?(Hash)
+  @ips_nodes.each do |_, node|
+    next unless node.is_a?(Hash)
+
+    redborder = node['redborder']
+    if node['rbname'] &&
+       redborder.is_a?(Hash) &&
+       redborder['ti_policy_id'] &&
+       redborder['ti_policy_name'] &&
+       redborder['ti_policy_threshold_ip'] &&
+       redborder['ti_policy_threshold_sha1'] &&
+       redborder['ti_policy_threshold_sha2'] &&
+       redborder['ti_policy_threshold_url'] &&
+       redborder['ti_policy_threshold_domain']
+      valid_nodes << node
+    end
   end
 end
 
