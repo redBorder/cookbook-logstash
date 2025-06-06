@@ -1,15 +1,13 @@
 <%
-valid_nodes = @ips_nodes.select do |node|
-  if node.dig('rbname') &&
-      node.dig('redborder', 'ti_policy_id') &&
-      node.dig('redborder', 'ti_policy_name') && 
-      node.dig('redborder', 'ti_policy_threshold_ip') && 
-      node.dig('redborder', 'ti_policy_threshold_sha1') && 
-      node.dig('redborder', 'ti_policy_threshold_sha2') && 
-      node.dig('redborder', 'ti_policy_threshold_url') && 
-      node.dig('redborder', 'ti_policy_threshold_domain')
-    valid_nodes << node
-  end
+valid_nodes = @vault_nodes.select do |node|
+  node.dig('rbname') &&
+  node.dig('redborder', 'ti_policy_id') &&
+  node.dig('redborder', 'ti_policy_name') && 
+  node.dig('redborder', 'ti_policy_threshold_ip') && 
+  node.dig('redborder', 'ti_policy_threshold_sha1') && 
+  node.dig('redborder', 'ti_policy_threshold_sha2') && 
+  node.dig('redborder', 'ti_policy_threshold_url') && 
+  node.dig('redborder', 'ti_policy_threshold_domain')
 end
 
 if valid_nodes && valid_nodes.any? %>
@@ -32,12 +30,13 @@ filter {
     }
 
     indicators_mapping => {
-      "src" => "ip"
-      "dst" => "ip"
-      "public_ip" => "ip"
-      "sha256" => "sha2"
-      "file_uri" => "url"
-      "file_hostname" => "domain"
+      "source" => "ip"
+      "target" => "ip"
+      "fromhost_ip" => "ip"
+      "traffic_lan_ip" => "ip"
+      "traffic_wan_ip" => "ip"
+      "intrusion_source" => "ip"
+      "intrusion_target" => "ip"
     }
   }
 }

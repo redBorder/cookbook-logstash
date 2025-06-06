@@ -28,6 +28,9 @@ action :add do
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+
+    memcached_servers = node['redborder']['memcached']['hosts']
+
     begin
       sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
       default_sensor = YAML.load(::File.open('/etc/logstash/default_sensor.yml'))
@@ -243,6 +246,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/vault/10_threat_intelligence.conf" do
+        source 'vault_threat_intelligence.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(memcached_servers: memcached_servers, vault_nodes: vault_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/vault/99_output.conf" do
         source 'output_kafka_namespace.conf.erb'
         owner user
@@ -327,8 +341,6 @@ action :add do
 
     # netflow pipeline
     if is_manager
-      memcached_servers = node['redborder']['memcached']['hosts']
-
       template "#{pipelines_dir}/netflow/00_input.conf" do
         source 'input_kafka.conf.erb'
         owner user
