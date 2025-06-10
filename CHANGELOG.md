@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 7.3.0
+
+  - Miguel Negrón
+    - [6254eaf] Add comment back
+
 ## 7.2.0
 
   - Miguel Negrón
