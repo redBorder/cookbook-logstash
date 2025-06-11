@@ -39,7 +39,7 @@ filter {
   if [tag2] {
     <% @proxy_nodes.each do |proxy_node| %>
       <% if !proxy_node["redborder"].nil? and proxy_node["redborder"]["blocked"]!=true %>
-      #if [peer_ip_src] == "<%=proxy_node[:ipaddress]%>" {
+      if [peer_ip_src] == "<%=proxy_node[:ipaddress]%>" {
         ruby {
           code => "
             require 'ipaddr'
@@ -87,7 +87,7 @@ filter {
   
             "
           }
-        #}
+        }
       <% end %>
     <% end %>
     }

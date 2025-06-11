@@ -1,0 +1,27 @@
+filter {
+  <% if @nodes.is_a?(Hash) %>
+    <% @nodes.each do |_, group| %>
+      <% Array(group).each do |node| %>
+        <% redborder = node.dig('redborder') rescue nil %>
+        <% sensor_uuid = redborder.is_a?(Hash) ? redborder['sensor_uuid'] : nil %>
+        <% if redborder.is_a?(Hash) && redborder['blocked'] && sensor_uuid %>
+          if [sensor_uuid] == "<%= sensor_uuid %>" {
+            mutate {
+              add_field => { "discard" => "true" }
+            }
+          }
+        <% end %>
+      <% end %>
+    <% end %>
+  <% elsif @nodes.is_a?(Array) %>
+    <% @nodes.each do |node| %>
+      <% if node['redborder'] && node['redborder']['blocked'] %>
+        if [sensor_uuid] == "<%= node['redborder']['sensor_uuid'] %>" {
+          mutate {
+            add_field => { "discard" => "true" }
+          }
+        }
+      <% end %>
+    <% end %>
+  <% end %>
+}
