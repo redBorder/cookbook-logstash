@@ -7,10 +7,22 @@ filter {
     <% end %>
     <% @observation_id = (flow_node["redborder"]["observation_id"] and !flow_node["redborder"]["observation_id"].empty?) ? flow_node["redborder"]["observation_id"] : "default" %>
       if [observation_id] == "<%=@observation_id%>" {
-        mutate {
-          add_field => {
-            "sensor_name" => "<%= (flow_node["rbname"].nil? ? flow_node.name : flow_node["rbname"]) %>"
+        if ![sensor_name] {
+          mutate { add_field => {"sensor_name" => "<%= (flow_node["rbname"].nil? ? flow_node.name : flow_node["rbname"]) %>"}}
+        }
+        <% field_keys = ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid"] %>
+        <% field_keys.each do |key| %>
+          <% if (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "") %>
+          if ![<%=key%>] {
+            mutate { add_field => {"<%= key %> => "<%= flow_node['redborder'][key] %>"}}
           }
+          <% end %>
+        <% end %>
+        if ![index_partitions] {
+          mutate { add_field => {"index_partitions" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_partitions"].nil? ) ? flow_node["redborder"]["index_partitions"].to_i : 5].max %>}}
+        }
+        if ![index_replicas] {
+          mutate { add_field => {"index_replicas" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_replicas"].nil? ) ? flow_node["redborder"]["index_replicas"].to_i : 1].max %>}}
         }
       }
     <% unless @split_traffic_logstash %>
@@ -27,17 +39,22 @@ filter {
     <% end %>
     <% @observation_id = (flow_node["redborder"]["observation_id"] and !flow_node["redborder"]["observation_id"].empty?) ? flow_node["redborder"]["observation_id"] : "default" %>
       if [observation_id] == "<%=@observation_id%>" {
-        mutate {
-          add_field => {
-            "sensor_name" => "<%= (flow_node["rbname"].nil? ? flow_node.name : flow_node["rbname"]) %>"
-            <% ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid" ].each do |ss| %>
-            <% if !flow_node["redborder"][ss].nil? and flow_node["redborder"][ss]!="" %>
-            "<%= ss %>" => "<%= flow_node["redborder"][ss] %>"
-            <% end %>
-            <% end %>
-            "index_partitions" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_partitions"].nil? ) ? flow_node["redborder"]["index_partitions"].to_i : 5].max %>
-            "index_replicas" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_replicas"].nil? ) ? flow_node["redborder"]["index_replicas"].to_i : 1].max %>
+        if ![sensor_name] {
+          mutate { add_field => {"sensor_name" => "<%= (flow_node["rbname"].nil? ? flow_node.name : flow_node["rbname"]) %>"}}
+        }
+        <% field_keys = ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid"] %>
+        <% field_keys.each do |key| %>
+          <% if (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "") %>
+          if ![<%=key%>] {
+            mutate { add_field => {"<%= key %> => "<%= flow_node['redborder'][key] %>"}}
           }
+          <% end %>
+        <% end %>
+        if ![index_partitions] {
+          mutate { add_field => {"index_partitions" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_partitions"].nil? ) ? flow_node["redborder"]["index_partitions"].to_i : 5].max %>}}
+        }
+        if ![index_replicas] {
+          mutate { add_field => {"index_replicas" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_replicas"].nil? ) ? flow_node["redborder"]["index_replicas"].to_i : 1].max %>}}
         }
       }
     <% unless @split_traffic_logstash %>
