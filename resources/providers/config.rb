@@ -370,15 +370,10 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/netflow/04_darklist.conf" do
-        source 'netflow_darklist.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # Clean the file
+      file '/etc/logstash/pipelines/netflow/04_darklist.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/netflow/04_darklist.conf') }
       end
 
       memcached_servers = node['redborder']['memcached']['hosts']
@@ -951,14 +946,10 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/intrusion/04_darklist.conf" do
-        source 'intrusion_darklist.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # Clean the file
+      file '/etc/logstash/pipelines/intrusion/04_darklist.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/intrusion/04_darklist.conf') }
       end
 
       # This is related with this task
