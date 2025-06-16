@@ -9,6 +9,7 @@ if @ips_nodes.is_a?(Hash)
       if node['rbname'] &&
         redborder.is_a?(Hash) &&
         redborder['ti_policy_id'] &&
+        redborder['ti_policy_id'] != 0 &&
         redborder['ti_policy_name'] &&
         redborder['ti_policy_threshold_ip'] &&
         redborder['ti_policy_threshold_sha1'] &&
@@ -36,7 +37,7 @@ filter {
       <%= "\"threshold_sha2\" => #{node['redborder']['ti_policy_threshold_sha2']}" %>
       <%= "\"threshold_url\" => #{node['redborder']['ti_policy_threshold_url']}" %>
       <%= "\"threshold_domain\" => #{node['redborder']['ti_policy_threshold_domain']}" %>
-      <%= "}" %>
+      <%= "}" %><%= i < valid_nodes.length - 1 ? "," : "" %>
 <% end %>
     }
 

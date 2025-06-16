@@ -2,6 +2,7 @@
 valid_nodes = @vault_nodes.select do |node|
   node.dig('rbname') &&
   node.dig('redborder', 'ti_policy_id') &&
+  node.dig('redborder', 'ti_policy_id') != 0 &&
   node.dig('redborder', 'ti_policy_name') && 
   node.dig('redborder', 'ti_policy_threshold_ip') && 
   node.dig('redborder', 'ti_policy_threshold_sha1') && 
@@ -25,7 +26,7 @@ filter {
       <%= "\"threshold_sha2\" => #{node['redborder']['ti_policy_threshold_sha2']}" %>
       <%= "\"threshold_url\" => #{node['redborder']['ti_policy_threshold_url']}" %>
       <%= "\"threshold_domain\" => #{node['redborder']['ti_policy_threshold_domain']}" %>
-      <%= "}" %>
+      <%= "}" %><%= i < valid_nodes.length - 1 ? "," : "" %>
 <% end %>
     }
 
