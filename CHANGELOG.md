@@ -1,6 +1,18 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 7.3.1
+
+  - Pablo Pérez
+    - [0947aea] Merge pull request #103 from redBorder/feature/#21708_remove_darklist
+  - vimesa
+    - [5e054b3] Remove darklist
+
+## 7.3.0
+
+  - Miguel Negrón
+    - [6254eaf] Add comment back
+
 ## 7.2.0
 
   - Miguel Negrón
