@@ -37,7 +37,7 @@ filter {
       <%= "\"threshold_sha2\" => #{node['redborder']['ti_policy_threshold_sha2']}" %>
       <%= "\"threshold_url\" => #{node['redborder']['ti_policy_threshold_url']}" %>
       <%= "\"threshold_domain\" => #{node['redborder']['ti_policy_threshold_domain']}" %>
-      <%= "}" %><%= i < valid_nodes.length - 1 ? "," : "" %>
+      <%= "}" %>
 <% end %>
     }
 
