@@ -3,7 +3,7 @@ cookbook-logstash CHANGELOG
 
 ## 8.0.0
 
-  - Miguel Negrón
+  - vimesa && manegron
     - [05185f8] Merge pull request #96 from redBorder/feature/#20408_update_ti
     - [f176e47] Remove commas between sensors
     - [317ba81] Remove mapping uri with url for intrusion ti
@@ -16,7 +16,6 @@ cookbook-logstash CHANGELOG
     - [973c149] change key_mapper by indicators_types
     - [655abee] Update ti
     - [49a4b48] Update ti
-  - vimesa
     - [fe05a84] Merge branch 'feature/#20408_update_ti' of github.com:redBorder/cookbook-logstash into feature/#20408_update_ti
     - [8cd1c2b] Add condition when policy_id is 0
     - [84cb313] Fix intrusion threat intelligence pipeline
@@ -30,7 +29,6 @@ cookbook-logstash CHANGELOG
     - [f1d1b36] Modify template
     - [37b3653] Add flow reputation
     - [28b2566] Add reputations policies
-  - manegron
     - [05185f8] Merge pull request #96 from redBorder/feature/#20408_update_ti
     - [f176e47] Remove commas between sensors
     - [317ba81] Remove mapping uri with url for intrusion ti
