@@ -1,6 +1,52 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.0.0
+
+  - Miguel Negrón
+    - [05185f8] Merge pull request #96 from redBorder/feature/#20408_update_ti
+    - [f176e47] Remove commas between sensors
+    - [317ba81] Remove mapping uri with url for intrusion ti
+    - [9932f05] Update ti
+    - [3a41bef] Fix syntax error
+    - [15856d6] Update threshold
+    - [1ac70fa] Update ti
+    - [52388c3] Fix syntax error
+    - [38ec2eb] Add intrusion nodes
+    - [973c149] change key_mapper by indicators_types
+    - [655abee] Update ti
+    - [49a4b48] Update ti
+  - vimesa
+    - [fe05a84] Merge branch 'feature/#20408_update_ti' of github.com:redBorder/cookbook-logstash into feature/#20408_update_ti
+    - [8cd1c2b] Add condition when policy_id is 0
+    - [84cb313] Fix intrusion threat intelligence pipeline
+    - [eea3565] Modify template
+    - [896b852] Add intrusion and vault threat intelligence pipeline
+    - [a92a276] Rename intrusion_nodes to ips_nodes
+    - [ec53bb8] Merge branch 'master' into feature/#20408_update_ti
+    - [6e5ba69] Delete the old file if it exists
+    - [d07d32a] Add threshold
+    - [110be09] Merge branch 'master' into feature/#20408_flow_reputations
+    - [f1d1b36] Modify template
+    - [37b3653] Add flow reputation
+    - [28b2566] Add reputations policies
+  - manegron
+    - [05185f8] Merge pull request #96 from redBorder/feature/#20408_update_ti
+    - [f176e47] Remove commas between sensors
+    - [317ba81] Remove mapping uri with url for intrusion ti
+    - [1ea901b] Remove empty file
+    - [c5b1556] Merge branch 'master' into feature/#20408_update_ti
+    - [9932f05] Update ti
+    - [3a41bef] Fix syntax error
+    - [15856d6] Update threshold
+    - [1ac70fa] Update ti
+    - [52388c3] Fix syntax error
+    - [38ec2eb] Add intrusion nodes
+    - [973c149] change key_mapper by indicators_types
+    - [655abee] Update ti
+    - [49a4b48] Update ti
+    - [07bf824] Fix lint rename sensors_policies
+
 ## 7.3.1
 
   - Pablo Pérez
