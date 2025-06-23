@@ -1,10 +1,41 @@
+<%
+valid_nodes = @flow_nodes.select do |node|
+  node.dig('rbname') &&
+  node.dig('redborder', 'ti_policy_id') &&
+  node.dig('redborder', 'ti_policy_id') != 0 &&
+  node.dig('redborder', 'ti_policy_name') && 
+  node.dig('redborder', 'ti_policy_threshold_ip') && 
+  node.dig('redborder', 'ti_policy_threshold_sha1') && 
+  node.dig('redborder', 'ti_policy_threshold_sha2') && 
+  node.dig('redborder', 'ti_policy_threshold_url') && 
+  node.dig('redborder', 'ti_policy_threshold_domain')
+end
+
+if valid_nodes && valid_nodes.any? %>
 filter {
-  threatintelligence {
-    memcached_servers => <%=@memcached_servers%>
-    key_mapping => {
-      "lan_ip" => "lan_ip_is_malicious"
-      "wan_ip" => "wan_ip_is_malicious"
-      "public_ip" => "public_ip_is_malicious"
+  threat_intelligence {
+    memcached_servers => <%= @memcached_servers %>
+
+    sensors_policies => {
+<% valid_nodes.each_with_index do |node, i| %>
+    "<%= node['rbname'] %>" => <%= "{" %>
+      <%= "\"id\" => #{node['redborder']['ti_policy_id']}" %>
+      <%= "\"name\" => \"#{node['redborder']['ti_policy_name']}\"" %>
+      <%= "\"threshold_ip\" => #{node['redborder']['ti_policy_threshold_ip']}" %>
+      <%= "\"threshold_sha1\" => #{node['redborder']['ti_policy_threshold_sha1']}" %>
+      <%= "\"threshold_sha2\" => #{node['redborder']['ti_policy_threshold_sha2']}" %>
+      <%= "\"threshold_url\" => #{node['redborder']['ti_policy_threshold_url']}" %>
+      <%= "\"threshold_domain\" => #{node['redborder']['ti_policy_threshold_domain']}" %>
+      <%= "}" %>
+<% end %>
+    }
+
+    indicators_mapping => {
+      "lan_ip" => "ip"
+      "wan_ip" => "ip"
     }
   }
 }
+<% else %>
+# No threat intelligence policies found.
+<% end %>
