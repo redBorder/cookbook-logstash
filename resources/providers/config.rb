@@ -1204,7 +1204,7 @@ action :add do
       # This script will generated the YAML file needed to enrich the asset type into the events
       execute 'rb_create_asset_type_yaml' do
         ignore_failure true
-        command "/usr/lib/redborder/bin/rb_create_asset_type_yaml.sh"
+        command "/usr/lib/redborder/bin/rb_create_asset_type_yaml.sh /etc/assets/mac_to_asset_type.yaml"
         action :run
       end
     end

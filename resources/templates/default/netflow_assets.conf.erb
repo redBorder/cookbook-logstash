@@ -3,7 +3,7 @@ filter {
   translate {
     field => "[client_mac]"
     destination => "[client_asset_type]"
-    dictionary_path => "/etc/assets/mac_to_asset_type_id.yaml"
+    dictionary_path => "/etc/assets/mac_to_asset_type.yaml"
     override => true
   }
 }
