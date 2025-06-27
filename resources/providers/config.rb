@@ -416,7 +416,6 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(mac_to_asset_type_id_file: mac_to_asset_type_id_file, asset_type_id_to_asset_type_name_file: asset_type_id_to_asset_type_name_file)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
