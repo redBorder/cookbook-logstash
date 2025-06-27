@@ -1,31 +1,9 @@
 filter {
-  # 1. Map CLIENT MAC with asset type ID
+  # 1. Map ASSET TYPE ID with asset type name
   translate {
     field => "[client_mac]"
-    destination => "[client_asset_type_id]"
-    dictionary_path => "<%= @mac_to_asset_type_id_file %>"
+    destination => "[client_asset_type]"
+    dictionary_path => "<%= @mac_to_asset_type_file %>"
     override => true
-  }
-
-  # 2. Map ASSET TYPE ID with asset type name
-  translate {
-    field => "[client_asset_type_id]"
-    destination => "[client_asset_type_name]"
-    dictionary_path => "<%= @asset_type_id_to_asset_type_name_file %>"
-    override => true
-  }
-
-  # Clean up if client_asset_type_id not found
-  if ![client_asset_type_id] and [client_asset_type_name] {
-    mutate {
-      remove_field => ["client_asset_type_name"]
-    }
-  }
-
-  # Clean up if client_asset_type_name not found
-  if ![client_asset_type_name] and [client_asset_type_id] {
-    mutate {
-      remove_field => ["client_asset_type_id"]
-    }
   }
 }
