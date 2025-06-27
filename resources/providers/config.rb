@@ -27,6 +27,9 @@ action :add do
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+    assets_dir = new_resource.assets_dir
+    asset_type_id_to_asset_type_name_file = new_resource.asset_type_id_to_asset_type_name_file
+    mac_to_asset_type_id_file = new_resource.mac_to_asset_type_id_file
 
     memcached_servers = node['redborder']['memcached']['hosts']
 
@@ -419,6 +422,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        variables(mac_to_asset_type_id_file: mac_to_asset_type_id_file, asset_type_id_to_asset_type_name_file: asset_type_id_to_asset_type_name_file)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1197,7 +1201,7 @@ action :add do
     end
 
     if is_manager
-      directory '/etc/assets' do
+      directory assets_dir do
         owner 'root'
         group 'root'
         mode '0777'
@@ -1207,13 +1211,13 @@ action :add do
       # This script will generated the YAML file needed to enrich the asset type into the events
       execute 'rb_create_asset_type_id_yaml' do
         ignore_failure true
-        command "/usr/lib/redborder/bin/rb_create_asset_type_id_yaml.sh /etc/assets/asset_type_id_to_asset_type_name.yaml"
+        command "/usr/lib/redborder/bin/rb_create_asset_type_id_yaml.sh #{asset_type_id_to_asset_type_name_file}"
         action :run
       end
 
       execute 'rb_create_asset_type_name_yaml' do
         ignore_failure true
-        command "/usr/lib/redborder/bin/rb_create_asset_type_name_yaml.sh /etc/assets/mac_to_asset_type_id.yaml"
+        command "/usr/lib/redborder/bin/rb_create_asset_type_name_yaml.sh #{mac_to_asset_type_id_file}"
         action :run
       end
     end

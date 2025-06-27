@@ -26,3 +26,6 @@ attribute :split_traffic_logstash, kind_of: [TrueClass, FalseClass], default: fa
 attribute :split_intrusion_logstash, kind_of: [TrueClass, FalseClass], default: false
 attribute :intrusion_incidents_priority_filter, kind_of: String, default: 'high'
 attribute :vault_incidents_priority_filter, kind_of: String, default: 'error'
+attribute :assets_dir, kind_of: String, default: '/etc/assets'
+attribute :mac_to_asset_type_id_file, kind_of: String, default: '/etc/assets/mac_to_asset_type_id.yaml'
+attribute :asset_type_id_to_asset_type_name_file, kind_of: String, default: '/etc/assets/asset_type_id_to_asset_type_name.yaml'
