@@ -41,17 +41,14 @@ action :add do
     dnf_package 'logstash-rules' do
       only_if { is_manager }
       action :upgrade
-      flush_cache [:before]
     end
 
     dnf_package 'logstash' do
       action :upgrade
-      flush_cache [:before]
     end
 
     dnf_package 'redborder-logstash-plugins' do
       action :upgrade
-      flush_cache [:before]
     end
 
     execute 'create_user' do
