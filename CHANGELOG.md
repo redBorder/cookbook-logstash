@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.0.1
+
+  - nilsver
+    - [9f653e0] remove flush cache
+
 ## 8.0.0
 
   - vimesa && manegron
