@@ -1196,19 +1196,26 @@ action :add do
       end
     end
 
-    # This script will generated the YAML file needed to enrich the asset type into the events
-    execute 'rb_create_asset_type_id_yaml' do
-      ignore_failure true
-      command "/usr/lib/redborder/bin/rb_create_asset_type_id_yaml.sh#{logstash_dir}/asset_type_id.yaml"
-      action :run
-      only_if { is_manager }
-    end
+    if is_manager
+      directory '/etc/assets' do
+        owner 'root'
+        group 'root'
+        mode '0777'
+        action :create
+      end
 
-    execute 'rb_create_asset_type_name_yaml' do
-      ignore_failure true
-      command "/usr/lib/redborder/bin/rb_create_asset_type_name_yaml.sh #{logstash_dir}/asset_type_name.yaml"
-      action :run
-      only_if { is_manager }
+      # This script will generated the YAML file needed to enrich the asset type into the events
+      execute 'rb_create_asset_type_id_yaml' do
+        ignore_failure true
+        command "/usr/lib/redborder/bin/rb_create_asset_type_id_yaml.sh /etc/assets/asset_type_id_to_asset_type_name.yaml"
+        action :run
+      end
+
+      execute 'rb_create_asset_type_name_yaml' do
+        ignore_failure true
+        command "/usr/lib/redborder/bin/rb_create_asset_type_name_yaml.sh /etc/assets/mac_to_asset_type_id.yaml"
+        action :run
+      end
     end
 
     service 'logstash' do

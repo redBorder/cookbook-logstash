@@ -3,7 +3,7 @@ filter {
   translate {
     field => "[client_mac]"
     destination => "[asset_type_id]"
-    dictionary_path => "/etc/logstash/asset_type_id.yaml"
+    dictionary_path => "/etc/assets/mac_to_asset_type_id.yaml"
     override => true
   }
 
@@ -11,7 +11,7 @@ filter {
   translate {
     field => "[asset_type_id]"
     destination => "[asset_type_name]"
-    dictionary_path => "/etc/logstash/asset_type_name.yaml"
+    dictionary_path => "/etc/assets/asset_type_id_to_asset_type_name.yaml"
     override => true
   }
 
