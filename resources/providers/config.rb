@@ -135,9 +135,9 @@ action :add do
       source 'logstash_log_rotate.erb'
       owner 'root'
       group 'root'
-      mode '644'
+      mode '0644'
       retries 2
-      not_if { ::File.exist?('/etc/logrotate.d/logstash') }
+      cookbook 'logstash'
     end
 
     # Vault pipeline
