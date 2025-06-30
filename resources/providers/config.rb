@@ -132,7 +132,7 @@ action :add do
     end
 
     template '/etc/logrotate.d/logstash' do
-      source 'logstash_log-rotate.erb'
+      source 'logstash_log_rotate.erb'
       owner 'root'
       group 'root'
       mode '644'
