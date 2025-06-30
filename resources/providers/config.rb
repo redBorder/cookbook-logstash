@@ -131,6 +131,14 @@ action :add do
       notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
     end
 
+    template '/etc/logrotate.d/logstash' do
+      source 'logstash_log-rotate.erb'
+      owner 'root'
+      group 'root'
+      mode '644'
+      retries 2
+    end
+
     # Vault pipeline
     if is_manager
       template "#{pipelines_dir}/vault/00_input.conf" do
@@ -1219,6 +1227,10 @@ action :remove do
 
     directory '/etc/logstash' do
       recursive true
+      action :delete
+    end
+
+    file '/etc/logrotate.d/logstash' do
       action :delete
     end
 
