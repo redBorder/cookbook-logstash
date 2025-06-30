@@ -1206,6 +1206,7 @@ action :add do
         ignore_failure true
         command "/usr/lib/redborder/bin/rb_create_asset_type_yaml.sh /etc/assets/mac_to_asset_type.yaml"
         action :run
+        not_if { node['redborder']['leader_configuring']  }
       end
     end
 
