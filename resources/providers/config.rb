@@ -137,6 +137,7 @@ action :add do
       group 'root'
       mode '644'
       retries 2
+      not_if { ::File.exist?('/etc/logrotate.d/logstash') }
     end
 
     # Vault pipeline
