@@ -409,6 +409,16 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/netflow/08_assets.conf" do
+        source 'netflow_assets.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/netflow/85_discard_events.conf" do
         source 'netflow_discard_events.conf.erb'
         owner user
@@ -1183,7 +1193,22 @@ action :add do
       end
     end
 
-    # end of bulkstats
+    if is_manager
+      directory '/etc/assets' do
+        owner 'root'
+        group 'root'
+        mode '0777'
+        action :create
+      end
+
+      # This script will generated the YAML file needed to enrich the asset type into the events
+      execute 'rb_create_asset_type_yaml' do
+        ignore_failure true
+        command '/usr/lib/redborder/bin/rb_create_asset_type_yaml.sh /etc/assets/mac_to_asset_type.yaml'
+        action :run
+        not_if { node['redborder']['leader_configuring'] }
+      end
+    end
 
     service 'logstash' do
       service_name 'logstash'

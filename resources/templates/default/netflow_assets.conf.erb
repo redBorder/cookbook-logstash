@@ -1,0 +1,9 @@
+filter {
+  # 1. Map client_mac with asset type name
+  translate {
+    field => "[client_mac]"
+    destination => "[client_asset_type]"
+    dictionary_path => "/etc/assets/mac_to_asset_type.yaml"
+    override => true
+  }
+}

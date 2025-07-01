@@ -1,6 +1,14 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.1.0
+
+  - Miguel Negrón
+    - [58b145a] Dont create asset type if node still configuring
+    - [af09bbf] Make dynamic file path
+    - [110bf70] Rename files
+    - [fa0ecb4] Add template
+
 ## 8.0.1
 
   - nilsver
