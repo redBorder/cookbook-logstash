@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.1.1
+
+  - Rafa Gómez
+    - [ec1b7b4] Improvement/#20536 Migrate logstash log rotate from cookbook-rb-manager (#109)
+
 ## 8.1.0
 
   - Miguel Negrón
