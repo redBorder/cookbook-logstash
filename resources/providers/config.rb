@@ -95,7 +95,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion)
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -1046,6 +1046,18 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_event_post',
                   namespaces: namespaces)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/druid-metrics/99_output.conf" do
+        source 'monitor_druid_metrics.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        # variables(output_namespace_topic: 'rb_event_post',
+        #           namespaces: namespaces)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end

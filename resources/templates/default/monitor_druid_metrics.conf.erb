@@ -1,0 +1,20 @@
+input {
+  kafka {
+    codec => json
+    bootstrap_servers => "kafka.service:9092"
+    topics => ['rb_druid_metrics']
+    decorate_events => true
+  }
+}
+
+filter {
+  druid_metrics {}
+}
+
+output {
+  kafka {
+    codec => json
+    topic_id => "rb_monitor"
+    bootstrap_servers => "kafka.service:9092"
+  }
+}
