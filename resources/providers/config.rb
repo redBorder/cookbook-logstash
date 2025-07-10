@@ -1048,19 +1048,31 @@ action :add do
                   namespaces: namespaces)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
+    end
 
-      template "#{pipelines_dir}/druid-metrics/99_output.conf" do
-        source 'monitor_druid_metrics.conf.erb'
+    # Druid metrics pipeline
+    if is_manager
+      template "#{pipelines_dir}/druid-metrics/00_input.conf" do
+        source 'druid_metrics_00_input.conf.erb'
         owner user
         group user
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        # variables(output_namespace_topic: 'rb_event_post',
-        #           namespaces: namespaces)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/druid-metrics/99_output.conf" do
+        source 'druid_metrics_99_output.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
+    
 
     # Redfish pipeline
     if is_manager || is_proxy
