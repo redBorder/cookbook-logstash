@@ -95,7 +95,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion)
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -1049,6 +1049,30 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
+
+    # Druid metrics pipeline
+    if is_manager
+      template "#{pipelines_dir}/druid-metrics/00_input.conf" do
+        source 'druid_metrics_00_input.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/druid-metrics/99_output.conf" do
+        source 'druid_metrics_99_output.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+    end
+    
 
     # Redfish pipeline
     if is_manager || is_proxy
