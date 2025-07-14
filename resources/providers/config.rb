@@ -1072,7 +1072,6 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
-    
 
     # Redfish pipeline
     if is_manager || is_proxy
