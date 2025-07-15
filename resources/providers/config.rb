@@ -18,8 +18,6 @@ action :add do
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
-    mongo_cve_database = new_resource.mongo_cve_database
-    mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
     split_intrusion_logstash = new_resource.split_intrusion_logstash
