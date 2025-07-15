@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.2.0
+
+  - Pablo Torres
+    - [f592ea2] Feature #21767: Add druid-metric pipeline
+
 ## 8.1.1
 
   - Rafa Gómez
