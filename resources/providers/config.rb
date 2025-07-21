@@ -500,6 +500,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        variables(username: username, password: password, port: port, host: host, database_name: database_name)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 

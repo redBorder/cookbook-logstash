@@ -1,7 +1,11 @@
 filter {
   if [scan_type] == "2" {
     postgrescve {
-      database_yml_path => "/var/www/rb-rails/config/database.yml"
+      host           => "<%= @host %>"
+      port           => "<%= @port %>"
+      user           => "<%= @username %>"
+      password       => "<%= @password %>"
+      database       => "<%= @database_name %>"
     }
   }
 }
