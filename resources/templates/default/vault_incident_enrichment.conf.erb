@@ -10,6 +10,9 @@ filter {
       field_map => {
         "fromhost_ip" => "ip"
       }
+      redis_hosts => <%= @redis_hosts %>
+      redis_port => <%= @redis_port %>
+      redis_password => "<%= @redis_password %>"
     }
   }
 }
