@@ -6,7 +6,7 @@ filter {
       incidents_priority_filter => "<%= @intrusion_incidents_priority_filter %>"
       redis_hosts => <%= @redis_hosts %>
       redis_port => <%= @redis_port %>
-      redis_password => <%= @redis_password %>
+      redis_password => "<%= @redis_password %>"
     }
   }
 }
