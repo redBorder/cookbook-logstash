@@ -1,6 +1,31 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.3.0
+
+  - Luis Blanco
+    - [6a13db8] Merge pull request #113 from redBorder/feature/22218_replace_mongodb
+  - ljblancoredborder
+    - [6a13db8] Merge pull request #113 from redBorder/feature/22218_replace_mongodb
+    - [a1316b2] Merge branch 'master' into feature/22218_replace_mongodb
+  - nilsver
+    - [01b5bcc] update logstash to use databag
+    - [367f3ca] remove mongo variables
+    - [8d5bb38] Merge branch 'development' into feature/22218_replace_mongodb
+    - [84079ed] replace mongodb
+    - [890d0bc] Release 8.1.1
+  - Daniel Castro
+    - [cdb6f86] Release 8.2.0
+    - [5507ee0] Merge pull request #112 from redBorder/feature/#21767_add_druid_metrics
+  - Pablo Torres
+    - [961b351] Feature #21767: Fix lint
+    - [1fda213] Feature #21767: Move pipeline to manager if
+    - [f21ecdf] Feature #21767: Separate pipeline into two files
+    - [f592ea2] Feature #21767: Add druid-metric pipeline
+    - [c81515c] Feature #21767: Added druid metrics
+  - Rafa Gómez
+    - [ec1b7b4] Improvement/#20536 Migrate logstash log rotate from cookbook-rb-manager (#109)
+
 ## 8.2.0
 
   - Pablo Torres
