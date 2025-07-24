@@ -1,0 +1,11 @@
+filter {
+  if [scan_type] == "2" {
+    postgrescve {
+      host           => "<%= @host %>"
+      port           => "<%= @port %>"
+      user           => "<%= @username %>"
+      password       => "<%= @password %>"
+      database       => "<%= @database_name %>"
+    }
+  }
+}
