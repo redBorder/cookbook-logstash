@@ -18,8 +18,6 @@ action :add do
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
-    mongo_cve_database = new_resource.mongo_cve_database
-    mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
     split_intrusion_logstash = new_resource.split_intrusion_logstash
@@ -495,14 +493,14 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/scanner/02_mongocve.conf" do
-        source 'scanner_mongocve.conf.erb'
+      template "#{pipelines_dir}/scanner/02_postgrescve.conf" do
+        source 'scanner_postgrescve.conf.erb'
         owner user
         group user
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(mongo_port: mongo_port, mongo_cve_database: mongo_cve_database)
+        variables(username: username, password: password, port: port, host: host, database_name: database_name)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
