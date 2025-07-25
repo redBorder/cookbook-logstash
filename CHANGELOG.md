@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.3.1
+
+  - jnavarrorb
+    - [5ba3ec9] Remove executable permissions on non-executable files
+
 ## 8.3.0
 
   - nilsver
