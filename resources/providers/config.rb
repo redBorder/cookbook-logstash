@@ -25,6 +25,10 @@ action :add do
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+    redis_hosts = new_resource.redis_hosts
+    redis_port = new_resource.redis_port
+    redis_secrets = new_resource.redis_secrets
+    redis_password = redis_secrets['pass'] unless redis_secrets.empty?
 
     memcached_servers = node['redborder']['memcached']['hosts']
 
@@ -234,7 +238,10 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(vault_incidents_priority_filter: vault_incidents_priority_filter)
+        variables(vault_incidents_priority_filter: vault_incidents_priority_filter,
+                  redis_hosts: redis_hosts,
+                  redis_port: redis_port,
+                  redis_password: redis_password)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -999,7 +1006,10 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter)
+        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter,
+                  redis_hosts: redis_hosts,
+                  redis_port: redis_port,
+                  redis_password: redis_password)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
