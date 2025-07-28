@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.3.0
+
+  - nilsver
+    - [01b5bcc] update logstash to use databag
+    - [367f3ca] remove mongo variables
+    - [84079ed] replace mongodb
+
 ## 8.2.0
 
   - Pablo Torres
