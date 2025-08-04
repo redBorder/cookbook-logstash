@@ -1231,19 +1231,19 @@ action :add do
 
       # CAPEv2
       # TO DO: Integrate CAPEv2
-      if node['redborder']['loaders'] && managers_per_service['cape_api'] && !managers_per_service['cape_api'].empty?
-        template "#{pipelines_dir}/malware/60_cape.conf" do
-          source 'malware_60_cape.conf.erb'
-          owner user
-          group user
-          mode '0644'
-          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-        end
-      elsif File.exist?("#{pipelines_dir}/malware/60_cape.conf")
-        file "#{pipelines_dir}/malware/60_cape.conf" do
-          action :delete
-        end
-      end
+      # if node['redborder']['loaders'] && managers_per_service['cape_api'] && !managers_per_service['cape_api'].empty?
+      #   template "#{pipelines_dir}/malware/60_cape.conf" do
+      #     source 'malware_60_cape.conf.erb'
+      #     owner user
+      #     group user
+      #     mode '0644'
+      #     notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      #   end
+      # elsif File.exist?("#{pipelines_dir}/malware/60_cape.conf")
+      #   file "#{pipelines_dir}/malware/60_cape.conf" do
+      #     action :delete
+      #   end
+      # end
 
       template "#{pipelines_dir}/malware/98_clean_input_files.conf" do
         source 'malware_98_clean_input_files.conf.erb'
