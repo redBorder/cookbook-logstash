@@ -1143,6 +1143,8 @@ action :add do
         owner user
         group user
         mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1151,6 +1153,8 @@ action :add do
         owner user
         group user
         mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1162,6 +1166,8 @@ action :add do
           owner user
           group user
           mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
           variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
                     access_key_id: s3_secrets['key_id_malware'],
                     secret_access_key: s3_secrets['key_secret_malware'])
@@ -1182,6 +1188,8 @@ action :add do
           owner user
           group user
           mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
           variables(apikey: node['redborder']['loaders']['metadefender_api_key'],
                     access_key_id: s3_secrets['key_id_malware'],
                     secret_access_key: s3_secrets['key_secret_malware'])
@@ -1199,7 +1207,8 @@ action :add do
         owner user
         group user
         mode '0644'
-        retries 2
+        ignore_failure true
+        cookbook 'logstash'
         variables(access_key_id: s3_secrets['key_id_malware'],
                   secret_access_key: s3_secrets['key_secret_malware'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
@@ -1212,6 +1221,8 @@ action :add do
       #   owner user
       #   group user
       #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
       #   variables(access_key_id: s3_secrets['key_id_malware'],
       #             secret_access_key: s3_secrets['key_secret_malware'])
       #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
@@ -1223,7 +1234,9 @@ action :add do
       #   source 'malware_50_fuzzy.conf.erb'
       #   owner user
       #   group user
-      #   mode '0644'
+      #   mode '0644
+      #   ignore_failure true
+      #   cookbook 'logstash''
       #   variables(:access_key_id => s3_secrets["key_id_malware"],
       #             :secret_access_key => s3_secrets["key_secret_malware"])
       #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
@@ -1237,6 +1250,8 @@ action :add do
       #     owner user
       #     group user
       #     mode '0644'
+      #     ignore_failure true
+      #     cookbook 'logstash'
       #     notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       #   end
       # elsif File.exist?("#{pipelines_dir}/malware/60_cape.conf")
@@ -1250,6 +1265,8 @@ action :add do
         owner user
         group user
         mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1258,6 +1275,8 @@ action :add do
         owner user
         group user
         mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
