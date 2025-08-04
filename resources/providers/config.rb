@@ -1163,8 +1163,8 @@ action :add do
           group user
           mode '0644'
           variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
-                    access_key_id: s3_secrets["key_id_malware"],
-                    secret_access_key: s3_secrets["key_secret_malware"])
+                    access_key_id: s3_secrets['key_id_malware'],
+                    secret_access_key: s3_secrets['key_secret_malware'])
           notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
         end
       elsif File.exist?("#{pipelines_dir}/malware/10_virustotal.conf")
