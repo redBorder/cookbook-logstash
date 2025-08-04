@@ -29,6 +29,7 @@ action :add do
     redis_port = new_resource.redis_port
     redis_secrets = new_resource.redis_secrets
     redis_password = redis_secrets['pass'] unless redis_secrets.empty?
+    s3_secrets = new_resource.s3_secrets
 
     memcached_servers = node['redborder']['memcached']['hosts']
 
