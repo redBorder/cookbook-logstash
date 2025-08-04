@@ -1173,7 +1173,7 @@ action :add do
                     secret_access_key: s3_secrets['key_secret_malware'])
           notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
         end
-      elsif File.exist?("#{pipelines_dir}/malware/10_virustotal.conf")
+      elsif ::File.exist?("#{pipelines_dir}/malware/10_virustotal.conf")
         file "#{pipelines_dir}/malware/10_virustotal.conf" do
           action :delete
         end
@@ -1195,7 +1195,7 @@ action :add do
                     secret_access_key: s3_secrets['key_secret_malware'])
           notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
         end
-      elsif File.exist?("#{pipelines_dir}/malware/20_metadefender.conf")
+      elsif ::File.exist?("#{pipelines_dir}/malware/20_metadefender.conf")
         file "#{pipelines_dir}/malware/20_metadefender.conf" do
           action :delete
         end
