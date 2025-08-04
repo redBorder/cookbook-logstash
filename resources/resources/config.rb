@@ -27,4 +27,3 @@ attribute :vault_incidents_priority_filter, kind_of: String, default: 'error'
 attribute :redis_hosts, kind_of: Array, default: []
 attribute :redis_port, kind_of: Integer, default: 26379
 attribute :redis_secrets, kind_of: Hash, default: {}
-attribute :malware_enable, kind_of: [TrueClass, FalseClass], default: false

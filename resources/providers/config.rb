@@ -29,7 +29,6 @@ action :add do
     redis_port = new_resource.redis_port
     redis_secrets = new_resource.redis_secrets
     redis_password = redis_secrets['pass'] unless redis_secrets.empty?
-    malware_enable = new_resource.malware_enable
 
     memcached_servers = node['redborder']['memcached']['hosts']
 
@@ -98,8 +97,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics)
-      pipelines.push('malware') if malware_enable
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
