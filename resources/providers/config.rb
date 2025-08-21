@@ -143,19 +143,21 @@ action :add do
       cookbook 'logstash'
     end
 
+    # filter_builder = Logstash::Filters::FilterBuilder.new(pipelines_dir: pipelines_dir)
+
     # Vault pipeline
     if is_manager
-      input_template pipeline: 'vault', topic: 'rb_vault'
-      # template "#{pipelines_dir}/vault/00_input.conf" do
-      #   source 'input_kafka.conf.erb'
-      #   owner user
-      #   group user
-      #   mode '0644'
-      #   ignore_failure true
-      #   cookbook 'logstash'
-      #   variables(topics: ['rb_vault'])
-      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      # end
+      # filter_builder.input_template pipeline: 'vault', topic: 'rb_vault'
+      template "#{pipelines_dir}/vault/00_input.conf" do
+        source 'input_kafka.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(topics: ['rb_vault'])
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
 
       template "#{pipelines_dir}/vault/01_generic.conf" do
         source 'vault_generic.conf.erb'
