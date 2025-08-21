@@ -2,6 +2,7 @@
 # Provider:: config
 
 include Logstash::Helper
+include Logstash::Filters
 
 action :add do
   begin
@@ -144,16 +145,17 @@ action :add do
 
     # Vault pipeline
     if is_manager
-      template "#{pipelines_dir}/vault/00_input.conf" do
-        source 'input_kafka.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(topics: ['rb_vault'])
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
+      input_template pipeline: 'vault', topic: 'rb_vault'
+      # template "#{pipelines_dir}/vault/00_input.conf" do
+      #   source 'input_kafka.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
+      #   variables(topics: ['rb_vault'])
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
 
       template "#{pipelines_dir}/vault/01_generic.conf" do
         source 'vault_generic.conf.erb'
