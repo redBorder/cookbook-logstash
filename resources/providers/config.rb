@@ -1216,17 +1216,17 @@ action :add do
       end
 
       # Yara
-      template "#{pipelines_dir}/malware/40_yara.conf" do
-        source 'malware_40_yara.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(access_key_id: s3_secrets['key_id_malware'],
-                  secret_access_key: s3_secrets['key_secret_malware'])
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
+      # template "#{pipelines_dir}/malware/40_yara.conf" do
+      #   source 'malware_40_yara.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
+      #   variables(access_key_id: s3_secrets['key_id_malware'],
+      #             secret_access_key: s3_secrets['key_secret_malware'])
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
 
       # Fuzzy
       # TO DO: Integrate Fuzzy
