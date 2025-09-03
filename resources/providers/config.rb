@@ -1139,6 +1139,13 @@ action :add do
         action :create
       end
 
+      file '/var/log/logstash/logstash-malware-sincedb.log' do
+        owner user
+        group user
+        mode '0644'
+        action :create
+      end
+
       template "#{pipelines_dir}/malware/00_input.conf" do
         source 'malware_00_input.conf.erb'
         owner user
