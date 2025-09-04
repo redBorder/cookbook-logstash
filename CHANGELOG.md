@@ -1,6 +1,28 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.0
+
+  - Rafael Gomez
+    - [25e80f3] Create /var/log/logstash/logstash-malware-sincedb.log before running the malware pipeline
+  - Pablo Pérez
+    - [46eb79e] Back comment to Yara
+    - [2f285dd] Uncomment yara - integrated
+    - [aa07346] Comment aerospike plugin part until aerospike is integrated2
+    - [84726ce] Add s3 as attribute
+    - [2a58dac] Use default File instead of Chef::File
+    - [baedadf] Added needed lines into malware config
+    - [35d64d7] Add malware into pipelines.yml
+    - [e44748a] Change doble quote to single quote
+    - [85ea6cb] Comment not integrated part
+    - [ec7b8c6] Malware always installs
+    - [c9fce66] Bring back malware pipeline
+    - [3c4fedd] Rename cuckoo to cape
+    - [938f904] Rename cuckoo to cape
+    - [9e82035] Rename metascan to metadefender
+    - [dbdc439] Rename metascan to metadefender
+    - [89eb724] Bring back legacy malware pipelines
+
 ## 8.3.1
 
   - jnavarrorb
