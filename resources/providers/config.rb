@@ -1139,6 +1139,13 @@ action :add do
         action :create
       end
 
+      directory '/usr/share/logstash/yara_rules' do
+        owner 'webui'
+        group 'webui'
+        mode '0755'
+        action :create
+      end
+
       file '/var/log/logstash/logstash-malware-sincedb.log' do
         owner user
         group user
