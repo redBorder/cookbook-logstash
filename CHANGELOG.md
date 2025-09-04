@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.1
+
+  - Rafael Gomez
+    - [7845435] Add yara rules directory in cookbook logstash
+
 ## 8.4.0
 
   - Rafael Gomez
