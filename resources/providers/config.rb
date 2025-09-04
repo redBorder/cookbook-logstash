@@ -29,6 +29,7 @@ action :add do
     redis_port = new_resource.redis_port
     redis_secrets = new_resource.redis_secrets
     redis_password = redis_secrets['pass'] unless redis_secrets.empty?
+    s3_secrets = new_resource.s3_secrets
 
     memcached_servers = node['redborder']['memcached']['hosts']
 
@@ -97,7 +98,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics)
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -1125,6 +1126,164 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(output_topic: 'rb_monitor')
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+    end
+
+    # Malware pipeline
+    if is_manager
+      directory '/usr/share/logstash/malware' do
+        owner user
+        group user
+        mode '0755'
+        action :create
+      end
+
+      file '/var/log/logstash/logstash-malware-sincedb.log' do
+        owner user
+        group user
+        mode '0644'
+        action :create
+      end
+
+      template "#{pipelines_dir}/malware/00_input.conf" do
+        source 'malware_00_input.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/malware/01_normalize.conf" do
+        source 'malware_01_normalize.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      # Virus Total
+      if node['redborder']['loaders'] && node['redborder']['loaders']['virustotal_api_key'] &&
+         !node['redborder']['loaders']['virustotal_api_key'].empty?
+        template "#{pipelines_dir}/malware/10_virustotal.conf" do
+          source 'malware_10_virustotal.conf.erb'
+          owner user
+          group user
+          mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
+          variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
+                    access_key_id: s3_secrets['key_id_malware'],
+                    secret_access_key: s3_secrets['key_secret_malware'])
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
+      elsif ::File.exist?("#{pipelines_dir}/malware/10_virustotal.conf")
+        file "#{pipelines_dir}/malware/10_virustotal.conf" do
+          action :delete
+        end
+      end
+
+      # MetaDefender
+      if node['redborder']['loaders'] && node['redborder']['loaders']['metadefender_api_key'] &&
+         !node['redborder']['loaders']['metadefender_api_key'].empty? && !s3_secrets['key_id_malware'].nil? &&
+         !s3_secrets['key_id_malware'].empty? && !s3_secrets['key_secret_malware'].nil? && !s3_secrets['key_secret_malware'].empty?
+        template "#{pipelines_dir}/malware/20_metadefender.conf" do
+          source 'malware_20_metadefender.conf.erb'
+          owner user
+          group user
+          mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
+          variables(apikey: node['redborder']['loaders']['metadefender_api_key'],
+                    access_key_id: s3_secrets['key_id_malware'],
+                    secret_access_key: s3_secrets['key_secret_malware'])
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
+      elsif ::File.exist?("#{pipelines_dir}/malware/20_metadefender.conf")
+        file "#{pipelines_dir}/malware/20_metadefender.conf" do
+          action :delete
+        end
+      end
+
+      # Clamscan
+      template "#{pipelines_dir}/malware/30_clamscan.conf" do
+        source 'malware_30_clamscan.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(access_key_id: s3_secrets['key_id_malware'],
+                  secret_access_key: s3_secrets['key_secret_malware'])
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      # Yara
+      # template "#{pipelines_dir}/malware/40_yara.conf" do
+      #   source 'malware_40_yara.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
+      #   variables(access_key_id: s3_secrets['key_id_malware'],
+      #             secret_access_key: s3_secrets['key_secret_malware'])
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
+
+      # Fuzzy
+      # TO DO: Integrate Fuzzy
+      # template "#{pipelines_dir}/malware/50_fuzzy.conf" do
+      #   source 'malware_50_fuzzy.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644
+      #   ignore_failure true
+      #   cookbook 'logstash''
+      #   variables(:access_key_id => s3_secrets["key_id_malware"],
+      #             :secret_access_key => s3_secrets["key_secret_malware"])
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
+
+      # CAPEv2
+      # TO DO: Integrate CAPEv2
+      # if node['redborder']['loaders'] && managers_per_service['cape_api'] && !managers_per_service['cape_api'].empty?
+      #   template "#{pipelines_dir}/malware/60_cape.conf" do
+      #     source 'malware_60_cape.conf.erb'
+      #     owner user
+      #     group user
+      #     mode '0644'
+      #     ignore_failure true
+      #     cookbook 'logstash'
+      #     notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      #   end
+      # elsif File.exist?("#{pipelines_dir}/malware/60_cape.conf")
+      #   file "#{pipelines_dir}/malware/60_cape.conf" do
+      #     action :delete
+      #   end
+      # end
+
+      template "#{pipelines_dir}/malware/98_clean_input_files.conf" do
+        source 'malware_98_clean_input_files.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/malware/99_output.conf" do
+        source 'malware_99_output.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
