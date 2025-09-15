@@ -18,8 +18,6 @@ action :add do
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
-    mongo_cve_database = new_resource.mongo_cve_database
-    mongo_port = new_resource.mongo_port
     logstash_pipelines = new_resource.logstash_pipelines
     split_traffic_logstash = new_resource.split_traffic_logstash
     split_intrusion_logstash = new_resource.split_intrusion_logstash
@@ -29,6 +27,14 @@ action :add do
     is_manager = is_manager?
     flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
     flow_nodes_with_proxy = new_resource.flow_nodes_with_proxy
+    redis_hosts = new_resource.redis_hosts
+    redis_port = new_resource.redis_port
+    redis_secrets = new_resource.redis_secrets
+    redis_password = redis_secrets['pass'] unless redis_secrets.empty?
+    s3_secrets = new_resource.s3_secrets
+
+    memcached_servers = node['redborder']['memcached']['hosts']
+
     begin
       sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
       default_sensor = YAML.load(::File.open('/etc/logstash/default_sensor.yml'))
@@ -40,17 +46,14 @@ action :add do
     dnf_package 'logstash-rules' do
       only_if { is_manager }
       action :upgrade
-      flush_cache [:before]
     end
 
     dnf_package 'logstash' do
       action :upgrade
-      flush_cache [:before]
     end
 
     dnf_package 'redborder-logstash-plugins' do
       action :upgrade
-      flush_cache [:before]
     end
 
     execute 'create_user' do
@@ -97,7 +100,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion)
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -131,6 +134,15 @@ action :add do
       cookbook 'logstash'
       variables(is_manager: is_manager, is_proxy: is_proxy, pipelines: logstash_pipelines)
       notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+    end
+
+    template '/etc/logrotate.d/logstash' do
+      source 'logstash_log_rotate.erb'
+      owner 'root'
+      group 'root'
+      mode '0644'
+      retries 2
+      cookbook 'logstash'
     end
 
     # Vault pipeline
@@ -229,7 +241,10 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(vault_incidents_priority_filter: vault_incidents_priority_filter)
+        variables(vault_incidents_priority_filter: vault_incidents_priority_filter,
+                  redis_hosts: redis_hosts,
+                  redis_port: redis_port,
+                  redis_password: redis_password)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -241,6 +256,17 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(nodes: vault_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/vault/10_threat_intelligence.conf" do
+        source 'vault_threat_intelligence.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(memcached_servers: memcached_servers, vault_nodes: vault_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -372,18 +398,11 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/netflow/04_darklist.conf" do
-        source 'netflow_darklist.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(memcached_server: memcached_server)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # Clean the file
+      file '/etc/logstash/pipelines/netflow/04_darklist.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/netflow/04_darklist.conf') }
       end
-
-      memcached_servers = node['redborder']['memcached']['hosts']
 
       template "#{pipelines_dir}/netflow/05_threat_intelligence.conf" do
         source 'netflow_threat_intelligence.conf.erb'
@@ -392,7 +411,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers)
+        variables(memcached_servers: memcached_servers, flow_nodes: flow_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -404,6 +423,16 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(nodes: flow_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/netflow/08_assets.conf" do
+        source 'netflow_assets.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -474,14 +503,14 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/scanner/02_mongocve.conf" do
-        source 'scanner_mongocve.conf.erb'
+      template "#{pipelines_dir}/scanner/02_postgrescve.conf" do
+        source 'scanner_postgrescve.conf.erb'
         owner user
         group user
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(mongo_port: mongo_port, mongo_cve_database: mongo_cve_database)
+        variables(username: username, password: password, port: port, host: host, database_name: database_name)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -953,14 +982,10 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/intrusion/04_darklist.conf" do
-        source 'intrusion_darklist.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # Clean the file
+      file '/etc/logstash/pipelines/intrusion/04_darklist.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/intrusion/04_darklist.conf') }
       end
 
       # This is related with this task
@@ -984,7 +1009,10 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter)
+        variables(intrusion_incidents_priority_filter: intrusion_incidents_priority_filter,
+                  redis_hosts: redis_hosts,
+                  redis_port: redis_port,
+                  redis_password: redis_password)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -995,7 +1023,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers)
+        variables(memcached_servers: memcached_servers, ips_nodes: ips_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1029,6 +1057,29 @@ action :add do
         cookbook 'logstash'
         variables(output_namespace_topic: 'rb_event_post',
                   namespaces: namespaces)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+    end
+
+    # Druid metrics pipeline
+    if is_manager
+      template "#{pipelines_dir}/druid-metrics/00_input.conf" do
+        source 'druid_metrics_00_input.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/druid-metrics/99_output.conf" do
+        source 'druid_metrics_99_output.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
@@ -1077,6 +1128,171 @@ action :add do
         cookbook 'logstash'
         retries 2
         variables(output_topic: 'rb_monitor')
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+    end
+
+    # Malware pipeline
+    if is_manager
+      directory '/usr/share/logstash/malware' do
+        owner user
+        group user
+        mode '0755'
+        action :create
+      end
+
+      directory '/usr/share/logstash/yara_rules' do
+        owner 'webui'
+        group 'webui'
+        mode '0755'
+        action :create
+      end
+
+      file '/var/log/logstash/logstash-malware-sincedb.log' do
+        owner user
+        group user
+        mode '0644'
+        action :create
+      end
+
+      template "#{pipelines_dir}/malware/00_input.conf" do
+        source 'malware_00_input.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/malware/01_normalize.conf" do
+        source 'malware_01_normalize.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      # Virus Total
+      if node['redborder']['loaders'] && node['redborder']['loaders']['virustotal_api_key'] &&
+         !node['redborder']['loaders']['virustotal_api_key'].empty?
+        template "#{pipelines_dir}/malware/10_virustotal.conf" do
+          source 'malware_10_virustotal.conf.erb'
+          owner user
+          group user
+          mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
+          variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
+                    access_key_id: s3_secrets['key_id_malware'],
+                    secret_access_key: s3_secrets['key_secret_malware'])
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
+      elsif ::File.exist?("#{pipelines_dir}/malware/10_virustotal.conf")
+        file "#{pipelines_dir}/malware/10_virustotal.conf" do
+          action :delete
+        end
+      end
+
+      # MetaDefender
+      if node['redborder']['loaders'] && node['redborder']['loaders']['metadefender_api_key'] &&
+         !node['redborder']['loaders']['metadefender_api_key'].empty? && !s3_secrets['key_id_malware'].nil? &&
+         !s3_secrets['key_id_malware'].empty? && !s3_secrets['key_secret_malware'].nil? && !s3_secrets['key_secret_malware'].empty?
+        template "#{pipelines_dir}/malware/20_metadefender.conf" do
+          source 'malware_20_metadefender.conf.erb'
+          owner user
+          group user
+          mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
+          variables(apikey: node['redborder']['loaders']['metadefender_api_key'],
+                    access_key_id: s3_secrets['key_id_malware'],
+                    secret_access_key: s3_secrets['key_secret_malware'])
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
+      elsif ::File.exist?("#{pipelines_dir}/malware/20_metadefender.conf")
+        file "#{pipelines_dir}/malware/20_metadefender.conf" do
+          action :delete
+        end
+      end
+
+      # Clamscan
+      template "#{pipelines_dir}/malware/30_clamscan.conf" do
+        source 'malware_30_clamscan.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(access_key_id: s3_secrets['key_id_malware'],
+                  secret_access_key: s3_secrets['key_secret_malware'])
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      # Yara
+      # template "#{pipelines_dir}/malware/40_yara.conf" do
+      #   source 'malware_40_yara.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
+      #   variables(access_key_id: s3_secrets['key_id_malware'],
+      #             secret_access_key: s3_secrets['key_secret_malware'])
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
+
+      # Fuzzy
+      # TO DO: Integrate Fuzzy
+      # template "#{pipelines_dir}/malware/50_fuzzy.conf" do
+      #   source 'malware_50_fuzzy.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644
+      #   ignore_failure true
+      #   cookbook 'logstash''
+      #   variables(:access_key_id => s3_secrets["key_id_malware"],
+      #             :secret_access_key => s3_secrets["key_secret_malware"])
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
+
+      # CAPEv2
+      # TO DO: Integrate CAPEv2
+      # if node['redborder']['loaders'] && managers_per_service['cape_api'] && !managers_per_service['cape_api'].empty?
+      #   template "#{pipelines_dir}/malware/60_cape.conf" do
+      #     source 'malware_60_cape.conf.erb'
+      #     owner user
+      #     group user
+      #     mode '0644'
+      #     ignore_failure true
+      #     cookbook 'logstash'
+      #     notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      #   end
+      # elsif File.exist?("#{pipelines_dir}/malware/60_cape.conf")
+      #   file "#{pipelines_dir}/malware/60_cape.conf" do
+      #     action :delete
+      #   end
+      # end
+
+      template "#{pipelines_dir}/malware/98_clean_input_files.conf" do
+        source 'malware_98_clean_input_files.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/malware/99_output.conf" do
+        source 'malware_99_output.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
@@ -1185,7 +1401,22 @@ action :add do
       end
     end
 
-    # end of bulkstats
+    if is_manager
+      directory '/etc/assets' do
+        owner 'root'
+        group 'root'
+        mode '0777'
+        action :create
+      end
+
+      # This script will generated the YAML file needed to enrich the asset type into the events
+      execute 'rb_create_asset_type_yaml' do
+        ignore_failure true
+        command '/usr/lib/redborder/bin/rb_create_asset_type_yaml.sh /etc/assets/mac_to_asset_type.yaml'
+        action :run
+        not_if { node['redborder']['leader_configuring'] }
+      end
+    end
 
     service 'logstash' do
       service_name 'logstash'
@@ -1221,6 +1452,10 @@ action :remove do
 
     directory '/etc/logstash' do
       recursive true
+      action :delete
+    end
+
+    file '/etc/logrotate.d/logstash' do
       action :delete
     end
 

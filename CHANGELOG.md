@@ -1,6 +1,119 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.1
+
+  - Rafael Gomez
+    - [7845435] Add yara rules directory in cookbook logstash
+
+## 8.4.0
+
+  - Rafael Gomez
+    - [25e80f3] Create /var/log/logstash/logstash-malware-sincedb.log before running the malware pipeline
+  - Pablo Pérez
+    - [46eb79e] Back comment to Yara
+    - [2f285dd] Uncomment yara - integrated
+    - [aa07346] Comment aerospike plugin part until aerospike is integrated2
+    - [84726ce] Add s3 as attribute
+    - [2a58dac] Use default File instead of Chef::File
+    - [baedadf] Added needed lines into malware config
+    - [35d64d7] Add malware into pipelines.yml
+    - [e44748a] Change doble quote to single quote
+    - [85ea6cb] Comment not integrated part
+    - [ec7b8c6] Malware always installs
+    - [c9fce66] Bring back malware pipeline
+    - [3c4fedd] Rename cuckoo to cape
+    - [938f904] Rename cuckoo to cape
+    - [9e82035] Rename metascan to metadefender
+    - [dbdc439] Rename metascan to metadefender
+    - [89eb724] Bring back legacy malware pipelines
+
+## 8.3.1
+
+  - jnavarrorb
+    - [5ba3ec9] Remove executable permissions on non-executable files
+
+## 8.3.0
+
+  - nilsver
+    - [01b5bcc] update logstash to use databag
+    - [367f3ca] remove mongo variables
+    - [84079ed] replace mongodb
+
+## 8.2.0
+
+  - Pablo Torres
+    - [f592ea2] Feature #21767: Add druid-metric pipeline
+
+## 8.1.1
+
+  - Rafa Gómez
+    - [ec1b7b4] Improvement/#20536 Migrate logstash log rotate from cookbook-rb-manager (#109)
+
+## 8.1.0
+
+  - Miguel Negrón
+    - [58b145a] Dont create asset type if node still configuring
+    - [af09bbf] Make dynamic file path
+    - [110bf70] Rename files
+    - [fa0ecb4] Add template
+
+## 8.0.1
+
+  - nilsver
+    - [9f653e0] remove flush cache
+
+## 8.0.0
+
+  - vimesa && manegron
+    - [05185f8] Merge pull request #96 from redBorder/feature/#20408_update_ti
+    - [f176e47] Remove commas between sensors
+    - [317ba81] Remove mapping uri with url for intrusion ti
+    - [9932f05] Update ti
+    - [3a41bef] Fix syntax error
+    - [15856d6] Update threshold
+    - [1ac70fa] Update ti
+    - [52388c3] Fix syntax error
+    - [38ec2eb] Add intrusion nodes
+    - [973c149] change key_mapper by indicators_types
+    - [655abee] Update ti
+    - [49a4b48] Update ti
+    - [fe05a84] Merge branch 'feature/#20408_update_ti' of github.com:redBorder/cookbook-logstash into feature/#20408_update_ti
+    - [8cd1c2b] Add condition when policy_id is 0
+    - [84cb313] Fix intrusion threat intelligence pipeline
+    - [eea3565] Modify template
+    - [896b852] Add intrusion and vault threat intelligence pipeline
+    - [a92a276] Rename intrusion_nodes to ips_nodes
+    - [ec53bb8] Merge branch 'master' into feature/#20408_update_ti
+    - [6e5ba69] Delete the old file if it exists
+    - [d07d32a] Add threshold
+    - [110be09] Merge branch 'master' into feature/#20408_flow_reputations
+    - [f1d1b36] Modify template
+    - [37b3653] Add flow reputation
+    - [28b2566] Add reputations policies
+    - [05185f8] Merge pull request #96 from redBorder/feature/#20408_update_ti
+    - [f176e47] Remove commas between sensors
+    - [317ba81] Remove mapping uri with url for intrusion ti
+    - [1ea901b] Remove empty file
+    - [c5b1556] Merge branch 'master' into feature/#20408_update_ti
+    - [9932f05] Update ti
+    - [3a41bef] Fix syntax error
+    - [15856d6] Update threshold
+    - [1ac70fa] Update ti
+    - [52388c3] Fix syntax error
+    - [38ec2eb] Add intrusion nodes
+    - [973c149] change key_mapper by indicators_types
+    - [655abee] Update ti
+    - [49a4b48] Update ti
+    - [07bf824] Fix lint rename sensors_policies
+
+## 7.3.1
+
+  - Pablo Pérez
+    - [0947aea] Merge pull request #103 from redBorder/feature/#21708_remove_darklist
+  - vimesa
+    - [5e054b3] Remove darklist
+
 ## 7.3.0
 
   - Miguel Negrón
