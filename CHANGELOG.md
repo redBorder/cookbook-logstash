@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.2
+
+  - nilsver
+    - [b98b66e] flow nodes splitted when from proxy (#91)
+
 ## 8.4.1
 
   - Rafael Gomez
