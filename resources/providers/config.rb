@@ -1155,6 +1155,18 @@ action :add do
         action :create
       end
 
+      # Malware Weights file
+      # Will be read from logstash-filter-aerospike-malware-score
+      template '/usr/share/logstash/weights.yml' do
+        source 'malware_weights.yml.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/malware/00_input.conf" do
         source 'malware_00_input.conf.erb'
         owner user
