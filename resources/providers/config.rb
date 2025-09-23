@@ -1176,8 +1176,8 @@ action :add do
       end
 
       # Virus Total
-      if node['redborder']['loaders'] && node['redborder']['loaders']['virustotal_api_key'] &&
-         !node['redborder']['loaders']['virustotal_api_key'].empty?
+      if node['redborder']['manager']['loaders'] && node['redborder']['manager']['loaders']['virustotal_api_key'] &&
+         !node['redborder']['manager']['loaders']['virustotal_api_key'].empty?
         template "#{pipelines_dir}/malware/10_virustotal.conf" do
           source 'malware_10_virustotal.conf.erb'
           owner user
