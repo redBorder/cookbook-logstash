@@ -1185,7 +1185,7 @@ action :add do
           mode '0644'
           ignore_failure true
           cookbook 'logstash'
-          variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
+          variables(apikey: node['redborder']['manager']['loaders']['virustotal_api_key'],
                     access_key_id: s3_secrets['key_id_malware'],
                     secret_access_key: s3_secrets['key_secret_malware'])
           notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
