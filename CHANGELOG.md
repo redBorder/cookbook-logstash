@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.6
+
+  - Miguel Negrón
+    - [ce1854f] Merge pull request #128 from redBorder/hotfix_malware_s3_keys
+  - Pablo Pérez
+    - [2ba6c40] Fix malware s3 bucket keys
+
 ## 8.4.5
   - manegron
     - Bump version
