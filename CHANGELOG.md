@@ -2,8 +2,8 @@ cookbook-logstash CHANGELOG
 ===============
 
 ## 8.4.5
-
-
+  - manegron
+    - Bump version
 
 ## 8.4.4
 
