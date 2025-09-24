@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.3
+
+  - David Vanhoucke
+    - [26729dc] fix hyphen in enrichment sflow pipeline
+
 ## 8.4.2
 
   - nilsver
