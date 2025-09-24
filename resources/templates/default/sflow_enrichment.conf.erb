@@ -14,7 +14,7 @@ filter {
         <% field_keys.each do |key| %>
           <% if (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "") %>
           if ![<%=key%>] {
-            mutate { add_field => {"<%= key %> => "<%= flow_node['redborder'][key] %>"}}
+            mutate { add_field => {"<%= key %>" => "<%= flow_node['redborder'][key] %>"}}
           }
           <% end %>
         <% end %>
@@ -46,7 +46,7 @@ filter {
         <% field_keys.each do |key| %>
           <% if (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "") %>
           if ![<%=key%>] {
-            mutate { add_field => {"<%= key %> => "<%= flow_node['redborder'][key] %>"}}
+            mutate { add_field => {"<%= key %>" => "<%= flow_node['redborder'][key] %>"}}
           }
           <% end %>
         <% end %>
