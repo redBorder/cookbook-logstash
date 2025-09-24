@@ -29,4 +29,4 @@ attribute :flow_nodes_with_proxy, kind_of: Array, default: []
 attribute :redis_hosts, kind_of: Array, default: []
 attribute :redis_port, kind_of: Integer, default: 26379
 attribute :redis_secrets, kind_of: Hash, default: {}
-attribute :s3_secrets, kind_of: Hash, default: {}
+attribute :s3_malware_secrets, kind_of: Hash, default: {}
