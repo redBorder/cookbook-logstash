@@ -1,8 +1,6 @@
 cookbook-logstash CHANGELOG
 ===============
 
-<<<<<<< HEAD
-=======
 ## 8.4.4
 
   - manegron
@@ -17,7 +15,6 @@ cookbook-logstash CHANGELOG
   - nilsver
     - [b98b66e] flow nodes splitted when from proxy (#91)
 
->>>>>>> development
 ## 8.4.3
 
   - David Vanhoucke
