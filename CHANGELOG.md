@@ -1,6 +1,23 @@
 cookbook-logstash CHANGELOG
 ===============
 
+<<<<<<< HEAD
+=======
+## 8.4.4
+
+  - manegron
+    - [8a4aa77] Pass malware s3
+  - david vhk
+    - [e35728f] Update metadata.rb
+    - [7cf262b] Merge branch 'master' into development
+  - David Vanhoucke
+    - [9c34335] bump version
+    - [26729dc] fix hyphen in enrichment sflow pipeline
+    - [104ec9f] bump version
+  - nilsver
+    - [b98b66e] flow nodes splitted when from proxy (#91)
+
+>>>>>>> development
 ## 8.4.3
 
   - David Vanhoucke
