@@ -1,6 +1,10 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.5
+
+
+
 ## 8.4.4
 
   - manegron
