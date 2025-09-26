@@ -1,6 +1,12 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.4.7
+
+  - Pablo Pérez
+    - [5d46d59] Update node
+    - [9144bb1] Update virustotal api key path in the node
+
 ## 8.4.6
 
   - Miguel Negrón
