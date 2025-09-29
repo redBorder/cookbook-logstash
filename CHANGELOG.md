@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.5.0
+
+  - Pablo Pérez
+    - [5b3a377] Feature #22731 bring back logstash-filter-aerospike-malware-score (#123)
+
 ## 8.4.7
 
   - Pablo Pérez
