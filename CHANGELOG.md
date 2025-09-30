@@ -1,6 +1,17 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.5.0
+
+  - Pablo Pérez
+    - [5b3a377] Feature #22731 bring back logstash-filter-aerospike-malware-score (#123)
+
+## 8.4.7
+
+  - Pablo Pérez
+    - [5d46d59] Update node
+    - [9144bb1] Update virustotal api key path in the node
+
 ## 8.4.6
 
   - Miguel Negrón

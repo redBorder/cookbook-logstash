@@ -1156,6 +1156,18 @@ action :add do
         action :create
       end
 
+      # Malware Weights file
+      # Will be read from logstash-filter-aerospike-malware-score
+      template '/usr/share/logstash/weights.yml' do
+        source 'malware_weights.yml.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/malware/00_input.conf" do
         source 'malware_00_input.conf.erb'
         owner user
@@ -1177,8 +1189,8 @@ action :add do
       end
 
       # Virus Total
-      if node['redborder']['loaders'] && node['redborder']['loaders']['virustotal_api_key'] &&
-         !node['redborder']['loaders']['virustotal_api_key'].empty?
+      if node['redborder']['manager']['loaders'] && node['redborder']['manager']['loaders']['virustotal_api_key'] &&
+         !node['redborder']['manager']['loaders']['virustotal_api_key'].empty?
         template "#{pipelines_dir}/malware/10_virustotal.conf" do
           source 'malware_10_virustotal.conf.erb'
           owner user
@@ -1186,7 +1198,7 @@ action :add do
           mode '0644'
           ignore_failure true
           cookbook 'logstash'
-          variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
+          variables(apikey: node['redborder']['manager']['loaders']['virustotal_api_key'],
                     access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
                     secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'],
                     cdomain: cdomain)
