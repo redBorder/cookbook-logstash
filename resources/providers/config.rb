@@ -61,7 +61,7 @@ action :add do
     end
 
     group 'virusgroup' do
-      members %w[logstash]
+      members ['logstash']
       action :create
     end
 
