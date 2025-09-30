@@ -25,11 +25,13 @@ action :add do
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     is_proxy = is_proxy?
     is_manager = is_manager?
+    flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
+    flow_nodes_with_proxy = new_resource.flow_nodes_with_proxy
     redis_hosts = new_resource.redis_hosts
     redis_port = new_resource.redis_port
     redis_secrets = new_resource.redis_secrets
     redis_password = redis_secrets['pass'] unless redis_secrets.empty?
-    s3_secrets = new_resource.s3_secrets
+    s3_malware_secrets = new_resource.s3_malware_secrets
 
     memcached_servers = node['redborder']['memcached']['hosts']
 
@@ -328,7 +330,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes, split_traffic_logstash: split_traffic_logstash)
+        variables(split_traffic_logstash: split_traffic_logstash, flow_nodes_without_proxy: flow_nodes_without_proxy, flow_nodes_with_proxy: flow_nodes_with_proxy)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1158,6 +1160,18 @@ action :add do
         action :create
       end
 
+      # Malware Weights file
+      # Will be read from logstash-filter-aerospike-malware-score
+      template '/usr/share/logstash/weights.yml' do
+        source 'malware_weights.yml.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/malware/00_input.conf" do
         source 'malware_00_input.conf.erb'
         owner user
@@ -1179,8 +1193,8 @@ action :add do
       end
 
       # Virus Total
-      if node['redborder']['loaders'] && node['redborder']['loaders']['virustotal_api_key'] &&
-         !node['redborder']['loaders']['virustotal_api_key'].empty?
+      if node['redborder']['manager']['loaders'] && node['redborder']['manager']['loaders']['virustotal_api_key'] &&
+         !node['redborder']['manager']['loaders']['virustotal_api_key'].empty?
         template "#{pipelines_dir}/malware/10_virustotal.conf" do
           source 'malware_10_virustotal.conf.erb'
           owner user
@@ -1188,9 +1202,9 @@ action :add do
           mode '0644'
           ignore_failure true
           cookbook 'logstash'
-          variables(apikey: node['redborder']['loaders']['virustotal_api_key'],
-                    access_key_id: s3_secrets['key_id_malware'],
-                    secret_access_key: s3_secrets['key_secret_malware'])
+          variables(apikey: node['redborder']['manager']['loaders']['virustotal_api_key'],
+                    access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
+                    secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'])
           notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
         end
       elsif ::File.exist?("#{pipelines_dir}/malware/10_virustotal.conf")
@@ -1201,8 +1215,8 @@ action :add do
 
       # MetaDefender
       if node['redborder']['loaders'] && node['redborder']['loaders']['metadefender_api_key'] &&
-         !node['redborder']['loaders']['metadefender_api_key'].empty? && !s3_secrets['key_id_malware'].nil? &&
-         !s3_secrets['key_id_malware'].empty? && !s3_secrets['key_secret_malware'].nil? && !s3_secrets['key_secret_malware'].empty?
+         !node['redborder']['loaders']['metadefender_api_key'].empty? && !s3_malware_secrets['s3_malware_access_key_id'].nil? &&
+         !s3_malware_secrets['s3_malware_access_key_id'].empty? && !s3_malware_secrets['s3_malware_secret_key_id'].nil? && !s3_malware_secrets['s3_malware_secret_key_id'].empty?
         template "#{pipelines_dir}/malware/20_metadefender.conf" do
           source 'malware_20_metadefender.conf.erb'
           owner user
@@ -1211,8 +1225,8 @@ action :add do
           ignore_failure true
           cookbook 'logstash'
           variables(apikey: node['redborder']['loaders']['metadefender_api_key'],
-                    access_key_id: s3_secrets['key_id_malware'],
-                    secret_access_key: s3_secrets['key_secret_malware'])
+                    access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
+                    secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'])
           notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
         end
       elsif ::File.exist?("#{pipelines_dir}/malware/20_metadefender.conf")
@@ -1229,8 +1243,8 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(access_key_id: s3_secrets['key_id_malware'],
-                  secret_access_key: s3_secrets['key_secret_malware'])
+        variables(access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
+                  secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1242,8 +1256,8 @@ action :add do
       #   mode '0644'
       #   ignore_failure true
       #   cookbook 'logstash'
-      #   variables(access_key_id: s3_secrets['key_id_malware'],
-      #             secret_access_key: s3_secrets['key_secret_malware'])
+      #   variables(access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
+      #             secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'])
       #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       # end
 
@@ -1256,8 +1270,8 @@ action :add do
       #   mode '0644
       #   ignore_failure true
       #   cookbook 'logstash''
-      #   variables(:access_key_id => s3_secrets["key_id_malware"],
-      #             :secret_access_key => s3_secrets["key_secret_malware"])
+      #   variables(:access_key_id => s3_malware_secrets["s3_malware_access_key_id"],
+      #             :secret_access_key => s3_malware_secrets["s3_malware_secret_key_id"])
       #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       # end
 
