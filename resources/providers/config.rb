@@ -63,8 +63,9 @@ action :add do
     end
 
     group 'virusgroup' do
+      append true
       members ['logstash']
-      action :create
+      action :manage
     end
 
     begin
