@@ -66,6 +66,7 @@ action :add do
       append true
       members ['logstash']
       action :manage
+      only_if 'getent group virusgroup'
     end
 
     begin
