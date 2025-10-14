@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.5.1
+
+  - Luis Blanco
+    - [e8fe5b0] adding logstash to group virusgroup (#133)
+
 ## 8.5.0
 
   - Pablo Pérez

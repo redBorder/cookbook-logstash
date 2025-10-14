@@ -63,6 +63,13 @@ action :add do
       not_if "getent passwd #{user}"
     end
 
+    group 'virusgroup' do
+      append true
+      members ['logstash']
+      action :manage
+      only_if 'getent group virusgroup'
+    end
+
     begin
       logstash_hash_item = data_bag_item('passwords', 'vault')
     rescue
