@@ -38,7 +38,7 @@ filter {
   <% if @split_traffic_logstash %>
   if [tag2] {
     <% @proxy_nodes.each do |proxy_node| %>
-      <% if !proxy_node["redborder"].nil? and proxy_node["redborder"]["blocked"]!=true %>
+      <% if !proxy_node["redborder"].nil? %>
       if [peer_ip_src] == "<%=proxy_node[:ipaddress]%>" {
         ruby {
           code => "
