@@ -4,7 +4,7 @@ cookbook-logstash CHANGELOG
 ## 8.5.2
 
   - Miguel Negrón
-    - [f125648] Release 8.5.2
+    - [f125648] In sflow pipeline tagging template remove the check of proxy "blocked" (#136)
 
 ## 8.5.1
 
