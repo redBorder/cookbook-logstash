@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.5.2
+
+  - Miguel Negrón
+    - [f125648] Release 8.5.2
+
 ## 8.5.1
 
   - Luis Blanco
