@@ -1144,7 +1144,7 @@ action :add do
       directory '/usr/share/logstash/malware' do
         owner user
         group user
-        mode '0755'
+        mode '0775'
         action :create
       end
 
