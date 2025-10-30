@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.5.3
+
+  - Pablo Pérez
+    - [c10f1d3] Add cdomain to malware pipeline
+
 ## 8.5.2
 
   - Miguel Negrón
