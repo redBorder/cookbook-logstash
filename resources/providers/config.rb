@@ -1144,6 +1144,7 @@ action :add do
     if is_manager
       execute 'add_logstash_to_malware_group' do
         command "usermod -aG malware #{user}"
+        only_if "getent group malware"
         not_if "id -nG #{user} | grep -qw malware"
       end
 
