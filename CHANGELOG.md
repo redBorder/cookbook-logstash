@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.6.3
+
+  - Rafa Gómez
+    - [694a4ef] Improvement/#23269 Create malware recipe (#140)
+
 ## 8.5.3
 
   - Pablo Pérez
