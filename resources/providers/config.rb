@@ -1142,6 +1142,11 @@ action :add do
 
     # Malware pipeline
     if is_manager
+      execute 'add_logstash_to_malware_group' do
+        command "usermod -aG malware #{user}"
+        not_if "id -nG #{user} | grep -qw malware"
+      end
+
       directory '/usr/share/logstash/yara_rules' do
         owner 'webui'
         group 'webui'
