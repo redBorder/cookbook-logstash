@@ -1142,13 +1142,6 @@ action :add do
 
     # Malware pipeline
     if is_manager
-      directory '/usr/share/logstash/malware' do
-        owner user
-        group user
-        mode '0755'
-        action :create
-      end
-
       directory '/usr/share/logstash/yara_rules' do
         owner 'webui'
         group 'webui'
