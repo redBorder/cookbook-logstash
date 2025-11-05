@@ -1153,6 +1153,7 @@ action :add do
         group 'webui'
         mode '0755'
         action :create
+        only_if 'getent passwd webui'
       end
 
       file '/var/log/logstash/logstash-malware-sincedb.log' do
