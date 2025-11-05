@@ -23,6 +23,7 @@ action :add do
     split_intrusion_logstash = new_resource.split_intrusion_logstash
     intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
+    malware_score_threshold = new_resource.malware_score_threshold
     is_proxy = is_proxy?
     is_manager = is_manager?
     flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
@@ -1300,6 +1301,20 @@ action :add do
       #     action :delete
       #   end
       # end
+
+      template "#{pipelines_dir}/malware/97_incident_enrichment.conf" do
+        source 'malware_incident_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(malware_score_threshold: malware_score_threshold,
+                  redis_hosts: redis_hosts,
+                  redis_port: redis_port,
+                  redis_password: redis_password)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
 
       template "#{pipelines_dir}/malware/98_clean_input_files.conf" do
         source 'malware_98_clean_input_files.conf.erb'
