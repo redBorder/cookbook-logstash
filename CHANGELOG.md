@@ -1,6 +1,16 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.6.1
+
+  - Rafael Gomez
+    - [5636892] Create /usr/share/logstash/yara_rules directory if webui user exists
+
+## 8.6.0
+
+  - Rafa Gómez
+    - [694a4ef] Improvement/#23269 Create malware recipe (#140)
+
 ## 8.5.3
 
   - Pablo Pérez

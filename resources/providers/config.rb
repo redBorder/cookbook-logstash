@@ -1142,11 +1142,10 @@ action :add do
 
     # Malware pipeline
     if is_manager
-      directory '/usr/share/logstash/malware' do
-        owner user
-        group user
-        mode '0755'
-        action :create
+      execute 'add_logstash_to_malware_group' do
+        command "usermod -aG malware #{user}"
+        only_if 'getent group malware'
+        not_if "id -nG #{user} | grep -qw malware"
       end
 
       directory '/usr/share/logstash/yara_rules' do
@@ -1154,6 +1153,7 @@ action :add do
         group 'webui'
         mode '0755'
         action :create
+        only_if 'getent passwd webui'
       end
 
       file '/var/log/logstash/logstash-malware-sincedb.log' do
