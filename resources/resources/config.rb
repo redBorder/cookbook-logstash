@@ -26,6 +26,7 @@ attribute :split_intrusion_logstash, kind_of: [TrueClass, FalseClass], default: 
 attribute :intrusion_incidents_priority_filter, kind_of: String, default: 'high'
 attribute :vault_incidents_priority_filter, kind_of: String, default: 'error'
 attribute :malware_score_threshold, kind_of: Integer, default: 50
+attribute :malware_incidents_priority, kind_of: String, default: 'high'
 attribute :flow_nodes_without_proxy, kind_of: Array, default: []
 attribute :flow_nodes_with_proxy, kind_of: Array, default: []
 attribute :redis_hosts, kind_of: Array, default: []

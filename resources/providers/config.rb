@@ -24,6 +24,7 @@ action :add do
     intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
     malware_score_threshold = new_resource.malware_score_threshold
+    malware_incidents_priority = new_resource.malware_incidents_priority
     is_proxy = is_proxy?
     is_manager = is_manager?
     flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
@@ -1310,6 +1311,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(malware_score_threshold: malware_score_threshold,
+                  malware_incidents_priority: malware_incidents_priority,
                   redis_hosts: redis_hosts,
                   redis_port: redis_port,
                   redis_password: redis_password)
