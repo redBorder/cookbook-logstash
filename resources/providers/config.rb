@@ -1519,11 +1519,12 @@ end
 
 action :register do
   begin
+    ipaddress_sync = new_resource.ipaddress_sync
     unless node['logstash']['registered']
       query = {}
       query['ID'] = "logstash-#{node['hostname']}"
       query['Name'] = 'logstash'
-      query['Address'] = "#{node['ipaddress']}"
+      query['Address'] = ipaddress_sync
       query['Port'] = 5000
       json_query = Chef::JSONCompat.to_json(query)
 
