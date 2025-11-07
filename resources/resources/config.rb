@@ -8,6 +8,7 @@ attribute :user, kind_of: String, default: 'logstash'
 attribute :logstash_dir, kind_of: String, default: '/etc/logstash'
 attribute :pipelines_dir, kind_of: String, default: '/etc/logstash/pipelines'
 attribute :cdomain, kind_of: String, default: 'redborder.cluster'
+attribute :ipaddress_sync, kind_of: String, default: '127.0.0.1'
 attribute :managers_all, kind_of: Array, default: []
 attribute :flow_nodes, kind_of: Array, default: []
 attribute :proxy_nodes, kind_of: Array, default: []

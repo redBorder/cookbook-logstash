@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.6.2
+
+  - vimesa
+    - [0366683] Set ip sync
+
 ## 8.6.1
 
   - Rafael Gomez
