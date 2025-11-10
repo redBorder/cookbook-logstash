@@ -1,6 +1,21 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.6.3
+
+  - Luis Blanco
+    - [3c4da72] Merge pull request #145 from redBorder/feature/#22929_recover_yara_config
+  - ljblancoredborder
+    - [3c4da72] Merge pull request #145 from redBorder/feature/#22929_recover_yara_config
+    - [78b9cfd] Merge remote-tracking branch 'origin/master' into feature/#22929_recover_yara_config
+    - [0553a54] Merge remote-tracking branch 'origin/master' into feature/#22929_recover_yara_config
+    - [e69fc04] fix bogus date
+    - [862ffe6] recover template call of yara filter in malware pipeline
+  - Pablo Pérez
+    - [f1a136a] Merge master into dev branch and solve conflicts
+    - [d6f40bf] Revert "fix bogus date"
+    - [14398bc] Merge branch 'master' into feature/#22929_recover_yara_config
+
 ## 8.6.2
 
   - vimesa
