@@ -1304,7 +1304,7 @@ action :add do
       # end
 
       template "#{pipelines_dir}/malware/97_incident_enrichment.conf" do
-        source 'malware_incident_enrichment.conf.erb'
+        source 'malware_97_incident_enrichment.conf.erb'
         owner user
         group user
         mode '0644'
