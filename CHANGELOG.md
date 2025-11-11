@@ -5,6 +5,7 @@ cookbook-logstash CHANGELOG
 
   - ljblancoredborder
     - [a161506] bump version, fix bogus date
+  - Pablo Pérez
     - [862ffe6] recover template call of yara filter in malware pipeline
 
 ## 8.6.2
