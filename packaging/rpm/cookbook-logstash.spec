@@ -62,7 +62,7 @@ fi
 * Thu Oct 10 2024 Miguel Negrón <manegron@redborder.com>
 - Add pre and postun
 
-* Fri Jan 19 2023 David Vanhoucke <dvanhoucke@redborder.com>
+* Fri Jan 19 2024 David Vanhoucke <dvanhoucke@redborder.com>
 - Add apstate pipeline
 
 * Fri Sep 22 2023 Miguel Negrón <manegron@redborder.com>
