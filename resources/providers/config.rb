@@ -89,7 +89,7 @@ action :add do
       db_redborder_secrets = {}
     end
 
-    unless db_redborder_secrets.empty?
+    unless db_redborder_secrets.to_hash.empty?
       database_name = db_redborder_secrets['database']
       username = db_redborder_secrets['username']
       password = db_redborder_secrets['pass']
