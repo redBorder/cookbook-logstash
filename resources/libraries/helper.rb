@@ -101,7 +101,9 @@ module Logstash
         next unless monitor['redborder']['monitors']
 
         monitor['redborder']['monitors'].each do |dmonitor|
-          return true if dmonitor['system'].split().first == 'redfish'
+          if dmonitor['system'].is_a?(String) && dmonitor['system'].split().first == 'redfish'
+            return true
+          end
         end
       end
 
