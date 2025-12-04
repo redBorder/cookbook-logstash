@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.7.1
+
+  - nilsver
+    - [1c0925e] add check if device monitor is string
+
 ## 8.7.0
 
   - ljblancoredborder
