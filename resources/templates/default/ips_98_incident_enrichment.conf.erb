@@ -1,11 +1,19 @@
 filter {
   ruby {
     code => '
-      filename = event.get("file_path")
-      if filename
-        filename = File.basename(filename)
-        event.set("filename", filename)
+      malware_score = 0
+      hash_score = event.get("hash_score")
+      ip_score = event.get("ip_score")
+      url_score = event.get("url_score")
+      if hash_score.positive?
+        malware_score += hash_score.to_i
+      elsif ip_score.positive?
+        malware_score += ip_score.to_i
+      elsif url_score.positive?
+        malware_score += url_score.to_i
       end
+
+      event.set("malware_score", malware_score)
     '
   }
 
