@@ -23,6 +23,9 @@ action :add do
     split_intrusion_logstash = new_resource.split_intrusion_logstash
     intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
+    malware_score_threshold = new_resource.malware_score_threshold
+    malware_incidents_priority = new_resource.malware_incidents_priority
+    reputation_managers = new_resource.reputation_managers
     is_proxy = is_proxy?
     is_manager = is_manager?
     flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
@@ -108,7 +111,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware)
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware ips)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -1318,6 +1321,58 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+    end
+
+    # Ips malware pipeline
+    if is_manager
+      template "#{pipelines_dir}/ips/00_input.conf" do
+        source 'input_kafka.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(topics: ['rb_event'])
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/ips/10_ips.conf" do
+        source 'ips_10_ips.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(reputation_managers: reputation_managers)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/ips/98_incident_enrichment.conf" do
+        source 'ips_98_incident_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(malware_score_threshold: malware_score_threshold,
+                  malware_incidents_priority: malware_incidents_priority,
+                  redis_hosts: redis_hosts,
+                  redis_port: redis_port,
+                  redis_password: redis_password)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/ips/99_output.conf" do
+        source 'output_kafka_namespace.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(output_namespace_topic: 'rb_malware_post',
+                  namespaces: namespaces)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
     end
