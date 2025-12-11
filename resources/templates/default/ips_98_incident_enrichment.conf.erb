@@ -16,7 +16,7 @@ filter {
       message = "Hash Score: #{hash_score}, IP Score: #{ip_score}, URL Score: #{url_score}"
 
       event.set("malware_score", malware_score)
-      event.set("priority", <%= @malware_incidents_priority %>)
+      event.set("priority", "<%= @malware_incidents_priority %>")
       event.set("message", message)
     '
   }
