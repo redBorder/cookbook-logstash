@@ -1,0 +1,35 @@
+filter {
+  ruby {
+    code => '
+      malware_score = 0
+      hash_score = event.get("hash_score")
+      ip_score = event.get("ip_score")
+      url_score = event.get("url_score")
+      if hash_score.positive?
+        malware_score += hash_score.to_i
+      elsif ip_score.positive?
+        malware_score += ip_score.to_i
+      elsif url_score.positive?
+        malware_score += url_score.to_i
+      end
+
+      message = "Hash Score: #{hash_score}, IP Score: #{ip_score}, URL Score: #{url_score}"
+
+      event.set("malware_score", malware_score)
+      event.set("priority", "<%= @malware_incidents_priority %>")
+      event.set("message", message)
+    '
+  }
+
+  if ![incident_uuid] {
+    incident_enrichment {
+      incident_fields => ["malware_score", "sha256", "filename"]
+      incidents_priority_filter => <%= @malware_incidents_priority %>
+      source => "Malware"
+      malware_score_threshold => <%= @malware_score_threshold %>
+      redis_hosts => <%= @redis_hosts %>
+      redis_port => <%= @redis_port %>
+      redis_password => "<%= @redis_password %>"
+    }
+  }
+}

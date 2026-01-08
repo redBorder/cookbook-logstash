@@ -1,0 +1,20 @@
+filter {
+  ips {
+    reputation_servers => <%= (@reputation_managers.nil? || @reputation_managers.empty?) ? "[\"rb-reputation.service.#{node["redborder"]["cdomain"]}\"]" : (@reputation_managers.first(5).map{|x| "#{x}.#{node["redborder"]["cdomain"]}:7777" }) %>
+  }
+
+ if [file_name] or [url] {
+   ruby {
+     code => '
+       def rb_easy_unescape(str, encoding = Encoding::UTF_8)
+         str.dup.force_encoding("ASCII-8BIT").gsub(/%((?:\p{XDigit}{2})+)/n) { [$1].pack("H*") }.force_encoding(encoding)
+       end
+       event.set("file_name", rb_easy_unescape(event.get("file_name"))) if event.get("file_name")
+       event.set("url", rb_easy_unescape(event.get("url"))) if event.get("url")
+     '
+   }
+ }
+ mutate {
+    remove_field => ["@timestamp"]
+  }
+}

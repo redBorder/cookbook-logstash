@@ -1,6 +1,32 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.8.0
+
+  - Rafael Gomez
+    - [11030b7] Fix reputation_managers looping in case is not nil or empty
+  - Pablo Pérez
+    - [afec28b] Add message and priority into incident event
+    - [3dc2173] Unify malware score
+    - [1915829] Move malware_97_incident_enrichment to ips_98_incident_enrichment
+    - [85545f3] Fix reputation servers ips
+    - [922a25d] show default direction if is nil or empty
+    - [86fb23d] Add ips pipeline if ips
+    - [2ad7ff7] Bring back malware ips pipeline
+    - [f7710ed] Default severity changed to critica
+    - [7d45084] Add malware_incidents_priority
+    - [113eb0c] Add incident priority filter if is a malware
+    - [6eec51c] Update to use File.basename
+    - [7b8a555] Update incident_fields and save filename
+    - [bd0f99a] Add malware score threshold
+    - [ed33945] Change hash to sha256
+    - [9cd3806] Create malware_97_incident_enrichment.conf.erb
+
+## 8.7.1
+
+  - nilsver
+    - [1c0925e] add check if device monitor is string
+
 ## 8.7.0
 
   - ljblancoredborder
