@@ -78,6 +78,11 @@
   path.config: "/etc/logstash/pipelines/malware"
   pipeline.workers: 1
   <% end %>
+  <% if @pipelines.include?("ips-pipeline") %>
+- pipeline.id: ips-pipeline
+  path.config: "/etc/logstash/pipelines/ips"
+  pipeline.workers: 1
+  <% end %>
   <% end %>
   <% if @is_manager or @is_proxy %>
   <% if @pipelines.include?("bulkstats-pipeline") %>
