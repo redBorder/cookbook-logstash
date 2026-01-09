@@ -281,6 +281,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/vault/11_device_enrichment.conf" do
+        source 'device_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(memcached_servers: memcached_servers, sensor_nodes: vault_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/vault/99_output.conf" do
         source 'output_kafka_namespace.conf.erb'
         owner user
@@ -444,6 +455,17 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/netflow/11_device_enrichment.conf" do
+        source 'device_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(memcached_servers: memcached_servers, sensor_nodes: flow_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -932,6 +954,17 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/monitor/11_device_enrichment.conf" do
+        source 'device_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(memcached_servers: memcached_servers, sensor_nodes: device_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
