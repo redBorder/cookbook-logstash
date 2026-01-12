@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.0
+
+  - Miguel Negron
+    - [eb3274c] add device enrichment (#152)
+
 ## 8.8.0
 
   - Rafael Gomez
