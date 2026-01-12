@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.1
+
+  - nilsver
+    - [29ef5cf] encrypted databag
+
 ## 8.9.0
 
   - Miguel Negron
