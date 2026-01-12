@@ -11,6 +11,8 @@ action :add do
     flow_nodes = new_resource.flow_nodes
     proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
+    snmp_nodes = new_resource.snmp_nodes
+    redfish_nodes = new_resource.redfish_nodes
     vault_nodes = new_resource.vault_nodes
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
@@ -907,7 +909,7 @@ action :add do
         mode '0644'
         cookbook 'logstash'
         retries 2
-        variables(device_nodes: device_nodes)
+        variables(sensor_nodes: (device_nodes + snmp_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -918,7 +920,7 @@ action :add do
         mode '0644'
         cookbook 'logstash'
         retries 2
-        variables(device_nodes: device_nodes)
+        variables(sensor_nodes: (device_nodes + snmp_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -964,7 +966,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers, sensor_nodes: device_nodes)
+        variables(memcached_servers: memcached_servers, sensor_nodes: (device_nodes + snmp_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1137,7 +1139,7 @@ action :add do
         mode '0644'
         retries 2
         cookbook 'logstash'
-        variables(device_nodes: device_nodes,
+        variables(sensor_nodes: (device_nodes + redfish_nodes),
                   monitors: monitors_dg['monitors'])
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
@@ -1159,7 +1161,7 @@ action :add do
         mode '0644'
         retries 2
         cookbook 'logstash'
-        variables(device_nodes: device_nodes)
+        variables(sensor_nodes: (device_nodes + redfish_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1453,7 +1455,7 @@ action :add do
 
     # Make subdirectories for sftp
     sensors_uuid_with_monitors = []
-    device_nodes.each do |dnode|
+    (device_nodes + snmp_nodes).each do |dnode|
       # TODO: Simplify that double if, maybe some bools don't need to be checked anymore
       # TODO: move is_proxy outside
       next if !dnode['redborder']['parent_id'].nil? && !is_proxy
@@ -1488,8 +1490,8 @@ action :add do
     end
 
     # TODO: Check if this is deprecated
-    has_bulkstats_monitors = bulkstats_monitors?(device_nodes)
-    has_redfish_monitors = redfish_monitors?(device_nodes)
+    has_bulkstats_monitors = bulkstats_monitors?(device_nodes + snmp_nodes)
+    has_redfish_monitors = redfish_monitors?(device_nodes + redfish_nodes)
 
     activate_logstash = has_bulkstats_monitors || has_redfish_monitors
 
