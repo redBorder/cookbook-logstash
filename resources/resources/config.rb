@@ -15,6 +15,8 @@ attribute :proxy_nodes, kind_of: Array, default: []
 attribute :scanner_nodes, kind_of: Array, default: []
 attribute :vault_nodes, kind_of: Array, default: []
 attribute :device_nodes, kind_of: Array, default: []
+attribute :snmp_nodes, kind_of: Array, default: []
+attribute :redfish_nodes, kind_of: Array, default: []
 attribute :ips_nodes, kind_of: Hash, default: {}
 attribute :mobility_nodes, kind_of: Hash, default: {}
 attribute :namespaces, kind_of: Array, default: []
