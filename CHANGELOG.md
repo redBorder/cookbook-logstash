@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.2
+
+  - Miguel Negron
+    - [ac6112e] Add snmp and redfish sensors (#156)
+
 ## 8.9.1
 
   - nilsver

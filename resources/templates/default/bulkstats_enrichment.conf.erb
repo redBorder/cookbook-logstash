@@ -1,5 +1,5 @@
 filter {
-  <% @device_nodes.each do |node| %>
+  <% @sensor_nodes.each do |node| %>
     <% next unless !node[:ipaddress].nil? and !node["redborder"].nil? %>
     <% @has_bulkstats_monitor = false  %>
     <% node["redborder"]["monitors"].each do |monitor| %>

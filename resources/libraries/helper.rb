@@ -80,10 +80,10 @@ module Logstash
       sensors
     end
 
-    def bulkstats_monitors?(device_nodes)
-      return false unless device_nodes
+    def bulkstats_monitors?(sensor_nodes)
+      return false unless sensor_nodes
 
-      device_nodes.each do |monitor|
+      sensor_nodes.each do |monitor|
         next unless monitor['redborder']['monitors']
 
         monitor['redborder']['monitors'].each do |dmonitor|
@@ -94,10 +94,10 @@ module Logstash
       false
     end
 
-    def redfish_monitors?(device_nodes)
-      return false unless device_nodes
+    def redfish_monitors?(sensor_nodes)
+      return false unless sensor_nodes
 
-      device_nodes.each do |monitor|
+      sensor_nodes.each do |monitor|
         next unless monitor['redborder']['monitors']
 
         monitor['redborder']['monitors'].each do |dmonitor|
