@@ -1,6 +1,16 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.3
+
+  - manegron
+    - [a08af8b] Add rescue on get role
+    - [ac6112e] Add snmp and redfish sensors (#156)
+  - David Vanhoucke
+    - [8981aa4] bump version
+  - Miguel Negrón
+    - [ac6112e] Add snmp and redfish sensors (#156)
+
 ## 8.9.2
 
   - Miguel Negron
