@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.5
+
+  - manegron
+    - [3fb133f] Change log level
+
 ## 8.9.4
 
   - manegron
