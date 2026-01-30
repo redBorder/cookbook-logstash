@@ -8,7 +8,7 @@ module Logstash
         begin
           m = Chef::Node.load m_key
         rescue
-          Chef::Log.error("[get_managers] Failed to load node: #{m_key}")
+          Chef::Log.warn("[get_managers] Failed to load node: #{m_key}")
         end
         m = node if m.name == node.name
 
@@ -38,7 +38,7 @@ module Logstash
         begin
           ro = Chef::Role.load rol
         rescue
-          Chef::Log.error("[get_namespaces] Failed to load role: #{rol}")
+          Chef::Log.warn("[get_namespaces] Failed to load role: #{rol}")
         end
         next unless ro && ro.override_attributes['redborder'] &&
                     ro.override_attributes['redborder']['namespace'] &&
@@ -59,7 +59,7 @@ module Logstash
         begin
           m = Chef::Node.load m_key
         rescue
-          Chef::Log.error("[get_sensors_info] Failed to load node: #{m_key}")
+          Chef::Log.warn("[get_sensors_info] Failed to load node: #{m_key}")
         end
         m = node if m.name == node.name
 
