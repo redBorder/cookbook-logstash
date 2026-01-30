@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.4
+
+  - manegron
+    - [b1deebd] Add rescue
+
 ## 8.9.3
 
   - manegron
