@@ -1,34 +1,63 @@
+<%#
+Mar 02 16:40:50 jenkins-ljblanco.redborder.cluster logstash[356622]: [2026-03-02T16:40:50,883][INFO ][logstash.javapipeline    ][sflow-pipeline] Starting pipeline
+{:pipeline_id=>"sflow-pipeline", "pipeline.workers"=>3, "pipeline.batch.size"=>125, "pipeline.batch.delay"=>50, "pipeline.max_inflight"=>375, 
+"pipeline.sources"=>["/etc/logstash/pipelines/sflow/00_input.conf", 
+"/etc/logstash/pipelines/sflow/01_tagging.conf", 
+"/etc/logstash/pipelines/sflow/02_normalization.conf", 
+"/etc/logstash/pipelines/sflow/03_enrichment.conf", 
+"/etc/logstash/pipelines/sflow/04_field_conversion.conf", 
+"/etc/logstash/pipelines/sflow/99_output.conf"], :thread=>"#<Thread:0x578d2f run>"}
+%>
+
 filter {
-  
-  # Default direction
-  mutate {
-    add_field => {
-      "direction" => "upstream"
-    }
-  }
-
   if ![tag] or [tag] == 0 {
-    <% @flow_nodes.select{|s| s[:ipaddress] and s["redborder"] and s["redborder"]["homenets"] and !s["redborder"]["blocked"]}.each do |flow_node| %>
-    if [peer_ip_src] == "<%=flow_node[:ipaddress]%>" {
-      # Determine if direction is different than "upstream"
-      ruby { 
-        code => " require 'ipaddr'
-                  
-                  homenets = [<%=flow_node["redborder"]["homenets"].map{|h| "IPAddr.new('#{h["value"]}')"} .join(",")%>]
-
-                  if homenets.any? {|subnet| subnet.include?(event.get('ip_src')) } 
-                    if homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
-                      event.set('direction', 'internal')
-                    else
-                      event.set('direction', 'upstream')
-                    end
-                  elsif homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
-                    event.set('direction', 'downstream')
-                  end
-                 "
+    <%# find like in a hashmap homenets = Hashmap[ip] %>
+    translate {
+      destination => "homenets"
+      field       => "peer_ip_src"
+      dictionary  => <%# Start mapping homenets as string %>{
+        <%= @flow_nodes.map { |flow_node|
+          ip = flow_node[:ipaddress]
+          homenets = flow_node.dig('redborder','homenets') || []
+          homenets_str = homenets.map { |h| h['value'] }.join('|') # use '|' as delimiter
+          %Q("#{ip}" => "#{homenets_str}")
+        }.join(",\n  ") %> 
       }
     }
-  <% end %>
+
+    <%# Split the string into an array of CIDRs for cidr filter %>
+    mutate {
+      split => { "homenets" => "|" }
+    }
+
+    <%# Determine direction fo traffic using CIDR filter %>
+    cidr {
+      address => [ "ip_src" ]
+      network => [ "%{homenets}" ]
+      add_tag => [ "is_src_internal" ]
+    }
+
+    cidr {
+      address => [ "ip_dst" ]
+      network => [ "%{homenets}" ]
+      add_tag => [ "is_dst_internal" ]
+    }
+
+    <%# Add direction field and value %>
+    if [is_src_internal] in [tags] and [is_dst_internal] in [tags] {
+      mutate { add_field => { "direction" => "internal" } }
+    } else if [is_src_internal] in [tags] {
+      mutate { add_field => { "direction" => "upstream" } }
+    } else if [is_dst_internal] in [tags] {
+      mutate { add_field => { "direction" => "downstream" } }
+    } else {
+      mutate { add_field => { "direction" => "please_define_homenets_in_sensor" } }
+    }
+
+    <%# Clear helper tag %>
+    mutate {
+      remove_tag => [ "is_src_internal", "is_dst_internal" ]
+    }
   } else if [tag] == 1 {
       mutate { add_field => { "direction" => "downstream" } }
   } else if [tag] == 3 {
@@ -93,4 +122,3 @@ filter {
     }
   <% end %>
 }
-
