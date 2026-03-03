@@ -12,43 +12,40 @@ Mar 02 16:40:50 jenkins-ljblanco.redborder.cluster logstash[356622]: [2026-03-02
 filter {
   if ![tag] or [tag] == 0 {
     <%# find like in a hashmap homenets = Hashmap[ip] %>
-    translate {
+    <%#= translate {
       destination => "homenets"
       field       => "peer_ip_src"
-      dictionary  => <%# Start mapping homenets as string %>{
-        <%= @flow_nodes.map { |flow_node|
+      dictionary  => {
+        "10.0.50.91" => "10.1.0.0/16|192.168.10.0/24",
+        "10.0.50.92" => "172.16.0.0/12"
+         @flow_nodes.map { |flow_node|
           ip = flow_node[:ipaddress]
           homenets = flow_node.dig('redborder','homenets') || []
           homenets_str = homenets.map { |h| h['value'] }.join('|') # use '|' as delimiter
           %Q("#{ip}" => "#{homenets_str}")
-        }.join(",\n  ") %> 
+        }.join(",\n  ") 
       }
-    }
+    } %> 
 
-    <%# Split the string into an array of CIDRs for cidr filter %>
-    mutate {
-      split => { "homenets" => "|" }
-    }
+    <% homenets = %w[10.1.0.0/16 192.168.10.0/24] %>
 
-    <%# Determine direction fo traffic using CIDR filter %>
     cidr {
-      address => [ "ip_src" ]
-      network => [ "%{homenets}" ]
+      address => "%{ip_src}"
+      <%#= network_path => "/etc/logstash/sflow_homenets/default.txt" %>
+      network => <%= homenets %>
       add_tag => [ "is_src_internal" ]
     }
-
     cidr {
-      address => [ "ip_dst" ]
-      network => [ "%{homenets}" ]
+      address => "%{ip_dst}"
+      <%#= network_path => "/etc/logstash/sflow_homenets/default.txt" %>
+      network => <%= homenets %>
       add_tag => [ "is_dst_internal" ]
     }
-
-    <%# Add direction field and value %>
-    if [is_src_internal] in [tags] and [is_dst_internal] in [tags] {
+    if "is_src_internal" in [tags] and "is_dst_internal" in [tags] {
       mutate { add_field => { "direction" => "internal" } }
-    } else if [is_src_internal] in [tags] {
+    } else if "is_src_internal" in [tags] {
       mutate { add_field => { "direction" => "upstream" } }
-    } else if [is_dst_internal] in [tags] {
+    } else if "is_dst_internal" in [tags] {
       mutate { add_field => { "direction" => "downstream" } }
     } else {
       mutate { add_field => { "direction" => "please_define_homenets_in_sensor" } }
