@@ -1,43 +1,41 @@
 filter {
   if ![tag] or [tag] == 0 {
     ruby {
-    code => '
-      require "ipaddr"
-      require "yaml"
+      init => '
+        require "ipaddr"
+        require "yaml"
 
-      sensor_ip = event.get("peer_ip_src")
-      homenets = 
-      begin
-        YAML.safe_load(File.read("/etc/logstash/sflow_homenets/default.yml"))[sensor_ip]
-      rescue
-        []
-      end
+        sensor_homenets = YAML.safe_load(File.read("/etc/logstash/sflow_homenets/default.yml")) rescue {}
+      '
+      code => '
+        sensor_ip = event.get("peer_ip_src")
+        homenets = sensor_homenets[sensor_ip]
 
-      ip_src = event.get("ip_src")
-      ip_dst = event.get("ip_dst")
+        ip_src = event.get("ip_src")
+        ip_dst = event.get("ip_dst")
 
-      # Check source IP
-      if ip_src
-        homenets.each do |network|
-          if IPAddr.new(network).include?(IPAddr.new(ip_src))
-            event.tag("is_src_internal")
-            event.set("src_homenet", network)
-            break
+        # Check source IP
+        if ip_src
+          homenets.each do |network|
+            if IPAddr.new(network).include?(IPAddr.new(ip_src))
+              event.tag("is_src_internal")
+              event.set("src_homenet", network)
+              break
+            end
           end
         end
-      end
 
-      # Check destination IP
-      if ip_dst
-        homenets.each do |network|
-          if IPAddr.new(network).include?(IPAddr.new(ip_dst))
-            event.tag("is_dst_internal")
-            event.set("dst_homenet", network)
-            break
+        # Check destination IP
+        if ip_dst
+          homenets.each do |network|
+            if IPAddr.new(network).include?(IPAddr.new(ip_dst))
+              event.tag("is_dst_internal")
+              event.set("dst_homenet", network)
+              break
+            end
           end
         end
-      end
-    '
+      '
     }
     
     if "is_src_internal" in [tags] and "is_dst_internal" in [tags] {
