@@ -1,26 +1,17 @@
-<%#
-Mar 02 16:40:50 jenkins-ljblanco.redborder.cluster logstash[356622]: [2026-03-02T16:40:50,883][INFO ][logstash.javapipeline    ][sflow-pipeline] Starting pipeline
-{:pipeline_id=>"sflow-pipeline", "pipeline.workers"=>3, "pipeline.batch.size"=>125, "pipeline.batch.delay"=>50, "pipeline.max_inflight"=>375, 
-"pipeline.sources"=>["/etc/logstash/pipelines/sflow/00_input.conf", 
-"/etc/logstash/pipelines/sflow/01_tagging.conf", 
-"/etc/logstash/pipelines/sflow/02_normalization.conf", 
-"/etc/logstash/pipelines/sflow/03_enrichment.conf", 
-"/etc/logstash/pipelines/sflow/04_field_conversion.conf", 
-"/etc/logstash/pipelines/sflow/99_output.conf"], :thread=>"#<Thread:0x578d2f run>"}
-%>
-
 filter {
   if ![tag] or [tag] == 0 {
     ruby {
     code => '
       require "ipaddr"
+      require "yaml"
 
-      sensor_homenets = {}
-      @flow_nodes.each { |flow_node|
-        ip = flow_node[:ipaddress]
-        homenets = flow_node.dig("redborder","homenets") || []
-        sensor_homenets[ip] = homenets
-      }
+      sensor_ip = event.get("peer_ip_src")
+      homenets = 
+      begin
+        YAML.safe_load(File.read("/etc/logstash/sflow_homenets/default.yml"))[sensor_ip]
+      rescue
+        []
+      end
 
       ip_src = event.get("ip_src")
       ip_dst = event.get("ip_dst")
@@ -48,6 +39,7 @@ filter {
       end
     '
     }
+    
     if "is_src_internal" in [tags] and "is_dst_internal" in [tags] {
       mutate { add_field => { "direction" => "internal" } }
     } else if "is_src_internal" in [tags] {
@@ -55,7 +47,7 @@ filter {
     } else if "is_dst_internal" in [tags] {
       mutate { add_field => { "direction" => "downstream" } }
     } else {
-      mutate { add_field => { "direction" => "please_define_homenets_in_sensor" } }
+      mutate { add_field => { "direction" => "undefined_homenets" } }
     }
   }
 
@@ -106,9 +98,7 @@ filter {
               <% end %>
               <% end %>
             <%end %>
-  
             event.set('tag2', observation_tag2) if tag2 != observation_tag2
-  
             "
           }
         }
