@@ -5,11 +5,11 @@ filter {
         require "ipaddr"
         require "yaml"
 
-        sensor_homenets = YAML.safe_load(File.read("/etc/logstash/sflow_homenets/default.yml")) rescue {}
+        $sensor_homenets = YAML.safe_load(File.read("/etc/logstash/sflow_homenets/default.yml")) rescue {}
       '
       code => '
         sensor_ip = event.get("peer_ip_src")
-        homenets = sensor_homenets[sensor_ip]
+        homenets = $sensor_homenets[sensor_ip]
 
         ip_src = event.get("ip_src")
         ip_dst = event.get("ip_dst")
