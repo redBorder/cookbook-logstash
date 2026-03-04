@@ -327,6 +327,10 @@ action :add do
         recursive true
       end
 
+      sflow_nodes = flow_nodes.select do 
+        |s| s[:ipaddress] and s['redborder'] and s['redborder']['homenets'] and !s['redborder']['blocked'] rescue false
+      end
+
       template '/etc/logstash/sflow_homenets/default.yml' do
         source 'sflow_homenets.yml.erb'
         owner user
@@ -334,7 +338,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes)
+        variables(flow_nodes: sflow_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
