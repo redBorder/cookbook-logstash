@@ -47,6 +47,10 @@ filter {
     } else {
       mutate { add_field => { "direction" => "undefined_homenets" } }
     }
+  } else if [tag] == 1 {
+      mutate { add_field => { "direction" => "downstream" } }
+  } else if [tag] == 3 {
+      mutate { add_field => { "direction" => "internal" } }
   }
 
   <% if @split_traffic_logstash %>
