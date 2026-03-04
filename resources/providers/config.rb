@@ -368,6 +368,10 @@ action :add do
         |s| s[:ipaddress] and s['redborder'] and s['redborder']['homenets'] and !s['redborder']['blocked'] rescue false
       end
 
+      valid_nodes_with_proxy = flow_nodes_with_proxy.select do 
+        |s| s[:ipaddress] and s['redborder'] and s['redborder']['homenets'] and !s['redborder']['blocked'] and s['redborder']['parent_proxy_uuid'] rescue false
+      end
+
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
         source 'sflow_enrichment.conf.erb'
         owner user
@@ -379,7 +383,7 @@ action :add do
         variables(
           split_traffic_logstash: split_traffic_logstash,
           flow_nodes_without_proxy: valid_nodes_without_proxy,
-          flow_nodes_with_proxy: flow_nodes_without_proxy
+          flow_nodes_with_proxy: valid_nodes_with_proxy
         )
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end

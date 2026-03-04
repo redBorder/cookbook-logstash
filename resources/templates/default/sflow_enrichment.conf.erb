@@ -1,6 +1,5 @@
 filter {
   <% @flow_nodes_with_proxy.each do |flow_node| %>
-    <% if !flow_node[:ipaddress].nil? and !flow_node["redborder"].nil? and flow_node["redborder"]["blocked"]!=true %>
   if [proxy_uuid] == "<%= flow_node['redborder']['parent_proxy_uuid'] %>" {
     <% unless @split_traffic_logstash %>
     if [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>" {
@@ -29,7 +28,6 @@ filter {
     } # unless [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>"
     <% end %>
   }
-    <% end %>
   <% end %>
   if ![proxy_uuid] {
     ruby {
@@ -46,23 +44,28 @@ filter {
         sensor_ip = event.get("sensor_ip")
         flow_node = $flow_nodes_without_proxy.find { |n| n[:ipaddress] == sensor_ip }
 
+        return unless flow_node
+
         event.set("sensor_name", flow_node["rbname"]) if flow_node["rbname"]
 
         $domain_fields.each do |key|
-          next unless (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "")
-          
-          next if event.get(key)
-          value = flow_node['redborder'][key]
-          event.set(key,value)
+          next unless flow_node["redborder"] &&
+                      flow_node["redborder"][key] &&
+                      flow_node["redborder"][key] != ""
 
-        partitions = if ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_partitions"].nil? )
-          max [1, flow_node["redborder"]["index_partitions"].to_i]
+          next if event.get(key)
+
+          event.set(key, flow_node["redborder"][key])
+        end
+
+        partitions = if flow_node["redborder"] && flow_node["redborder"]["index_partitions"]
+          [1, flow_node["redborder"]["index_partitions"].to_i].max
         else
           5
         end
 
-        replicas = if ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_replicas"].nil? )
-          max [1, flow_node["redborder"]["index_replicas"].to_i]
+        replicas = if flow_node["redborder"] && flow_node["redborder"]["index_replicas"]
+          [1, flow_node["redborder"]["index_replicas"].to_i].max
         else
           1
         end
