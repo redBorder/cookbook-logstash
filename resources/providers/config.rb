@@ -349,7 +349,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes, proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
+        variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
