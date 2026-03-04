@@ -320,6 +320,24 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      directory '/etc/logstash/sflow_homenets' do
+        owner user
+        group user
+        mode '0755'
+        recursive true
+      end
+
+      template '/etc/logstash/sflow_homenets/default.yml' do
+        source 'sflow_homenets.yml.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(flow_nodes: flow_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/sflow/01_tagging.conf" do
         source 'sflow_tagging.conf.erb'
         owner user
