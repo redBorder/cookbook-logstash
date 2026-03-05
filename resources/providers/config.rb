@@ -379,7 +379,6 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-     #   variables(split_traffic_logstash: split_traffic_logstash, flow_nodes_without_proxy: flow_nodes_without_proxy, flow_nodes_with_proxy: valid_nodes_without_proxy)
         variables(
           split_traffic_logstash: split_traffic_logstash,
           flow_nodes_without_proxy: valid_nodes_without_proxy,
