@@ -58,57 +58,69 @@ filter {
 
   <% if @split_traffic_logstash %>
   if [tag2] {
-    <% @proxy_nodes.each do |proxy_node| %>
-      <% if !proxy_node["redborder"].nil? %>
-      if [peer_ip_src] == "<%=proxy_node[:ipaddress]%>" {
-        ruby {
-          code => "
-            require 'ipaddr'
-  
-            ip_src = IPAddr.new(event.get('ip_src'))
-            ip_dst = IPAddr.new(event.get('ip_dst'))
-  
-            tag2 = event.get('tag2')
-            observation_tag2 = tag2
+    ruby {
+      init => '
+        require "ipaddr"
+        # Precompute proxy node data
+        $proxy_nodes = <%= 
+          proxy_nodes = []
+          # # Enrich data from input (proxy nodes)
+          @proxy_nodes.each do |proxy_node|
+            next if proxy_node["redborder"].nil?
 
-            <% role_name = "rBsensor-#{proxy_node.name.gsub('rbproxy-','')}" %>
-            <% proxy_role = Chef::Role.load role_name rescue nil %>
+            # Build role name for Chef
+            role_name = "rBsensor-#{proxy_node["name"].gsub("rbproxy-","")}"
+            begin
+              role = Chef::Role.load(role_name)
+            rescue
+              next
+            end
 
-            <% if proxy_role && proxy_role.override_attributes && proxy_role.override_attributes['redborder'] && proxy_role.override_attributes['redborder']['interfaces'] && !proxy_role.override_attributes['redborder']['interfaces'].empty? %>
-              <% proxy_role.override_attributes['redborder']['interfaces'].each do |iface_key, _orig_iface| %>
-              <% unless proxy_role.override_attributes['redborder']['interfaces'][iface_key]['observation_id_filters'].empty? %>
-              observation_id_filters = <%= proxy_role.override_attributes['redborder']['interfaces'][iface_key]['observation_id_filters'].to_s.gsub('"', "'") %>
-  
-              observation_id_filters.each do |filter|
-                subnet = IPAddr.new(filter['subnet'])
-                observation_id = filter['observation_id']
-  
-                if subnet.include?(ip_src)
-                  observation_tag2 = observation_id
-                  break
-                end
+            next unless role.override_attributes
+
+            interfaces_filters = []
+            interfaces = role.override_attributes["redborder"]["interfaces"] || []
+            interfaces.each do |iface_key, iface_data|
+              next unless iface_data["observation_id_filters"] && !iface_data["observation_id_filters"].empty?
+
+              iface_data['observation_id_filters'].each do |f|
+                interfaces_filters.push f
               end
-  
-              if observation_tag2 == tag2
-                observation_id_filters.each do |filter|
-                  subnet = IPAddr.new(filter['subnet'])
-                  observation_id = filter['observation_id']
-  
-                  if subnet.include?(ip_dst)
-                    observation_tag2 = observation_id
-                    break
-                  end
-                end
-              end
-              <% end %>
-              <% end %>
-            <%end %>
-            event.set('tag2', observation_tag2) if tag2 != observation_tag2
-            "
-          }
-        }
-      <% end %>
-    <% end %>
+            end
+
+            proxy_nodes.push({
+              ipaddress: proxy_node['ipaddress'],
+              observation_id_filters: interfaces_filters
+            })
+          end
+          proxy_nodes
+        %>
+      '
+      code => '
+        ip_src = IPAddr.new(event.get("ip_src")) rescue nil
+        ip_dst = IPAddr.new(event.get("ip_dst")) rescue nil
+        tag2   = event.get("tag2")
+        observation_tag2 = tag2
+
+        sensor_ip = event.get("peer_ip_src")
+
+        proxy_node = $proxy_nodes.find { |n| n[:ipaddress] == sensor_ip }
+        if proxy_node && (ip_src || ip_dst)
+          proxy_node[:observation_id_filters].each do |filter|
+            subnet = IPAddr.new(filter["subnet"]) rescue nil
+            observation_id = filter["observation_id"]
+            next unless subnet
+
+            if subnet.include?(ip_src) || subnet.include?(ip_dst)
+              observation_tag2 = observation_id
+              break
+            end
+          end
+        end
+
+        event.set("tag2", observation_tag2) if tag2 != observation_tag2
+      '
     }
+  }
   <% end %>
 }
