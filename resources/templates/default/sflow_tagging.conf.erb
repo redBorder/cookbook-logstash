@@ -2,6 +2,9 @@ filter {
   if ![tag] or [tag] == 0 {
     ruby {
       init => '
+        # TODO 
+        #   populate necessasary values
+        #   rescues
         require "ipaddr"
         require "yaml"
 

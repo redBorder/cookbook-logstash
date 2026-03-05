@@ -327,8 +327,8 @@ action :add do
         recursive true
       end
 
-      sflow_nodes = flow_nodes.select do 
-        |s| s[:ipaddress] and s['redborder'] and s['redborder']['homenets'] and !s['redborder']['blocked'] rescue false
+      sflow_nodes = flow_nodes.select do |s|
+        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked')
       end
 
       template '/etc/logstash/sflow_homenets/default.yml' do
@@ -364,12 +364,12 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      valid_nodes_without_proxy = flow_nodes_without_proxy.select do 
-        |s| s[:ipaddress] and s['redborder'] and s['redborder']['homenets'] and !s['redborder']['blocked'] rescue false
+      valid_nodes_without_proxy = flow_nodes_without_proxy.select do |s|
+        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked')
       end
 
-      valid_nodes_with_proxy = flow_nodes_with_proxy.select do 
-        |s| s[:ipaddress] and s['redborder'] and s['redborder']['homenets'] and !s['redborder']['blocked'] and s['redborder']['parent_proxy_uuid'] rescue false
+      valid_nodes_with_proxy = flow_nodes_with_proxy.select do |s|
+        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked') && s.dig('redborder', 'parent_proxy_uuid')
       end
 
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
