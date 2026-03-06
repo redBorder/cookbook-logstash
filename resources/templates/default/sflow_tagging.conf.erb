@@ -12,7 +12,7 @@ filter {
       '
       code => '
         sensor_ip = event.get("peer_ip_src")
-        homenets = $sensor_homenets[sensor_ip]
+        homenets = $sensor_homenets[sensor_ip] || {}
 
         ip_src = event.get("ip_src")
         ip_dst = event.get("ip_dst")
@@ -63,6 +63,7 @@ filter {
         require "ipaddr"
         # Precompute proxy node data
         $proxy_nodes = <%= 
+          return [] unless @proxy_nodes
           proxy_nodes = []
           # # Enrich data from input (proxy nodes)
           @proxy_nodes.each do |proxy_node|
@@ -105,7 +106,7 @@ filter {
         sensor_ip = event.get("peer_ip_src")
 
         proxy_node = $proxy_nodes.find { |n| n[:ipaddress] == sensor_ip }
-        if proxy_node && (ip_src || ip_dst)
+        if proxy_node && (ip_src || ip_dst) && proxy_node[:observation_id_filters]
           proxy_node[:observation_id_filters].each do |filter|
             subnet = IPAddr.new(filter["subnet"]) rescue nil
             observation_id = filter["observation_id"]

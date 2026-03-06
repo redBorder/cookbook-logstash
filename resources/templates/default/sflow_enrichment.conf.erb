@@ -3,6 +3,7 @@ filter {
     init => '
       # Enrich non-proxy nodes
       $no_proxy_nodes = <%=
+        return {} unless @flow_nodes_without_proxy
         nodes = {}
         # Define domain fields for non-proxy nodes
         DOMAIN_FIELDS = %w[
@@ -32,6 +33,7 @@ filter {
 
       # Enrich proxy nodes
       $proxy_nodes = <%=
+        return {} unless @flow_nodes_with_proxy
         nodes = {}
         @flow_nodes_with_proxy.each do |node|
           key = node.dig("redborder","parent_proxy_uuid")
