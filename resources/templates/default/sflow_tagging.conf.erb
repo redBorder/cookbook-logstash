@@ -48,7 +48,7 @@ filter {
     } else if "is_dst_internal" in [tags] {
       mutate { add_field => { "direction" => "downstream" } }
     } else {
-      mutate { add_field => { "direction" => "undefined_homenets" } }
+      mutate { add_field => { "direction" => "N/A" } }
     }
   } else if [tag] == 1 {
       mutate { add_field => { "direction" => "downstream" } }
