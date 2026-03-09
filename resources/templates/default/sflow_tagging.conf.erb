@@ -22,7 +22,6 @@ filter {
           homenets.each do |network|
             if IPAddr.new(network).include?(IPAddr.new(ip_src))
               event.tag("is_src_internal")
-              event.set("src_homenet", network)
               break
             end
           end
@@ -33,7 +32,6 @@ filter {
           homenets.each do |network|
             if IPAddr.new(network).include?(IPAddr.new(ip_dst))
               event.tag("is_dst_internal")
-              event.set("dst_homenet", network)
               break
             end
           end
