@@ -2,39 +2,43 @@ filter {
   if ![tag] or [tag] == 0 {
     ruby {
       init => '
-        # TODO 
-        #   populate necessasary values
-        #   rescues
         require "ipaddr"
         require "yaml"
 
-        $sensor_homenets = YAML.safe_load(File.read("/etc/logstash/sflow_homenets/default.yml")) rescue {}
+        begin
+          path = "/etc/logstash/sflow_homenets/default.yml"
+          raw_data = YAML.safe_load(File.read(path)) || {}
+          $sensor_homenets = {}
+
+          raw_data.each do |sensor, networks|
+            $sensor_homenets[sensor] = networks.map do |n|
+              IPAddr.new(n) rescue nil
+            end.compact
+          end
+        rescue => e
+          $sensor_homenets = {}
+        end
+
+        def is_internal?(ip_str, homenets)
+          return false if ip_str.nil?
+          begin
+            target = IPAddr.new(ip_str)
+            homenets.any? { |net_obj| net_obj.include?(target) }
+          rescue
+            false
+          end
+        end
       '
       code => '
         sensor_ip = event.get("peer_ip_src")
-        homenets = $sensor_homenets[sensor_ip] || {}
+        homenets = $sensor_homenets[sensor_ip] || []
 
-        ip_src = event.get("ip_src")
-        ip_dst = event.get("ip_dst")
-
-        # Check source IP
-        if ip_src
-          homenets.each do |network|
-            if IPAddr.new(network).include?(IPAddr.new(ip_src))
-              event.tag("is_src_internal")
-              break
-            end
-          end
+        if is_internal?(event.get("ip_src"), homenets)
+          event.tag("is_src_internal")
         end
 
-        # Check destination IP
-        if ip_dst
-          homenets.each do |network|
-            if IPAddr.new(network).include?(IPAddr.new(ip_dst))
-              event.tag("is_dst_internal")
-              break
-            end
-          end
+        if is_internal?(event.get("ip_dst"), homenets)
+          event.tag("is_dst_internal")
         end
       '
     }
@@ -98,20 +102,19 @@ filter {
       code => '
         ip_src = IPAddr.new(event.get("ip_src")) rescue nil
         ip_dst = IPAddr.new(event.get("ip_dst")) rescue nil
-        tag2   = event.get("tag2")
-        observation_tag2 = tag2
+        return unless (ip_src || ip_dst)
 
+        tag2 = observation_tag2 = event.get("tag2")
         sensor_ip = event.get("peer_ip_src")
 
         proxy_node = $proxy_nodes.find { |n| n[:ipaddress] == sensor_ip }
-        if proxy_node && (ip_src || ip_dst) && proxy_node[:observation_id_filters]
+        if proxy_node && proxy_node[:observation_id_filters]
           proxy_node[:observation_id_filters].each do |filter|
             subnet = IPAddr.new(filter["subnet"]) rescue nil
-            observation_id = filter["observation_id"]
             next unless subnet
 
             if subnet.include?(ip_src) || subnet.include?(ip_dst)
-              observation_tag2 = observation_id
+              observation_tag2 = filter["observation_id"]
               break
             end
           end
