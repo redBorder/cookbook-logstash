@@ -63,40 +63,40 @@ filter {
     ruby {
       init => '
         require "ipaddr"
-        # Precompute proxy node data
-        $proxy_nodes = <%= 
+
+        $proxy_observations = <%
           return [] unless @proxy_nodes
-          proxy_nodes = []
-          # # Enrich data from input (proxy nodes)
+
+          # Expected output
+          # proxy_observations = {
+          #   sensor_ip => [
+          #     {
+          #       id => x
+          #       subnet => x.x.x.x/x
+          #     },
+          #     {...}
+          #   ]
+          # }
+          
           @proxy_nodes.each do |proxy_node|
-            next if proxy_node["redborder"].nil?
+            next unless proxy_node[:redborder] && proxy_node[:observation_id_filters]
 
-            # Build role name for Chef
-            role_name = "rBsensor-#{proxy_node["name"].gsub("rbproxy-","")}"
-            begin
-              role = Chef::Role.load(role_name)
-            rescue
-              next
-            end
+            filters = []
+            proxy_node[:observation_id_filters].map do |filter|
+              next unless filter[:observation_id] && filter[:subnet]
 
-            next unless role.override_attributes
-
-            interfaces_filters = []
-            interfaces = role.override_attributes["redborder"]["interfaces"] || []
-            interfaces.each do |iface_key, iface_data|
-              next unless iface_data["observation_id_filters"] && !iface_data["observation_id_filters"].empty?
-
-              iface_data['observation_id_filters'].each do |f|
-                interfaces_filters.push f
+              begin
+                id = filter[:observation_id]
+                subnet = IPAddr.new(filter[:subnet])
+                filters.push({id: id, subnet: subnet})
+              rescue
+                next
               end
             end
-
-            proxy_nodes.push({
-              ipaddress: proxy_node['ipaddress'],
-              observation_id_filters: interfaces_filters
-            })
+            sensor_ip = proxy_node[:ipaddress]
+            proxy_observations[sensor_ip] = filters
           end
-          proxy_nodes
+          proxy_observations
         %>
       '
       code => '
@@ -104,23 +104,20 @@ filter {
         ip_dst = IPAddr.new(event.get("ip_dst")) rescue nil
         return unless (ip_src || ip_dst)
 
-        tag2 = observation_tag2 = event.get("tag2")
+        target_observation = event.get("tag2")
         sensor_ip = event.get("peer_ip_src")
 
-        proxy_node = $proxy_nodes.find { |n| n[:ipaddress] == sensor_ip }
-        if proxy_node && proxy_node[:observation_id_filters]
-          proxy_node[:observation_id_filters].each do |filter|
-            subnet = IPAddr.new(filter["subnet"]) rescue nil
-            next unless subnet
-
-            if subnet.include?(ip_src) || subnet.include?(ip_dst)
-              observation_tag2 = filter["observation_id"]
-              break
-            end
+        observations = $proxy_observations.find { |n| n[:ipaddress] == sensor_ip }
+        observations.each do |observation|
+          subnet = observation[:subnet]
+          if subnet.include?(ip_src) || subnet.include?(ip_dst)
+            observation_tag2 = observation[:id] 
+            break
           end
         end
 
-        event.set("tag2", observation_tag2) if tag2 != observation_tag2
+        # Replace event
+        event.set("tag2", out_tag) if tag2 != observation_tag2
       '
     }
   }
