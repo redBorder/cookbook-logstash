@@ -1,28 +1,29 @@
 filter {
   ruby {
     init => '
-      # Enrich non-proxy nodes
-      $no_proxy_nodes = <%=
-        return {} unless @flow_nodes_without_proxy
-        nodes = {}
-        # Define domain fields for non-proxy nodes
-        DOMAIN_FIELDS = %w[
+      # Helper constants
+      <% DOMAIN_FIELDS = %w[
           sensor_uuid deployment deployment_uuid namespace namespace_uuid
           market market_uuid organization organization_uuid service_provider
           service_provider_uuid campus campus_uuid building building_uuid
           floor floor_uuid
-        ]
+        ] %>
+
+      # Enrich non-proxy nodes
+      $no_proxy_nodes = <%=
+        return {} unless @flow_nodes_without_proxy
+        nodes = {}
         @flow_nodes_without_proxy.each do |node|
           next unless node["ipaddress"]
           sensor_ip = node["ipaddress"].to_s
+
           data = {}
           data["sensor_name"] = node["rbname"] || node["name"] || "unnamed"
-
           DOMAIN_FIELDS.each do |field|
-            value = node.dig("redborder", field)
-            data[field] = value if value && !value.to_s.empty?
+            valid_value = node.dig("redborder", field)
+            next unless valid_value
+            data[field] = valid_value
           end
-
           data["index_partitions"] = node.dig("redborder","index_partitions") ? [1,node["redborder"]["index_partitions"].to_i].max : 5
           data["index_replicas"]   = node.dig("redborder","index_replicas")   ? [1,node["redborder"]["index_replicas"].to_i].max : 1
 
@@ -36,15 +37,21 @@ filter {
         return {} unless @flow_nodes_with_proxy
         nodes = {}
         @flow_nodes_with_proxy.each do |node|
-          key = node.dig("redborder","parent_proxy_uuid")
-          next unless key
-          nodes[key] ||= {}
+          proxy_uuid = node.dig("redborder","parent_proxy_uuid")
+          next unless proxy_uuid
+          nodes[proxy_uuid] ||= {}
 
           sensor_ip = node["ipaddress"].to_s
-          nodes[key][sensor_ip] = {
-            "sensor_name" => node["rbname"] || node["name"] || "unnamed",
-            "observation_id" => node.dig("redborder","observation_id").to_s.empty? ? "default" : node.dig("redborder","observation_id")
-          }
+          data = {}
+          data["sensor_name"] = node["rbname"] || node["name"] || "unnamed"
+          DOMAIN_FIELDS.each do |field|
+            valid_value = node.dig("redborder",field)
+            next unless valid_value
+            data[field] = valid_value
+          end
+          data["observation_id"] = node.dig("redborder","observation_id").to_s.empty? ? "default" : node.dig("redborder","observation_id")
+
+          nodes[proxy_uuid][sensor_ip] = data
         end
         nodes
       %>
@@ -53,18 +60,13 @@ filter {
       sensor_ip  = event.get("sensor_ip")
       proxy_uuid = event.get("proxy_uuid")
 
-      if proxy_uuid
-        node_data = $proxy_nodes.dig(proxy_uuid, sensor_ip)
-        if node_data
-          event.set("sensor_name", node_data["sensor_name"])
-          event.set("observation_id", node_data["observation_id"])
-        end
+      node_data = if proxy_uuid
+        $proxy_nodes.dig(proxy_uuid, sensor_ip)
       else
-        node_data = $no_proxy_nodes[sensor_ip]
-        if node_data
-          node_data.each { |field, value| event.set(field, value) }
-        end
+        $no_proxy_nodes[sensor_ip]
       end
+      return unless node_data
+      node_data.each { |field, value| event.set(field, value) }
     '
   }
 }
