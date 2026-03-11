@@ -52,6 +52,8 @@ filter {
     } else {
       mutate { add_field => { "direction" => "N/A" } }
     }
+    mutate { remove_tag => ["is_src_internal", "is_dst_internal"] }
+
   } else if [tag] == 1 {
       mutate { add_field => { "direction" => "downstream" } }
   } else if [tag] == 3 {
