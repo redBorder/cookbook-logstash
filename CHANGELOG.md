@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.9.6
+
+  - Luis Blanco
+    - [06e6169] Complete refactor of sflow filters: 01_tagging and 03_enrichment
+    - [4b193e9] filter valid sensors in providers config
+    - [9fd2ceb] build helper data file to store homenets by sensor_ip for 01_tagging
+
 ## 8.9.5
 
   - manegron

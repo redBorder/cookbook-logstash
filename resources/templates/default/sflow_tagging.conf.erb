@@ -1,34 +1,59 @@
 filter {
-  
-  # Default direction
-  mutate {
-    add_field => {
-      "direction" => "upstream"
-    }
-  }
-
   if ![tag] or [tag] == 0 {
-    <% @flow_nodes.select{|s| s[:ipaddress] and s["redborder"] and s["redborder"]["homenets"] and !s["redborder"]["blocked"]}.each do |flow_node| %>
-    if [peer_ip_src] == "<%=flow_node[:ipaddress]%>" {
-      # Determine if direction is different than "upstream"
-      ruby { 
-        code => " require 'ipaddr'
-                  
-                  homenets = [<%=flow_node["redborder"]["homenets"].map{|h| "IPAddr.new('#{h["value"]}')"} .join(",")%>]
+    ruby {
+      init => '
+        require "ipaddr"
+        require "yaml"
 
-                  if homenets.any? {|subnet| subnet.include?(event.get('ip_src')) } 
-                    if homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
-                      event.set('direction', 'internal')
-                    else
-                      event.set('direction', 'upstream')
-                    end
-                  elsif homenets.any? {|subnet| subnet.include?(event.get('ip_dst')) }
-                    event.set('direction', 'downstream')
-                  end
-                 "
-      }
+        begin
+          path = "/etc/logstash/sflow_homenets/default.yml"
+          raw_data = YAML.safe_load(File.read(path)) || {}
+          $sensor_homenets = {}
+
+          raw_data.each do |sensor, networks|
+            $sensor_homenets[sensor] = networks.map do |n|
+              IPAddr.new(n) rescue nil
+            end.compact
+          end
+        rescue => e
+          $sensor_homenets = {}
+        end
+
+        def is_internal?(ip_str, homenets)
+          return false if ip_str.nil?
+          begin
+            target = IPAddr.new(ip_str)
+            homenets.any? { |net_obj| net_obj.include?(target) }
+          rescue
+            false
+          end
+        end
+      '
+      code => '
+        sensor_ip = event.get("peer_ip_src")
+        homenets = $sensor_homenets[sensor_ip] || []
+
+        if is_internal?(event.get("ip_src"), homenets)
+          event.tag("is_src_internal")
+        end
+
+        if is_internal?(event.get("ip_dst"), homenets)
+          event.tag("is_dst_internal")
+        end
+      '
     }
-  <% end %>
+    
+    if "is_src_internal" in [tags] and "is_dst_internal" in [tags] {
+      mutate { add_field => { "direction" => "internal" } }
+    } else if "is_src_internal" in [tags] {
+      mutate { add_field => { "direction" => "upstream" } }
+    } else if "is_dst_internal" in [tags] {
+      mutate { add_field => { "direction" => "downstream" } }
+    } else {
+      mutate { add_field => { "direction" => "N/A" } }
+    }
+    mutate { remove_tag => ["is_src_internal", "is_dst_internal"] }
+
   } else if [tag] == 1 {
       mutate { add_field => { "direction" => "downstream" } }
   } else if [tag] == 3 {
@@ -37,60 +62,66 @@ filter {
 
   <% if @split_traffic_logstash %>
   if [tag2] {
-    <% @proxy_nodes.each do |proxy_node| %>
-      <% if !proxy_node["redborder"].nil? %>
-      if [peer_ip_src] == "<%=proxy_node[:ipaddress]%>" {
-        ruby {
-          code => "
-            require 'ipaddr'
-  
-            ip_src = IPAddr.new(event.get('ip_src'))
-            ip_dst = IPAddr.new(event.get('ip_dst'))
-  
-            tag2 = event.get('tag2')
-            observation_tag2 = tag2
+    ruby {
+      init => '
+        require "ipaddr"
 
-            <% role_name = "rBsensor-#{proxy_node.name.gsub('rbproxy-','')}" %>
-            <% proxy_role = Chef::Role.load role_name rescue nil %>
+        $proxy_observations = <%
+          return [] unless @proxy_nodes
 
-            <% if proxy_role && proxy_role.override_attributes && proxy_role.override_attributes['redborder'] && proxy_role.override_attributes['redborder']['interfaces'] && !proxy_role.override_attributes['redborder']['interfaces'].empty? %>
-              <% proxy_role.override_attributes['redborder']['interfaces'].each do |iface_key, _orig_iface| %>
-              <% unless proxy_role.override_attributes['redborder']['interfaces'][iface_key]['observation_id_filters'].empty? %>
-              observation_id_filters = <%= proxy_role.override_attributes['redborder']['interfaces'][iface_key]['observation_id_filters'].to_s.gsub('"', "'") %>
-  
-              observation_id_filters.each do |filter|
-                subnet = IPAddr.new(filter['subnet'])
-                observation_id = filter['observation_id']
-  
-                if subnet.include?(ip_src)
-                  observation_tag2 = observation_id
-                  break
-                end
+          # Expected output
+          # proxy_observations = {
+          #   sensor_ip => [
+          #     {
+          #       id => x
+          #       subnet => x.x.x.x/x
+          #     },
+          #     {...}
+          #   ]
+          # }
+          
+          @proxy_nodes.each do |proxy_node|
+            next unless proxy_node[:redborder] && proxy_node[:observation_id_filters]
+
+            filters = []
+            proxy_node[:observation_id_filters].map do |filter|
+              next unless filter[:observation_id] && filter[:subnet]
+
+              begin
+                id = filter[:observation_id]
+                subnet = IPAddr.new(filter[:subnet])
+                filters.push({id: id, subnet: subnet})
+              rescue
+                next
               end
-  
-              if observation_tag2 == tag2
-                observation_id_filters.each do |filter|
-                  subnet = IPAddr.new(filter['subnet'])
-                  observation_id = filter['observation_id']
-  
-                  if subnet.include?(ip_dst)
-                    observation_tag2 = observation_id
-                    break
-                  end
-                end
-              end
-              <% end %>
-              <% end %>
-            <%end %>
-  
-            event.set('tag2', observation_tag2) if tag2 != observation_tag2
-  
-            "
-          }
-        }
-      <% end %>
-    <% end %>
+            end
+            sensor_ip = proxy_node[:ipaddress]
+            proxy_observations[sensor_ip] = filters
+          end
+          proxy_observations
+        %>
+      '
+      code => '
+        ip_src = IPAddr.new(event.get("ip_src")) rescue nil
+        ip_dst = IPAddr.new(event.get("ip_dst")) rescue nil
+        return unless (ip_src || ip_dst)
+
+        target_observation = event.get("tag2")
+        sensor_ip = event.get("peer_ip_src")
+
+        observations = $proxy_observations.find { |n| n[:ipaddress] == sensor_ip }
+        observations.each do |observation|
+          subnet = observation[:subnet]
+          if subnet.include?(ip_src) || subnet.include?(ip_dst)
+            observation_tag2 = observation[:id] 
+            break
+          end
+        end
+
+        # Replace event
+        event.set("tag2", out_tag) if tag2 != observation_tag2
+      '
     }
+  }
   <% end %>
 }
-
