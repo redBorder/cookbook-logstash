@@ -4,15 +4,9 @@ cookbook-logstash CHANGELOG
 ## 8.9.6
 
   - Luis Blanco
-    - [06e6169] recover domain fields injection for proxy-descendant nodes. Simplify run logic by reading all contained data prefetched. Optimizations
-    - [85fcb22] refactor to parse proxy nodes data in init in favor of per event
-    - [65eab49] optimization by premapping values in init and make code more readable
-    - [c11bb69] reduce amount of lines for a lot of flow nodes by using ruby init instead of multiple logstash ifs
-    - [b3cf2e7] validate flow nodes without proxy to not contaminate logstash
-    - [4b193e9] reduce complexity in sflow filter 03 for sensors without proxy
-    - [55588a0] optimize load of yaml and requirements by using init, which doesn't run per event
-    - [9fd2ceb] build helper data file to store homenets by sensor_ip
-    - [119ef1d] unique ruby code looping inside sensor_id
+    - [06e6169] Complete refactor of sflow filters: 01_tagging and 03_enrichment
+    - [4b193e9] filter valid sensors in providers config
+    - [9fd2ceb] build helper data file to store homenets by sensor_ip for 01_tagging
 
 ## 8.9.5
 
