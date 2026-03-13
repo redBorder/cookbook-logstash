@@ -1,0 +1,15 @@
+<%
+require 'yaml'
+
+sensor_homenets = {}
+
+@flow_nodes.each do |n|
+  next unless n[:ipaddress]
+
+  ip = n[:ipaddress]
+  homenets = Array(n.dig('redborder', 'homenets')).map { |h| h[:value] }
+
+  sensor_homenets[ip] = homenets
+end
+%>
+<%= sensor_homenets.to_yaml %>

@@ -1,66 +1,72 @@
 filter {
-  <% @flow_nodes_with_proxy.each do |flow_node| %>
-    <% if !flow_node[:ipaddress].nil? and !flow_node["redborder"].nil? and flow_node["redborder"]["blocked"]!=true %>
-  if [proxy_uuid] == "<%= flow_node['redborder']['parent_proxy_uuid'] %>" {
-    <% unless @split_traffic_logstash %>
-    if [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>" {
-    <% end %>
-    <% @observation_id = (flow_node["redborder"]["observation_id"] and !flow_node["redborder"]["observation_id"].empty?) ? flow_node["redborder"]["observation_id"] : "default" %>
-      if [observation_id] == "<%=@observation_id%>" {
-        if ![sensor_name] {
-          mutate { add_field => {"sensor_name" => "<%= (flow_node["rbname"].nil? ? flow_node.name : flow_node["rbname"]) %>"}}
-        }
-        <% field_keys = ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid"] %>
-        <% field_keys.each do |key| %>
-          <% if (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "") %>
-          if ![<%=key%>] {
-            mutate { add_field => {"<%= key %>" => "<%= flow_node['redborder'][key] %>"}}
-          }
-          <% end %>
-        <% end %>
-        if ![index_partitions] {
-          mutate { add_field => {"index_partitions" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_partitions"].nil? ) ? flow_node["redborder"]["index_partitions"].to_i : 5].max %>}}
-        }
-        if ![index_replicas] {
-          mutate { add_field => {"index_replicas" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_replicas"].nil? ) ? flow_node["redborder"]["index_replicas"].to_i : 1].max %>}}
-        }
-      }
-    <% unless @split_traffic_logstash %>
-    } # unless [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>"
-    <% end %>
-  }
-    <% end %>
-  <% end %>
-  if ![proxy_uuid] {
-  <% @flow_nodes_without_proxy.each do |flow_node| %>
-    <% if !flow_node[:ipaddress].nil? and !flow_node["redborder"].nil? and flow_node["redborder"]["blocked"]!=true %>
-    <% unless @split_traffic_logstash %>
-    if [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>" {
-    <% end %>
-    <% @observation_id = (flow_node["redborder"]["observation_id"] and !flow_node["redborder"]["observation_id"].empty?) ? flow_node["redborder"]["observation_id"] : "default" %>
-      if [observation_id] == "<%=@observation_id%>" {
-        if ![sensor_name] {
-          mutate { add_field => {"sensor_name" => "<%= (flow_node["rbname"].nil? ? flow_node.name : flow_node["rbname"]) %>"}}
-        }
-        <% field_keys = ["sensor_uuid", "deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid", "organization", "organization_uuid", "service_provider", "service_provider_uuid", "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid"] %>
-        <% field_keys.each do |key| %>
-          <% if (!flow_node["redborder"][key].nil?) and (flow_node["redborder"][key] != "") %>
-          if ![<%=key%>] {
-            mutate { add_field => {"<%= key %>" => "<%= flow_node['redborder'][key] %>"}}
-          }
-          <% end %>
-        <% end %>
-        if ![index_partitions] {
-          mutate { add_field => {"index_partitions" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_partitions"].nil? ) ? flow_node["redborder"]["index_partitions"].to_i : 5].max %>}}
-        }
-        if ![index_replicas] {
-          mutate { add_field => {"index_replicas" => <%= [ 1, ( !flow_node["redborder"].nil? and !flow_node["redborder"]["index_replicas"].nil? ) ? flow_node["redborder"]["index_replicas"].to_i : 1].max %>}}
-        }
-      }
-    <% unless @split_traffic_logstash %>
-    } # unless [sensor_ip] ==  "<%=flow_node[:ipaddress].to_s%>"
-    <% end %>
-    <% end %>
-  <% end %>
+  ruby {
+    init => '
+      # Helper constants
+      <% DOMAIN_FIELDS = %w[
+          sensor_uuid deployment deployment_uuid namespace namespace_uuid
+          market market_uuid organization organization_uuid service_provider
+          service_provider_uuid campus campus_uuid building building_uuid
+          floor floor_uuid
+        ] %>
+
+      # Enrich non-proxy nodes
+      $no_proxy_nodes = <%=
+        return {} unless @flow_nodes_without_proxy
+        nodes = {}
+        @flow_nodes_without_proxy.each do |node|
+          next unless node["ipaddress"]
+          sensor_ip = node["ipaddress"].to_s
+
+          data = {}
+          data["sensor_name"] = node["rbname"] || node["name"] || "unnamed"
+          DOMAIN_FIELDS.each do |field|
+            valid_value = node.dig("redborder", field)
+            next unless valid_value
+            data[field] = valid_value
+          end
+          data["index_partitions"] = node.dig("redborder","index_partitions") ? [1,node["redborder"]["index_partitions"].to_i].max : 5
+          data["index_replicas"]   = node.dig("redborder","index_replicas")   ? [1,node["redborder"]["index_replicas"].to_i].max : 1
+
+          nodes[sensor_ip] = data
+        end
+        nodes
+      %>
+
+      # Enrich proxy nodes
+      $proxy_nodes = <%=
+        return {} unless @flow_nodes_with_proxy
+        nodes = {}
+        @flow_nodes_with_proxy.each do |node|
+          proxy_uuid = node.dig("redborder","parent_proxy_uuid")
+          next unless proxy_uuid
+          nodes[proxy_uuid] ||= {}
+
+          sensor_ip = node["ipaddress"].to_s
+          data = {}
+          data["sensor_name"] = node["rbname"] || node["name"] || "unnamed"
+          DOMAIN_FIELDS.each do |field|
+            valid_value = node.dig("redborder",field)
+            next unless valid_value
+            data[field] = valid_value
+          end
+          data["observation_id"] = node.dig("redborder","observation_id").to_s.empty? ? "default" : node.dig("redborder","observation_id")
+
+          nodes[proxy_uuid][sensor_ip] = data
+        end
+        nodes
+      %>
+    '
+    code => '
+      sensor_ip  = event.get("sensor_ip")
+      proxy_uuid = event.get("proxy_uuid")
+
+      node_data = if proxy_uuid
+        $proxy_nodes.dig(proxy_uuid, sensor_ip)
+      else
+        $no_proxy_nodes[sensor_ip]
+      end
+      return unless node_data
+      node_data.each { |field, value| event.set(field, value) }
+    '
   }
 }

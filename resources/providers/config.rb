@@ -320,6 +320,28 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      directory '/etc/logstash/sflow_homenets' do
+        owner user
+        group user
+        mode '0755'
+        recursive true
+      end
+
+      sflow_nodes = flow_nodes.select do |s|
+        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked')
+      end
+
+      template '/etc/logstash/sflow_homenets/default.yml' do
+        source 'sflow_homenets.yml.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(flow_nodes: sflow_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/sflow/01_tagging.conf" do
         source 'sflow_tagging.conf.erb'
         owner user
@@ -327,7 +349,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes, proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
+        variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -342,6 +364,14 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      valid_nodes_without_proxy = flow_nodes_without_proxy.select do |s|
+        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked')
+      end
+
+      valid_nodes_with_proxy = flow_nodes_with_proxy.select do |s|
+        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked') && s.dig('redborder', 'parent_proxy_uuid')
+      end
+
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
         source 'sflow_enrichment.conf.erb'
         owner user
@@ -349,7 +379,11 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(split_traffic_logstash: split_traffic_logstash, flow_nodes_without_proxy: flow_nodes_without_proxy, flow_nodes_with_proxy: flow_nodes_with_proxy)
+        variables(
+          split_traffic_logstash: split_traffic_logstash,
+          flow_nodes_without_proxy: valid_nodes_without_proxy,
+          flow_nodes_with_proxy: valid_nodes_with_proxy
+        )
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
