@@ -327,15 +327,27 @@ action :add do
         recursive true
       end
 
-      def valid_sflow_node?(s)
-        s[:ipaddress] &&
-        s.dig('redborder', 'homenets') &&
-        s.dig('redborder', 'blocked') != true
-      rescue NoMethodError, TypeError
-        false
-      end
+      # def valid_sflow_node?(s)
+      #   s[:ipaddress] &&
+      #     s.dig('redborder', 'homenets') &&
+      #     s.dig('redborder', 'blocked') != true
+      # rescue NoMethodError, TypeError
+      #   false
+      # end
+      # sflow_nodes = flow_nodes.select { |s| valid_sflow_node?(s) }
 
-      sflow_nodes = flow_nodes.select { |s| valid_sflow_node?(s) }
+      # sflow_nodes = flow_nodes.select do |s|
+      #   begin
+      #     next false unless s[:ipaddress]
+      #     next false unless s.dig('redborder', 'homenets')
+      #     next false unless s.dig('redborder', 'blocked') != true
+      #     true
+      #   rescue
+      #     false
+      #   end
+      # end
+
+      sflow_nodes = flow_nodes
 
       template '/etc/logstash/sflow_homenets/default.yml' do
         source 'sflow_homenets.yml.erb'
