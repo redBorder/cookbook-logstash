@@ -327,13 +327,6 @@ action :add do
         recursive true
       end
 
-      def valid_sflow_node?(s)
-        s[:ipaddress] &&
-          # s.dig('redborder', 'homenets') &&
-          s.dig('redborder', 'blocked') != true
-      rescue NoMethodError, TypeError
-        false
-      end
       valid_sflow_nodes = flow_nodes.select { |s| valid_sflow_node?(s) }
 
       sflow_nodes_with_homenets = valid_sflow_nodes.select { |s| s.dig('redborder', 'homenets') }
