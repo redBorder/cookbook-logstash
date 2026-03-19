@@ -327,7 +327,7 @@ action :add do
         recursive true
       end
 
-      valid_sflow_nodes = flow_nodes.select { |s| valid_sflow_node?(s) }
+      valid_sflow_nodes = flow_nodes.select { |s| valid_node?(s) }
 
       sflow_nodes_with_homenets = valid_sflow_nodes.select { |s| s.dig('redborder', 'homenets') }
       template '/etc/logstash/sflow_homenets/default.yml' do
@@ -364,8 +364,8 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      valid_nodes_without_proxy = flow_nodes_without_proxy.select { |s| valid_sflow_node?(s) }
-      valid_nodes_with_proxy = flow_nodes_with_proxy.select { |s| valid_sflow_node?(s) }
+      valid_nodes_without_proxy = flow_nodes_without_proxy.select { |s| valid_node?(s) }
+      valid_nodes_with_proxy = flow_nodes_with_proxy.select { |s| valid_node?(s) }
 
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
         source 'sflow_enrichment.conf.erb'

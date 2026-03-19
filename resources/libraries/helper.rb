@@ -133,9 +133,8 @@ module Logstash
       node.role?('manager')
     end
 
-    def valid_sflow_node?(s)
-      s[:ipaddress] &&
-        s.dig('redborder', 'blocked') != true
+    def valid_node?(node)
+      node[:ipaddress] && node.dig('redborder', 'blocked') != true
     rescue NoMethodError, TypeError
       false
     end
