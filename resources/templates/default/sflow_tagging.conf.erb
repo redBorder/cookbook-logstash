@@ -68,17 +68,6 @@ filter {
 
         $proxy_observations = <%
           return [] unless @proxy_nodes
-
-          # Expected output
-          # proxy_observations = {
-          #   sensor_ip => [
-          #     {
-          #       id => x
-          #       subnet => x.x.x.x/x
-          #     },
-          #     {...}
-          #   ]
-          # }
           
           @proxy_nodes.each do |proxy_node|
             next unless proxy_node[:redborder] && proxy_node[:observation_id_filters]
