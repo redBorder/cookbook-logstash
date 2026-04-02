@@ -479,14 +479,10 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      template "#{pipelines_dir}/netflow/08_assets.conf" do
-        source 'netflow_assets.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # Clean file deprecated 08_assets.conf file
+      file '/etc/logstash/pipelines/netflow/08_assets.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/netflow/08_assets.conf') }
       end
 
       template "#{pipelines_dir}/netflow/11_device_enrichment.conf" do
@@ -1542,23 +1538,6 @@ action :add do
         end
         action :nothing
         notifies :restart, 'service[logstash]', :delayed if activate_logstash
-      end
-    end
-
-    if is_manager
-      directory '/etc/assets' do
-        owner 'root'
-        group 'root'
-        mode '0777'
-        action :create
-      end
-
-      # This script will generated the YAML file needed to enrich the asset type into the events
-      execute 'rb_create_asset_type_yaml' do
-        ignore_failure true
-        command '/usr/lib/redborder/bin/rb_create_asset_type_yaml.sh /etc/assets/mac_to_asset_type.yaml'
-        action :run
-        not_if { node['redborder']['leader_configuring'] }
       end
     end
 
