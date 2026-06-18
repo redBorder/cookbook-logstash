@@ -13,6 +13,8 @@ action :add do
     device_nodes = new_resource.device_nodes
     snmp_nodes = new_resource.snmp_nodes
     redfish_nodes = new_resource.redfish_nodes
+    vmware_exsi_nodes = new_resource.vmware_exsi_nodes
+    vmware_exsi_vm_nodes = new_resource.vmware_exsi_vm_nodes
     vault_nodes = new_resource.vault_nodes
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
@@ -943,7 +945,7 @@ action :add do
         mode '0644'
         cookbook 'logstash'
         retries 2
-        variables(sensor_nodes: (device_nodes + snmp_nodes))
+        variables(sensor_nodes: (device_nodes + snmp_nodes + vmware_exsi_nodes + vmware_exsi_vm_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -954,7 +956,7 @@ action :add do
         mode '0644'
         cookbook 'logstash'
         retries 2
-        variables(sensor_nodes: (device_nodes + snmp_nodes))
+        variables(sensor_nodes: (device_nodes + snmp_nodes + vmware_exsi_nodes + vmware_exsi_vm_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -1000,7 +1002,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(memcached_servers: memcached_servers, sensor_nodes: (device_nodes + snmp_nodes))
+        variables(memcached_servers: memcached_servers, sensor_nodes: (device_nodes + snmp_nodes + vmware_exsi_nodes + vmware_exsi_vm_nodes))
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
