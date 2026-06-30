@@ -329,10 +329,9 @@ action :add do
         recursive true
       end
 
-      sflow_nodes = flow_nodes.select do |s|
-        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked')
-      end
+      valid_sflow_nodes = flow_nodes.select { |s| valid_node?(s) }
 
+      sflow_nodes_with_homenets = valid_sflow_nodes.select { |s| s.dig('redborder', 'homenets') }
       template '/etc/logstash/sflow_homenets/default.yml' do
         source 'sflow_homenets.yml.erb'
         owner user
@@ -340,7 +339,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: sflow_nodes)
+        variables(flow_nodes: sflow_nodes_with_homenets)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -352,6 +351,7 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
+        # variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -366,13 +366,8 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
-      valid_nodes_without_proxy = flow_nodes_without_proxy.select do |s|
-        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked')
-      end
-
-      valid_nodes_with_proxy = flow_nodes_with_proxy.select do |s|
-        s[:ipaddress] && s.dig('redborder', 'homenets') && !s.dig('redborder', 'blocked') && s.dig('redborder', 'parent_proxy_uuid')
-      end
+      valid_nodes_without_proxy = flow_nodes_without_proxy.select { |s| valid_node?(s) }
+      valid_nodes_with_proxy = flow_nodes_with_proxy.select { |s| valid_node?(s) }
 
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
         source 'sflow_enrichment.conf.erb'
