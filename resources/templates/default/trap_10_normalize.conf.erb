@@ -1,0 +1,23 @@
+filter {
+  ruby {
+    code => '
+      require "json"
+
+      keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "version", "sensor_uuid", "proxy_uuid", "timestamp", "@timestamp", "@version"]
+
+      raw_message = event.get("message")
+      if raw_message.nil?
+        full = event.to_hash
+        full.delete("@timestamp")
+        full.delete("@version")
+        raw_message = full.to_json
+      end
+
+      event.to_hash.keys.each do |k|
+        event.remove(k) unless keep_fields.include?(k)
+      end
+
+      event.set("message", raw_message)
+    '
+  }
+}
