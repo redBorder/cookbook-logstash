@@ -3,8 +3,8 @@ filter {
     code => '
       require "json"
 
-      keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "sensor_uuid", "proxy_uuid", "@timestamp", "@version"]
-      drop_from_message = ["sensor_uuid", "index_partitions", "index_replicas", "host", "sensor_name"]
+      keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "version", "sensor_uuid", "proxy_uuid", "timestamp"]
+      drop_from_message = ["sensor_uuid", "index_partitions", "index_replicas", "timestamp", "version", "host", "sensor_name"]
 
       raw_message = event.get("message")
       if raw_message.nil?
