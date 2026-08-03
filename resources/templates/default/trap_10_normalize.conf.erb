@@ -3,7 +3,8 @@ filter {
     code => '
       require "json"
 
-      keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "version", "sensor_uuid", "proxy_uuid", "timestamp", "@timestamp", "@version"]
+      keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "version", "sensor_uuid", "proxy_uuid", "timestamp"]
+      drop_from_message = ["sensor_uuid", "index_partitions", "index_replicas", "timestamp", "version", "host", "sensor_name"]
 
       raw_message = event.get("message")
       if raw_message.nil?
@@ -11,6 +12,12 @@ filter {
         full.delete("@timestamp")
         full.delete("@version")
         raw_message = full.to_json
+      end
+
+      begin
+        parsed = JSON.parse(raw_message)
+        raw_message = parsed.reject { |k, _| drop_from_message.include?(k) }.to_json if parsed.is_a?(Hash)
+      rescue JSON::ParserError
       end
 
       event.to_hash.keys.each do |k|
