@@ -4,7 +4,7 @@ filter {
       require "json"
 
       keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "version", "sensor_uuid", "proxy_uuid", "timestamp"]
-      drop_from_message = ["sensor_uuid", "index_partitions", "index_replicas", "timestamp", "version", "host", "sensor_name"]
+      drop_from_message = ["sensor_uuid", "index_partitions", "index_replicas", "timestamp", "version", "host", "sensor_name", "proxy_uuid", "reqid", "security_model"]
 
       raw_message = event.get("message")
       if raw_message.nil?
@@ -16,7 +16,10 @@ filter {
 
       begin
         parsed = JSON.parse(raw_message)
-        raw_message = parsed.reject { |k, _| drop_from_message.include?(k) }.to_json if parsed.is_a?(Hash)
+        if parsed.is_a?(Hash)
+          kept = parsed.reject { |k, _| drop_from_message.include?(k) }
+          raw_message = "{\n" + kept.map { |k, v| k.to_json + ":" + v.to_json }.join("\n,") + "\n}"
+        end
       rescue JSON::ParserError
       end
 
