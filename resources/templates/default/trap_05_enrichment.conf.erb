@@ -19,6 +19,25 @@ filter {
         }
       }
     }
+    <% %w(deployment deployment_uuid namespace namespace_uuid market market_uuid
+          organization organization_uuid service_provider service_provider_uuid
+          campus campus_uuid building building_uuid floor floor_uuid).each do |location| %>
+      <% value = node["redborder"][location] %>
+      <% next if value.nil? or value.to_s.empty? %>
+    if ![<%= location %>] {
+      mutate {
+        add_field => {
+          "<%= location %>" => "<%= value %>"
+        }
+      }
+    }
+    <% end %>
   }
   <% end %>
+
+  if ![sensor_ip] {
+    mutate {
+      copy => { "host" => "sensor_ip" }
+    }
+  }
 }
