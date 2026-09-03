@@ -1,14 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
-<<<<<<< HEAD
-=======
 ## 8.9.8
 
   - nilsver
     - [98d7fa9] Bugfix/#25988 logstash not restart when under heavy load (#170)
 
->>>>>>> origin
 ## 8.9.7
 
   - Luis Blanco
