@@ -1607,6 +1607,27 @@ action :add do
       end
     end
 
+    directory '/etc/systemd/system/logstash.service.d' do
+      owner 'root'
+      group 'root'
+      mode '0755'
+      action :create
+    end
+
+    execute 'systemctl-daemon-reload-logstash' do
+      command 'systemctl daemon-reload'
+      action :nothing
+    end
+
+    template '/etc/systemd/system/logstash.service.d/override.conf' do
+      source 'override.conf.erb'
+      owner 'root'
+      group 'root'
+      mode '0644'
+      cookbook 'logstash'
+      notifies :run, 'execute[systemctl-daemon-reload-logstash]', :immediately
+    end
+
     service 'logstash' do
       service_name 'logstash'
       ignore_failure true
@@ -1637,6 +1658,11 @@ action :remove do
       ignore_failure true
       supports status: true, enable: true
       action [:stop, :disable]
+    end
+
+    directory '/etc/systemd/system/logstash.service.d' do
+      recursive true
+      action :delete
     end
 
     directory '/etc/logstash' do
