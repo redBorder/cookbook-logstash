@@ -17,6 +17,7 @@ action :add do
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
     mobility_nodes = new_resource.mobility_nodes
+    monitor_nodes = new_resource.monitor_nodes
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
@@ -40,7 +41,6 @@ action :add do
     cdomain = new_resource.cdomain
 
     memcached_servers = node['redborder']['memcached']['hosts']
-    nodes = node.run_state['sensors_info_all']
 
     begin
       sensors_data = YAML.load(::File.open('/etc/logstash/sensors_data.yml'))
@@ -996,7 +996,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(nodes: nodes)
+        variables(nodes: monitor_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
