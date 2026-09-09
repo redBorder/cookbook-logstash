@@ -17,6 +17,7 @@ action :add do
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
     mobility_nodes = new_resource.mobility_nodes
+    monitor_nodes = new_resource.monitor_nodes
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
@@ -985,6 +986,17 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/monitor/02_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: monitor_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
