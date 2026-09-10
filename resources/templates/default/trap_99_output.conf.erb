@@ -1,0 +1,7 @@
+output {
+    kafka {
+        codec => "json"
+        topic_id => "rb_trap_post"
+        bootstrap_servers => "kafka.service:9092"
+    }
+}
