@@ -440,14 +440,26 @@ action :add do
       end
 
       template "#{pipelines_dir}/trap/99_output.conf" do
-        source 'trap_99_output.conf.erb'
+        source 'output_kafka_namespace.conf.erb'
         owner user
         group user
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
+        variables(output_namespace_topic: 'rb_trap_post',
+                  namespaces: namespaces)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
+
+      # template "#{pipelines_dir}/trap/99_output.conf" do
+      #   source 'trap_99_output.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
     end
 
     # netflow pipeline
