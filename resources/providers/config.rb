@@ -1089,6 +1089,12 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed
       end
 
+      # Clean the file
+      file '/etc/logstash/pipelines/intrusion/05_incident_enrichment.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/intrusion/05_incident_enrichment.conf') }
+      end
+
       template "#{pipelines_dir}/intrusion/06_incident_enrichment.conf" do
         source 'intrusion_incident_enrichment.conf.erb'
         owner user
