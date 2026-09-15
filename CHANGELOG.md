@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.10.1
+
+  - Miguel Negrón
+    - [9b0134d] Merge pull request #174 from redBorder/bugfix/#26542_incident_enrichment_duplicated
+  - vimesa
+    - [a9565de] If a duplicate incident_enrichment file exists, it deletes it
+
 ## 8.10.0
 
   - Miguel Negrón
