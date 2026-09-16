@@ -28,7 +28,6 @@ cookbook-logstash CHANGELOG
   - Luis Blanco
     - [c509709] Bugfix/#24415 fix no homenets sflow (#166)
 
->>>>>>> 2ba842952896f8ada0551f9612b4a0a53d660d18
 ## 8.9.8
 
   - nilsver
