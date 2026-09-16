@@ -1,4 +1,5 @@
 cookbook-logstash CHANGELOG
+===============
 
 ## 8.10.1
 
