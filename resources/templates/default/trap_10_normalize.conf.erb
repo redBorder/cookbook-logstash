@@ -1,0 +1,37 @@
+filter {
+  ruby {
+    code => '
+      require "json"
+
+      location_fields = ["deployment", "deployment_uuid", "namespace", "namespace_uuid", "market", "market_uuid",
+                         "organization", "organization_uuid", "service_provider", "service_provider_uuid",
+                         "campus", "campus_uuid", "building", "building_uuid", "floor", "floor_uuid"]
+
+      keep_fields = ["sensor_name", "sensor_ip", "host", "oid", "version", "sensor_uuid", "proxy_uuid", "timestamp"] + location_fields
+      drop_from_message = ["sensor_uuid", "index_partitions", "index_replicas", "timestamp", "version", "host", "sensor_name", "proxy_uuid", "reqid", "security_model"] + location_fields
+
+      raw_message = event.get("message")
+      if raw_message.nil?
+        full = event.to_hash
+        full.delete("@timestamp")
+        full.delete("@version")
+        raw_message = full.to_json
+      end
+
+      begin
+        parsed = JSON.parse(raw_message)
+        if parsed.is_a?(Hash)
+          kept = parsed.reject { |k, _| drop_from_message.include?(k) }
+          raw_message = "{\n" + kept.map { |k, v| k.to_json + ":" + v.to_json }.join("\n,") + "\n}"
+        end
+      rescue JSON::ParserError
+      end
+
+      event.to_hash.keys.each do |k|
+        event.remove(k) unless keep_fields.include?(k)
+      end
+
+      event.set("message", raw_message)
+    '
+  }
+}

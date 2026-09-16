@@ -1,0 +1,7 @@
+input{
+    kafka{
+        codec => "json"
+        topics => ["rb_trap"]
+        bootstrap_servers => "kafka.service:9092"
+    }
+}
