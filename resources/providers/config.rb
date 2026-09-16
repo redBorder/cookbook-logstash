@@ -18,6 +18,7 @@ action :add do
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
     mobility_nodes = new_resource.mobility_nodes
+    monitor_nodes = new_resource.monitor_nodes
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
@@ -1045,6 +1046,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/monitor/02_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: monitor_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/monitor/11_device_enrichment.conf" do
         source 'device_enrichment.conf.erb'
         owner user
@@ -1132,6 +1144,12 @@ action :add do
         cookbook 'logstash'
         variables(sensors: sensors_data['sensors'], default_sensor: default_sensor['default_sensor'], split_intrusion_logstash: split_intrusion_logstash)
         notifies :restart, 'service[logstash]', :delayed
+      end
+
+      # Clean the file
+      file '/etc/logstash/pipelines/intrusion/05_incident_enrichment.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/intrusion/05_incident_enrichment.conf') }
       end
 
       template "#{pipelines_dir}/intrusion/06_incident_enrichment.conf" do

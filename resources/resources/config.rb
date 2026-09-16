@@ -20,6 +20,7 @@ attribute :redfish_nodes, kind_of: Array, default: []
 attribute :trap_nodes, kind_of: Array, default: []
 attribute :ips_nodes, kind_of: Hash, default: {}
 attribute :mobility_nodes, kind_of: Hash, default: {}
+attribute :monitor_nodes, kind_of: Hash, default: {}
 attribute :namespaces, kind_of: Array, default: []
 attribute :memcached_server, kind_of: String, default: 'memcached.service'
 attribute :mac_vendors, kind_of: String, default: '/etc/objects/mac_vendors'
