@@ -17,6 +17,7 @@ action :add do
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
     mobility_nodes = new_resource.mobility_nodes
+    monitor_nodes = new_resource.monitor_nodes
     namespaces = new_resource.namespaces
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
@@ -320,6 +321,27 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      directory '/etc/logstash/sflow_homenets' do
+        owner user
+        group user
+        mode '0755'
+        recursive true
+      end
+
+      valid_sflow_nodes = flow_nodes.select { |s| valid_node?(s) }
+
+      sflow_nodes_with_homenets = valid_sflow_nodes.select { |s| s.dig('redborder', 'homenets') }
+      template '/etc/logstash/sflow_homenets/default.yml' do
+        source 'sflow_homenets.yml.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(flow_nodes: sflow_nodes_with_homenets)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/sflow/01_tagging.conf" do
         source 'sflow_tagging.conf.erb'
         owner user
@@ -327,7 +349,8 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(flow_nodes: flow_nodes, proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
+        variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
+        # variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -342,6 +365,9 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      valid_nodes_without_proxy = flow_nodes_without_proxy.select { |s| valid_node?(s) }
+      valid_nodes_with_proxy = flow_nodes_with_proxy.select { |s| valid_node?(s) }
+
       template "#{pipelines_dir}/sflow/03_enrichment.conf" do
         source 'sflow_enrichment.conf.erb'
         owner user
@@ -349,7 +375,11 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(split_traffic_logstash: split_traffic_logstash, flow_nodes_without_proxy: flow_nodes_without_proxy, flow_nodes_with_proxy: flow_nodes_with_proxy)
+        variables(
+          split_traffic_logstash: split_traffic_logstash,
+          flow_nodes_without_proxy: valid_nodes_without_proxy,
+          flow_nodes_with_proxy: valid_nodes_with_proxy
+        )
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -955,6 +985,17 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/monitor/02_check_license.conf" do
+        source 'check_license.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(nodes: monitor_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/monitor/11_device_enrichment.conf" do
         source 'device_enrichment.conf.erb'
         owner user
@@ -1042,6 +1083,12 @@ action :add do
         cookbook 'logstash'
         variables(sensors: sensors_data['sensors'], default_sensor: default_sensor['default_sensor'], split_intrusion_logstash: split_intrusion_logstash)
         notifies :restart, 'service[logstash]', :delayed
+      end
+
+      # Clean the file
+      file '/etc/logstash/pipelines/intrusion/05_incident_enrichment.conf' do
+        action :delete
+        only_if { ::File.exist?('/etc/logstash/pipelines/intrusion/05_incident_enrichment.conf') }
       end
 
       template "#{pipelines_dir}/intrusion/06_incident_enrichment.conf" do
@@ -1512,6 +1559,28 @@ action :add do
       end
     end
 
+    directory '/etc/systemd/system/logstash.service.d' do
+      owner 'root'
+      group 'root'
+      mode '0755'
+      action :create
+    end
+
+    execute 'systemctl-daemon-reload-logstash' do
+      command 'systemctl daemon-reload'
+      action :nothing
+    end
+
+    template '/etc/systemd/system/logstash.service.d/override.conf' do
+      source 'override.conf.erb'
+      owner 'root'
+      group 'root'
+      mode '0644'
+      cookbook 'logstash'
+      notifies :run, 'execute[systemctl-daemon-reload-logstash]', :immediately
+    end
+
+
     service 'logstash' do
       service_name 'logstash'
       ignore_failure true
@@ -1542,6 +1611,11 @@ action :remove do
       ignore_failure true
       supports status: true, enable: true
       action [:stop, :disable]
+    end
+
+    directory '/etc/systemd/system/logstash.service.d' do
+      recursive true
+      action :delete
     end
 
     directory '/etc/logstash' do

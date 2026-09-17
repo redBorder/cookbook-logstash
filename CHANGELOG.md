@@ -1,6 +1,51 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 8.10.1
+
+  - Miguel Negrón
+    - [9b0134d] Merge pull request #174 from redBorder/bugfix/#26542_incident_enrichment_duplicated
+  - vimesa
+    - [a9565de] If a duplicate incident_enrichment file exists, it deletes it
+
+## 8.10.0
+
+  - Miguel Negrón
+    - [5da1ddf] Merge pull request #172 from redBorder/improvement/#26241_add_redborder_license
+  - vimesa
+    - [7731104] Add a variable to the config
+    - [7849496] Add check_license in monitor pipeline
+    - [8f9f046] Add check_license to the monitor pipeline
+  - flopez-redborder
+    - [b5de9dd] Merge branch 'master' into development
+  - Felix Lopez Da Silva
+    - [c85886c] Release 8.9.8
+  - nilsver
+    - [98d7fa9] Bugfix/#25988 logstash not restart when under heavy load (#170)
+  - flopez
+    - [b5de9dd] Merge branch 'master' into development
+    - [c85886c] Release 8.9.8
+    - [0af25b4] Bump version for release
+  - Luis Blanco
+    - [c509709] Bugfix/#24415 fix no homenets sflow (#166)
+
+## 8.9.8
+
+  - nilsver
+    - [98d7fa9] Bugfix/#25988 logstash not restart when under heavy load (#170)
+
+## 8.9.7
+
+  - Luis Blanco
+    - [c509709] Bugfix/#24415 fix no homenets sflow (#166)
+
+## 8.9.6
+
+  - Luis Blanco
+    - [06e6169] Complete refactor of sflow filters: 01_tagging and 03_enrichment
+    - [4b193e9] filter valid sensors in providers config
+    - [9fd2ceb] build helper data file to store homenets by sensor_ip for 01_tagging
+
 ## 8.9.5
 
   - manegron
