@@ -13,6 +13,7 @@ action :add do
     device_nodes = new_resource.device_nodes
     snmp_nodes = new_resource.snmp_nodes
     redfish_nodes = new_resource.redfish_nodes
+    trap_nodes = new_resource.trap_nodes
     vault_nodes = new_resource.vault_nodes
     scanner_nodes = new_resource.scanner_nodes
     ips_nodes = new_resource.ips_nodes
@@ -114,7 +115,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware ips)
+      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware ips trap)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -404,6 +405,62 @@ action :add do
                   output_topic: 'rb_flow')
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
+    end
+
+    # Trap pipeline
+    if is_manager
+      template "#{pipelines_dir}/trap/00_input.conf" do
+        source 'trap_00_input.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/trap/05_enrichment.conf" do
+        source 'trap_05_enrichment.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(sensor_nodes: trap_nodes)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/trap/10_normalize.conf" do
+        source 'trap_10_normalize.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      template "#{pipelines_dir}/trap/99_output.conf" do
+        source 'output_kafka_namespace.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        variables(output_namespace_topic: 'rb_trap_post',
+                  namespaces: namespaces)
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
+      # template "#{pipelines_dir}/trap/99_output.conf" do
+      #   source 'trap_99_output.conf.erb'
+      #   owner user
+      #   group user
+      #   mode '0644'
+      #   ignore_failure true
+      #   cookbook 'logstash'
+      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      # end
     end
 
     # netflow pipeline
