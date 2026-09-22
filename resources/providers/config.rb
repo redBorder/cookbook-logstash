@@ -451,16 +451,6 @@ action :add do
                   namespaces: namespaces)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
-
-      # template "#{pipelines_dir}/trap/99_output.conf" do
-      #   source 'trap_99_output.conf.erb'
-      #   owner user
-      #   group user
-      #   mode '0644'
-      #   ignore_failure true
-      #   cookbook 'logstash'
-      #   notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      # end
     end
 
     # netflow pipeline
