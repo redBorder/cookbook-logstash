@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.0.0
+
+  - Jose Jimenez
+    - [cf997c2] Improvement/#25563 snmp trap visualization module (#169)
+
 ## 8.10.1
 
   - Miguel Negrón
