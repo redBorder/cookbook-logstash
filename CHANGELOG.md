@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.0.1
+
+  - manegron
+    - [bbb4572] Remove old enrichment devices
+
 ## 9.0.0
 
   - Jose Jimenez
