@@ -1,4 +1,12 @@
 filter {
+  if [host] !~ /^\d+\.\d+\.\d+\.\d+$/ {
+    grok {
+      match => { "transport" => "^%{DATA}: \[%{IP:host}\]:%{POSINT}" }
+      overwrite => [ "host" ]
+      tag_on_failure => [ "_trap_host_from_transport_failure" ]
+    }
+  }
+
   <% @sensor_nodes.each do |node| %>
     <% next unless node.name.to_s.start_with?("rbtrap-") %>
     <% next if node["redborder"].nil? %>
