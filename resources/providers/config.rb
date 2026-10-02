@@ -440,6 +440,16 @@ action :add do
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
+      template "#{pipelines_dir}/trap/85_discard_events.conf" do
+        source 'netflow_discard_events.conf.erb'
+        owner user
+        group user
+        mode '0644'
+        ignore_failure true
+        cookbook 'logstash'
+        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      end
+
       template "#{pipelines_dir}/trap/99_output.conf" do
         source 'output_kafka_namespace.conf.erb'
         owner user
