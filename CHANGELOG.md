@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.0.2
+
+  - manegron
+    - [e39791f] Upload cookbook only if opscode-erchef is active
+
 ## 9.0.1
 
   - manegron
