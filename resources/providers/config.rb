@@ -39,6 +39,7 @@ action :add do
     redis_secrets = new_resource.redis_secrets
     redis_password = redis_secrets['pass'] unless redis_secrets.empty?
     s3_malware_secrets = new_resource.s3_malware_secrets
+    clamscan_enabled = new_resource.clamscan_enabled
     cdomain = new_resource.cdomain
 
     memcached_servers = node['redborder']['memcached']['hosts']
@@ -1368,17 +1369,24 @@ action :add do
       end
 
       # Clamscan
-      template "#{pipelines_dir}/malware/30_clamscan.conf" do
-        source 'malware_30_clamscan.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
-                  secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'],
-                  cdomain: cdomain)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      if clamscan_enabled
+        template "#{pipelines_dir}/malware/30_clamscan.conf" do
+          source 'malware_30_clamscan.conf.erb'
+          owner user
+          group user
+          mode '0644'
+          ignore_failure true
+          cookbook 'logstash'
+          variables(access_key_id: s3_malware_secrets['s3_malware_access_key_id'],
+                    secret_access_key: s3_malware_secrets['s3_malware_secret_key_id'],
+                    cdomain: cdomain)
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
+      elsif ::File.exist?("#{pipelines_dir}/malware/30_clamscan.conf")
+        file "#{pipelines_dir}/malware/30_clamscan.conf" do
+          action :delete
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
       end
 
       # Yara

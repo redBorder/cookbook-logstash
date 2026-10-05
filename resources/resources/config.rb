@@ -38,3 +38,4 @@ attribute :redis_hosts, kind_of: Array, default: []
 attribute :redis_port, kind_of: Integer, default: 26379
 attribute :redis_secrets, kind_of: Hash, default: {}
 attribute :s3_malware_secrets, kind_of: Hash, default: {}
+attribute :clamscan_enabled, kind_of: [TrueClass, FalseClass], default: false
