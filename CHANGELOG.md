@@ -1,6 +1,14 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.0.3
+
+  - Miguel Negrón
+    - [0c910cd] Merge pull request #180 from redBorder/improvement/#26794_disable_clamd_by_defaul
+  - manegron
+    - [0c910cd] Merge pull request #180 from redBorder/improvement/#26794_disable_clamd_by_defaul
+    - [1310a5a] Disable clamav by default
+
 ## 9.0.2
 
   - manegron
