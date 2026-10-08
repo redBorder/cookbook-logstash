@@ -1,6 +1,14 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.0.4
+
+  - rb-aguzman
+    - [febe860] Merge pull request #179 from redBorder/bugfix/#26696_fix_enrichment_when_host_name_is_resolved
+  - José Jiménez
+    - [d9181b2] Add discard topics
+    - [c6096f9] Fix enrichment using ip instead of host
+
 ## 9.0.3
 
   - Miguel Negrón
