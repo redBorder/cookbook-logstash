@@ -1,6 +1,14 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.1.0
+
+  - Miguel Negrón
+    - [d38f910] Merge pull request #182 from redBorder/improvement/#26867_reduce_chef_server_queries
+  - manegron
+    - [d38f910] Merge pull request #182 from redBorder/improvement/#26867_reduce_chef_server_queries
+    - [04b2f91] Reduce chef server queries
+
 ## 9.0.4
 
   - rb-aguzman
