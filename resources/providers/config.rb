@@ -427,7 +427,7 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(sensor_nodes: trap_nodes)
+        variables(sensor_nodes: trap_nodes, ips_nodes: ips_nodes)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
