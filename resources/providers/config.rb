@@ -23,7 +23,6 @@ action :add do
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
     logstash_pipelines = new_resource.logstash_pipelines
-    split_traffic_logstash = new_resource.split_traffic_logstash
     split_intrusion_logstash = new_resource.split_intrusion_logstash
     intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
@@ -351,8 +350,6 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
-        # variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -363,7 +360,6 @@ action :add do
         mode '0644'
         ignore_failure true
         cookbook 'logstash'
-        variables(split_traffic_logstash: split_traffic_logstash)
         notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
       end
 
@@ -378,7 +374,6 @@ action :add do
         ignore_failure true
         cookbook 'logstash'
         variables(
-          split_traffic_logstash: split_traffic_logstash,
           flow_nodes_without_proxy: valid_nodes_without_proxy,
           flow_nodes_with_proxy: valid_nodes_with_proxy
         )
