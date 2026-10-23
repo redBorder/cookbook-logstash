@@ -9,7 +9,6 @@ action :add do
     logstash_dir = new_resource.logstash_dir
     pipelines_dir = new_resource.pipelines_dir
     flow_nodes = new_resource.flow_nodes
-    proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
     snmp_nodes = new_resource.snmp_nodes
     redfish_nodes = new_resource.redfish_nodes
