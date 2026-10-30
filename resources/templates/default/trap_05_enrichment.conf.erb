@@ -43,6 +43,43 @@ filter {
   }
   <% end %>
 
+  <% @ips_nodes.each do |_, group| %>
+  <% group.each do |node| %>
+    <% next if node["redborder"].nil? %>
+    <% sensor_uuid = node["redborder"]["sensor_uuid"].to_s %>
+    <% sensor_ip   = node["ipaddress"].to_s %>
+    <% next if sensor_uuid.empty? or sensor_ip.empty? %>
+    <% sensor_name = (node["rbname"].nil? ? node.name : node["rbname"]) %>
+  if ![sensor_uuid] and [host] == "<%= sensor_ip %>" {
+    mutate {
+      add_field => {
+        "sensor_uuid" => "<%= sensor_uuid %>"
+      }
+    }
+    if ![sensor_name] {
+      mutate {
+        add_field => {
+          "sensor_name" => "<%= sensor_name %>"
+        }
+      }
+    }
+    <% %w(deployment deployment_uuid namespace namespace_uuid market market_uuid
+          organization organization_uuid service_provider service_provider_uuid
+          campus campus_uuid building building_uuid floor floor_uuid).each do |location| %>
+      <% value = node["redborder"][location] %>
+      <% next if value.nil? or value.to_s.empty? %>
+    if ![<%= location %>] {
+      mutate {
+        add_field => {
+          "<%= location %>" => "<%= value %>"
+        }
+      }
+    }
+    <% end %>
+  }
+  <% end %>
+  <% end %>
+
   if ![sensor_ip] {
     mutate {
       copy => { "host" => "sensor_ip" }
