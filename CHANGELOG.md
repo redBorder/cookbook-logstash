@@ -1,6 +1,11 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.1.1
+
+  - Jose Jimenez
+    - [bf6f44a] Bugfix/#26854 enable ips intrusion send traps via http (#183)
+
 ## 9.1.0
 
   - Miguel Negrón
