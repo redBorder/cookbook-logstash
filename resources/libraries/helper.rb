@@ -37,11 +37,5 @@ module Logstash
     def is_manager?
       node.role?('manager')
     end
-
-    def valid_node?(node)
-      node[:ipaddress] && node.dig('redborder', 'blocked') != true
-    rescue NoMethodError, TypeError
-      false
-    end
   end
 end
