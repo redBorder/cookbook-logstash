@@ -9,7 +9,6 @@ action :add do
     logstash_dir = new_resource.logstash_dir
     pipelines_dir = new_resource.pipelines_dir
     flow_nodes = new_resource.flow_nodes
-    proxy_nodes = new_resource.proxy_nodes
     device_nodes = new_resource.device_nodes
     snmp_nodes = new_resource.snmp_nodes
     redfish_nodes = new_resource.redfish_nodes
@@ -23,7 +22,6 @@ action :add do
     memcached_server = new_resource.memcached_server
     mac_vendors = new_resource.mac_vendors
     logstash_pipelines = new_resource.logstash_pipelines
-    split_traffic_logstash = new_resource.split_traffic_logstash
     split_intrusion_logstash = new_resource.split_intrusion_logstash
     intrusion_incidents_priority_filter = new_resource.intrusion_incidents_priority_filter
     vault_incidents_priority_filter = new_resource.vault_incidents_priority_filter
@@ -32,8 +30,6 @@ action :add do
     reputation_managers = new_resource.reputation_managers
     is_proxy = is_proxy?
     is_manager = is_manager?
-    flow_nodes_without_proxy = new_resource.flow_nodes_without_proxy
-    flow_nodes_with_proxy = new_resource.flow_nodes_with_proxy
     redis_hosts = new_resource.redis_hosts
     redis_port = new_resource.redis_port
     redis_secrets = new_resource.redis_secrets
@@ -116,7 +112,7 @@ action :add do
 
     pipelines = []
     if is_manager
-      pipelines = %w(sflow netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware ips trap)
+      pipelines = %w(netflow vault scanner nmsp location mobility meraki apstate radius rbwindow bulkstats redfish monitor intrusion druid-metrics malware ips trap)
     elsif is_proxy
       pipelines = %w(bulkstats redfish)
     end
@@ -310,101 +306,15 @@ action :add do
       end
     end
 
-    # sflow pipeline
+    # sflow pipeline: removed, sfacctd (x2kafka) sends sflow to rb_flow already
+    # enriched and with the direction set. Clean up the pipeline of older versions.
     if is_manager
-      template "#{pipelines_dir}/sflow/00_input.conf" do
-        source 'input_kafka.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(topics: ['sflow'])
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
-      directory '/etc/logstash/sflow_homenets' do
-        owner user
-        group user
-        mode '0755'
-        recursive true
-      end
-
-      valid_sflow_nodes = flow_nodes.select { |s| valid_node?(s) }
-
-      sflow_nodes_with_homenets = valid_sflow_nodes.select { |s| s.dig('redborder', 'homenets') }
-      template '/etc/logstash/sflow_homenets/default.yml' do
-        source 'sflow_homenets.yml.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(flow_nodes: sflow_nodes_with_homenets)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
-      template "#{pipelines_dir}/sflow/01_tagging.conf" do
-        source 'sflow_tagging.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
-        # variables(proxy_nodes: proxy_nodes, split_traffic_logstash: split_traffic_logstash)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
-      template "#{pipelines_dir}/sflow/02_normalization.conf" do
-        source 'sflow_normalization.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(split_traffic_logstash: split_traffic_logstash)
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
-      valid_nodes_without_proxy = flow_nodes_without_proxy.select { |s| valid_node?(s) }
-      valid_nodes_with_proxy = flow_nodes_with_proxy.select { |s| valid_node?(s) }
-
-      template "#{pipelines_dir}/sflow/03_enrichment.conf" do
-        source 'sflow_enrichment.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(
-          split_traffic_logstash: split_traffic_logstash,
-          flow_nodes_without_proxy: valid_nodes_without_proxy,
-          flow_nodes_with_proxy: valid_nodes_with_proxy
-        )
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
-      template "#{pipelines_dir}/sflow/04_field_conversion.conf" do
-        source 'sflow_field_conversion.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
-      end
-
-      template "#{pipelines_dir}/sflow/99_output.conf" do
-        source 'output_kafka.conf.erb'
-        owner user
-        group user
-        mode '0644'
-        ignore_failure true
-        cookbook 'logstash'
-        variables(input_topics: ['sflow'],
-                  output_topic: 'rb_flow')
-        notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+      ["#{pipelines_dir}/sflow", '/etc/logstash/sflow_homenets'].each do |dir|
+        directory dir do
+          recursive true
+          action :delete
+          notifies :restart, 'service[logstash]', :delayed unless node['redborder']['leader_configuring']
+        end
       end
     end
 
