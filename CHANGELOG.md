@@ -1,6 +1,13 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 9.2.0
+
+  - nilsver
+    - [70bf117] remove unused variable proxy_nodes
+    - [2006bba] Remove sflow split traffic, the flow agent splits now
+    - [4730c5a] Map host to domain in netflow threat intelligence
+
 ## 9.1.1
 
   - Jose Jimenez
