@@ -1,6 +1,16 @@
 cookbook-logstash CHANGELOG
 ===============
 
+## 10.0.0
+
+  - Miguel Negrón
+    - [07fcf1b] Merge pull request #186 from redBorder/Improvement/#27136_replace_services_with_x2kafka
+  - manegron
+    - [07fcf1b] Merge pull request #186 from redBorder/Improvement/#27136_replace_services_with_x2kafka
+    - [87282ab] Merge remote-tracking branch 'origin/development' into Improvement/#27136_replace_services_with_x2kafka
+  - Juan Soto
+    - [79f8774] Remove the sflow pipeline, sfacctd sends sflow to rb_flow enriched and with direction
+
 ## 9.2.0
 
   - nilsver
